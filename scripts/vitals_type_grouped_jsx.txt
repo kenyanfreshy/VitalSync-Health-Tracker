@@ -1,0 +1,77 @@
+        {vitalsSortMode === 'type' && filteredVitalsRecords.length > 0 && (() => {
+          // Build sections for type-grouped view
+          const sections: { type: string; data: typeof filteredVitalsRecords }[] = [];
+          for (const r of filteredVitalsRecords) {
+            const t = getVitalType(r);
+            const last = sections[sections.length - 1];
+            if (last && last.type === t) { last.data.push(r); }
+            else { sections.push({ type: t, data: [r] }); }
+          }
+          return (
+            <View style={{ paddingHorizontal: 16, paddingBottom: 40 }}>
+              {sections.map(section => (
+                <View key={section.type}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, marginBottom: 6, gap: 8 }}>
+                    <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.primary, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                      {section.type} ({section.data.length})
+                    </Text>
+                    <View style={{ flex: 1, height: 1, backgroundColor: colors.border }} />
+                  </View>
+                  {section.data.map(item => {
+                    const hasBP = item.systolic != null || item.diastolic != null;
+                    const bpStatus = (item.systolic != null && item.diastolic != null) ? getBPStatus(item.systolic, item.diastolic) : null;
+                    const bpColor = bpStatus ? getBPStatusColor(bpStatus, colors as unknown as Record<string, string>) : colors.muted;
+                    const weightDisplay = item.weightKg
+                      ? item.weightUnit === 'lbs'
+                        ? `⚖️ ${kgToLbs(item.weightKg)} lbs`
+                        : `⚖️ ${item.weightKg} kg`
+                      : null;
+                    const hasSleep = item.sleepBedtime && item.sleepWakeTime;
+                    return (
+                      <View key={item.id} style={s.row}>
+                        <View style={s.rowLeft}>
+                          {hasBP && (
+                            <View style={s.bpRow}>
+                              <Text style={s.rowValue}>{item.systolic ?? '--'}/{item.diastolic ?? '--'}</Text>
+                              <Text style={s.mmhg}> mmHg</Text>
+                              {bpStatus && (
+                                <View style={[s.badge, { backgroundColor: bpColor + '22' }]}>
+                                  <Text style={[s.badgeText, { color: bpColor }]}>{getBPStatusLabel(bpStatus)}</Text>
+                                </View>
+                              )}
+                            </View>
+                          )}
+                          <View style={s.pillRow}>
+                            {item.heartRate       && <Text style={s.pill}>❤️ {item.heartRate} bpm</Text>}
+                            {item.hrv             && <Text style={s.pill}>💜 HRV {item.hrv} ms</Text>}
+                            {item.spo2            && <Text style={s.pill}>🫁 {item.spo2}% SpO₂</Text>}
+                            {item.temperature     && <Text style={s.pill}>🌡️ {tempUnit === 'C' ? fToC(item.temperature).toFixed(1) : item.temperature}°{tempUnit}</Text>}
+                            {item.respiratoryRate && <Text style={s.pill}>💨 {item.respiratoryRate}/min</Text>}
+                            {weightDisplay        && <Text style={s.pill}>{weightDisplay}</Text>}
+                            {hasSleep && (
+                              <Text style={s.pill}>
+                                🌙 {formatTimeHHMM(item.sleepBedtime!)}–{formatTimeHHMM(item.sleepWakeTime!)}
+                                {item.sleepTotalMinutes ? ` · ${formatDuration(item.sleepTotalMinutes)}` : ''}
+                                {item.sleepEfficiency ? ` · ${item.sleepEfficiency}% eff` : ''}
+                              </Text>
+                            )}
+                          </View>
+                          <Text style={s.rowSub}>{formatDate(item.timestamp)}</Text>
+                          {item.note ? <Text style={s.rowNote}>{item.note}</Text> : null}
+                        </View>
+                        <Pressable
+                          onPress={() => handleDelete(item.id)}
+                          style={({ pressed }) => [s.deleteBtn, pressed && { opacity: 0.5 }]}
+                        >
+                          <IconSymbol name="xmark" size={16} color={colors.error} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </View>
+              ))}
+            </View>
+          );
+        })()}
+        {vitalsSortMode === 'date' && <FlatList

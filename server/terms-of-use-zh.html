@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>使用条款 — VitalSync</title>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --primary: #0D9488;
+      --primary-light: #F0FDF9;
+      --foreground: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --accent-blue: #EFF6FF;
+      --accent-blue-border: #BFDBFE;
+      --accent-blue-title: #1D4ED8;
+      --warning-bg: #FFFBEB;
+      --warning-border: #FDE68A;
+      --warning-text: #92400E;
+      --radius: 14px;
+      --max-width: 760px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--foreground);
+      line-height: 1.85;
+      padding: 0 0 80px;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, #1E3A5F 0%, #0A7EA4 100%);
+      color: #fff;
+      text-align: center;
+      padding: 52px 24px 44px;
+    }
+    .header-icon { font-size: 42px; margin-bottom: 14px; display: block; }
+    .header h1 { font-size: 26px; font-weight: 800; letter-spacing: 0; margin-bottom: 8px; }
+    .header .tagline { font-size: 15px; opacity: 0.88; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+    .header .date {
+      margin-top: 16px; font-size: 12px; opacity: 0.7;
+      background: rgba(255,255,255,0.15); display: inline-block;
+      padding: 4px 14px; border-radius: 20px;
+    }
+
+    /* ── Language switch ── */
+    .lang-switch {
+      max-width: var(--max-width);
+      margin: 16px auto 0;
+      padding: 0 20px;
+      text-align: right;
+    }
+    .lang-switch a {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      border: 1px solid var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .lang-switch a:hover { background: var(--primary-light); }
+
+    /* ── Acceptance banner ── */
+    .acceptance {
+      max-width: var(--max-width);
+      margin: 24px auto 0;
+      padding: 0 20px;
+    }
+    .acceptance-inner {
+      background: var(--accent-blue);
+      border: 1.5px solid var(--accent-blue-border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .acceptance-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+    .acceptance-title { font-size: 15px; font-weight: 700; color: var(--accent-blue-title); margin-bottom: 6px; }
+    .acceptance p { font-size: 13px; color: var(--foreground); line-height: 1.65; }
+
+    /* ── Content ── */
+    .content {
+      max-width: var(--max-width);
+      margin: 24px auto 0;
+      padding: 0 20px;
+    }
+
+    /* ── Section cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 26px 28px 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .num {
+      background: var(--accent-blue-title);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-icon { font-size: 18px; }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin: 18px 0 8px;
+    }
+    h3:first-child { margin-top: 0; }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.85;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 7px;
+      line-height: 1.8;
+    }
+
+    strong { color: var(--foreground); font-weight: 600; }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Highlight box ── */
+    .highlight {
+      background: var(--primary-light);
+      border: 1.5px solid #99F6E4;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    .highlight p { font-size: 13px; color: #0F766E; margin: 0; font-weight: 500; }
+
+    /* ── Medical disclaimer ── */
+    .disclaimer {
+      background: var(--warning-bg);
+      border: 1.5px solid var(--warning-border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 16px;
+    }
+    .disclaimer-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: var(--warning-text); margin-bottom: 8px;
+    }
+    .disclaimer p { font-size: 13px; color: var(--warning-text); margin-bottom: 0; }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: linear-gradient(135deg, #F0FDF9 0%, #E0F2FE 100%);
+      border: 1.5px solid #99F6E4;
+      border-radius: var(--radius);
+      padding: 26px 28px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .contact-card h2 { border: none; padding: 0; margin-bottom: 10px; justify-content: center; }
+    .contact-card p { font-size: 14px; margin-bottom: 14px; }
+    .contact-email {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 11px 28px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .contact-email:hover { opacity: 0.9; text-decoration: none; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 32px;
+      padding: 0 20px;
+    }
+    .footer a { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <span class="header-icon">📋</span>
+    <h1>使用条款</h1>
+    <p class="tagline">VitalSync — 隐私优先的个人健康聚合应用</p>
+    <span class="date">生效日期：2026年3月8日</span>
+  </div>
+
+  <!-- Language switch -->
+  <div class="lang-switch">
+    <a href="/terms">🌐 English</a>
+  </div>
+
+  <!-- Acceptance banner -->
+  <div class="acceptance">
+    <div class="acceptance-inner">
+      <span class="acceptance-icon">ℹ️</span>
+      <div>
+        <div class="acceptance-title">同意本条款</div>
+        <p>通过下载、安装或使用 VitalSync，您同意受本使用条款的约束。如果您不同意本条款的任何部分，请勿使用本应用程序。本条款适用于在 iOS、Android 和网页端使用 VitalSync 的所有用户。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 1 -->
+    <div class="card">
+      <h2><span class="num">1</span> <span class="section-icon">🩺</span> 关于 VitalSync</h2>
+      <p>VitalSync 是由 <strong>akorir，MSN，RN，CCRN-CMC</strong>（一位具有高级临床培训的重症监护护士）开发的个人健康聚合应用程序。该应用使您能够完全在自己的设备上追踪、可视化和管理您的健康指标，包括：</p>
+      <ul>
+        <li>血压和脉搏读数</li>
+        <li>心率和心率变异性（HRV）</li>
+        <li>睡眠时长和质量</li>
+        <li>身体成分（体重、BMI、体脂率）</li>
+        <li>血氧饱和度（SpO₂）</li>
+        <li>心电图（ECG）数据</li>
+        <li>呼吸频率</li>
+        <li>药物和营养补充剂追踪</li>
+        <li>适合医生查阅的 PDF 和 CSV 报告</li>
+      </ul>
+      <div class="highlight">
+        <p>📱 VitalSync 是一款<strong>个人健康工具</strong>，不是医疗设备。它不旨在替代专业医疗护理、诊断或治疗。</p>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <h2><span class="num">2</span> <span class="section-icon">👤</span> 使用资格</h2>
+      <p>您必须年满 <strong>16 周岁</strong>才能使用 VitalSync。使用本应用即表示您声明并保证您符合此年龄要求。如果您未满 16 周岁，您只能在父母或法定监护人的直接监督下使用 VitalSync，且监护人须代表您同意本条款。</p>
+      <p>VitalSync 仅供个人、非商业用途使用。医疗机构、临床研究团队或商业实体使用本应用需要单独的书面协议。</p>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <h2><span class="num">3</span> <span class="section-icon">🔒</span> 您的数据与隐私</h2>
+      <h3>本地优先架构</h3>
+      <p>您在 VitalSync 中输入或同步的所有健康数据——包括读数、药物记录和报告——均使用本地设备存储，<strong>专属保存在您的设备上</strong>。VitalSync 不会将您的个人健康信息上传、传输或分享给任何外部服务器、云服务或第三方。</p>
+      <h3>这对您意味着什么</h3>
+      <ul>
+        <li>您对在应用中创建的所有数据拥有完全所有权。</li>
+        <li>使用 VitalSync 无需账户或注册。</li>
+        <li>从设备中删除应用将永久删除所有本地存储的数据。</li>
+        <li>导出的 PDF 和 CSV 报告在本地生成，仅在您明确选择分享时才会被共享。</li>
+      </ul>
+      <h3>Apple HealthKit 与 Health Connect</h3>
+      <p>VitalSync 可选择性地从 Apple HealthKit（iOS）和 Google Health Connect（Android）读取数据。从这些平台访问的健康数据在您的设备本地读取，不会向外部传输。您可以随时在设备设置中撤销这些权限。</p>
+      <p>如需了解完整详情，请阅读我们的<a href="https://www.termsfeed.com/live/e1112e83-a35d-4eac-8e98-75aa78873b81" target="_blank">隐私政策</a>。</p>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <h2><span class="num">4</span> <span class="section-icon">⚕️</span> 健康信息免责声明</h2>
+      <p>VitalSync 旨在帮助您追踪和可视化自己的健康数据。应用中显示的信息<strong>仅供个人参考和信息目的</strong>，不构成医疗建议、诊断或治疗。</p>
+      <ul>
+        <li>对于您的医疗状况或症状，请务必咨询有资质的持牌医疗保健提供者。</li>
+        <li>切勿因 VitalSync 中显示的信息而忽视专业医疗建议或延迟就医。</li>
+        <li>如遇医疗紧急情况，请立即拨打当地急救电话（如中国大陆 120、香港 999、台湾 119）。</li>
+        <li>请勿将 VitalSync 的读数作为任何临床决策的唯一依据。</li>
+      </ul>
+      <p>VitalSync 的开发者是一名注册护士，不通过应用或任何相关通信提供个人医疗建议。</p>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <h2><span class="num">5</span> <span class="section-icon">✅</span> 许可使用</h2>
+      <p>您可以将 VitalSync 用于合法的个人、非商业健康追踪目的。您同意<strong>不得</strong>：</p>
+      <ul>
+        <li>对应用进行逆向工程、反编译、反汇编或尝试提取源代码。</li>
+        <li>将应用用于任何违法目的或违反任何适用法律法规的行为。</li>
+        <li>尝试未经授权访问应用的任何组件或其底层系统。</li>
+        <li>未经授权重新分发、转售、再许可或商业利用应用或其任何部分。</li>
+        <li>未经事先书面许可修改、改编或创建基于应用的衍生作品。</li>
+        <li>以任何可能损坏、禁用或损害应用功能的方式使用应用。</li>
+        <li>在任何医疗、法律或保险情境中歪曲应用生成的数据。</li>
+      </ul>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <h2><span class="num">6</span> <span class="section-icon">💳</span> 应用内购买与订阅</h2>
+      <p>VitalSync 可能提供可选的应用内购买或订阅计划以解锁额外功能。所有购买均通过 Apple App Store 或 Google Play Store 处理，并受其各自条款和退款政策的约束。</p>
+      <ul>
+        <li><strong>订阅</strong>在每个计费周期结束时自动续订，除非在续订日期前至少 24 小时取消。</li>
+        <li><strong>退款</strong>直接由 Apple 或 Google 根据其商店政策处理。VitalSync 不独立处理退款。</li>
+        <li><strong>免费试用</strong>（如提供）在试用期结束时转为付费订阅，除非提前取消。</li>
+        <li>价格可能因地区而异，并在购买时以您的本地货币显示。</li>
+      </ul>
+      <p>如需管理或取消订阅，请访问您设备的订阅设置：<strong>iOS</strong> → 设置 → Apple ID → 订阅；<strong>Android</strong> → Google Play → 订阅。</p>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <h2><span class="num">7</span> <span class="section-icon">🔗</span> 第三方服务</h2>
+      <p>VitalSync 可选择性地与第三方健康平台和服务集成。您对这些服务的使用受其各自条款和隐私政策的约束，VitalSync 对其做法不承担责任。</p>
+      <ul>
+        <li><strong>Apple HealthKit</strong> — 受 Apple 服务条款和隐私政策约束。</li>
+        <li><strong>Google Health Connect</strong> — 受 Google 服务条款和隐私政策约束。</li>
+        <li><strong>Oura Ring</strong> — 受 Oura Health 条款和隐私政策约束。</li>
+        <li><strong>Garmin Connect</strong> — 受 Garmin 条款和隐私政策约束。</li>
+      </ul>
+      <p>VitalSync 不对第三方集成提供的数据的准确性、可靠性或完整性作出任何声明或保证。</p>
+    </div>
+
+    <!-- 8 -->
+    <div class="card">
+      <h2><span class="num">8</span> <span class="section-icon">©️</span> 知识产权</h2>
+      <p>VitalSync 的名称、标志、设计、界面及应用内的所有内容均为开发者的知识产权，受适用的版权、商标及其他知识产权法律保护。</p>
+      <p>您被授予有限的、非排他性的、不可转让的、可撤销的许可，以根据本条款将应用用于个人目的。此许可不包括以下权利：</p>
+      <ul>
+        <li>复制、再现或分发应用或其内容的任何部分。</li>
+        <li>未经事先书面许可使用 VitalSync 的名称、标志或品牌。</li>
+        <li>创建衍生作品或商业利用应用的任何部分。</li>
+      </ul>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <h2><span class="num">9</span> <span class="section-icon">⚠️</span> 免责声明</h2>
+      <p>VitalSync 以<strong>"现状"</strong>和<strong>"可用状态"</strong>提供，不提供任何明示或暗示的保证，包括但不限于：</p>
+      <ul>
+        <li>适销性或特定用途适用性的保证。</li>
+        <li>应用将无错误、不中断或不含病毒或其他有害组件的保证。</li>
+        <li>应用中显示的任何健康数据的准确性、完整性或可靠性的保证。</li>
+      </ul>
+      <p>您使用 VitalSync 完全由您自己承担风险。开发者不保证应用将满足您的特定要求或任何错误将被纠正。</p>
+    </div>
+
+    <!-- 10 -->
+    <div class="card">
+      <h2><span class="num">10</span> <span class="section-icon">🛡️</span> 责任限制</h2>
+      <p>在适用法律允许的最大范围内，VitalSync 的开发者对以下情况不承担任何责任：</p>
+      <ul>
+        <li>间接、附带、特殊、后果性或惩罚性损害。</li>
+        <li>数据、收入、利润或商业机会的损失。</li>
+        <li>根据应用中显示的数据做出的健康决策。</li>
+        <li>因使用或无法使用应用而产生的损害。</li>
+        <li>因未经授权访问或更改您的数据而造成的损害。</li>
+      </ul>
+      <p>在不允许排除或限制后果性或附带损害责任的司法管辖区，上述限制可能不适用于您。</p>
+    </div>
+
+    <!-- 11 -->
+    <div class="card">
+      <h2><span class="num">11</span> <span class="section-icon">⚖️</span> 赔偿</h2>
+      <p>您同意就以下情况产生的任何索赔、责任、损害、损失和费用（包括合理的法律费用），对 VitalSync 的开发者及任何关联方进行赔偿、辩护并使其免受损害：</p>
+      <ul>
+        <li>您对 VitalSync 的使用或访问。</li>
+        <li>您违反本使用条款。</li>
+        <li>您违反任何适用的法律或法规。</li>
+        <li>您根据应用中显示的数据做出的任何健康决策。</li>
+      </ul>
+    </div>
+
+    <!-- 12 -->
+    <div class="card">
+      <h2><span class="num">12</span> <span class="section-icon">🔄</span> 应用变更</h2>
+      <p>开发者保留随时修改、暂停或终止 VitalSync（或其任何部分）的权利，无需事先通知。这包括添加或删除功能、更改高级功能的定价或完全停止运营。</p>
+      <p>开发者对因应用或通过应用提供的任何服务的修改、暂停或终止而对您或任何第三方造成的损害不承担责任。</p>
+    </div>
+
+    <!-- 13 -->
+    <div class="card">
+      <h2><span class="num">13</span> <span class="section-icon">📝</span> 条款变更</h2>
+      <p>本使用条款可能会不时更新，以反映应用、适用法律或业务实践的变化。当发生重大变更时，您将在下次启动应用时通过应用内通知收到告知。</p>
+      <p>本页面顶部的"生效日期"反映最近一次修订。您在任何变更后继续使用 VitalSync 即表示您接受更新后的条款。如果您不同意修订后的条款，您应停止使用该应用。</p>
+    </div>
+
+    <!-- 14 -->
+    <div class="card">
+      <h2><span class="num">14</span> <span class="section-icon">🚪</span> 终止</h2>
+      <p>您可以随时通过从设备中删除应用来停止使用 VitalSync。删除应用将永久删除所有本地存储的健康数据。</p>
+      <p>如果发现您违反本使用条款或任何适用法律，开发者保留随时终止或限制您访问 VitalSync 的权利，无需事先通知。</p>
+    </div>
+
+    <!-- 15 -->
+    <div class="card">
+      <h2><span class="num">15</span> <span class="section-icon">🌐</span> 适用法律与争议解决</h2>
+      <p>本使用条款受<strong>美国</strong>法律管辖并按其解释，不考虑法律冲突原则。</p>
+      <p>因本条款或您使用 VitalSync 而产生的任何争议，应首先通过善意协商解决。如协商失败，争议应根据美国仲裁协会的规则通过具有约束力的仲裁解决，除非适用法律禁止。</p>
+      <p>本条款中的任何内容均不妨碍任何一方在必要时向有管辖权的法院寻求禁令或其他衡平法救济，以保护知识产权或机密信息。</p>
+    </div>
+
+    <!-- Medical disclaimer -->
+    <div class="disclaimer">
+      <div class="disclaimer-title">⚕️ 重要医疗免责声明</div>
+      <p>VitalSync 是个人健康追踪工具，<strong>不是医疗设备</strong>。它不用于诊断、治疗、治愈或预防任何疾病或医疗状况。应用中显示的信息仅供个人参考。在做出任何健康或医疗决策之前，请务必咨询有资质的持牌医疗专业人员。如遇紧急情况，请立即拨打当地急救电话。</p>
+    </div>
+
+    <!-- Contact -->
+    <div class="contact-card">
+      <h2>📬 对本条款有疑问？</h2>
+      <p>如果您对本使用条款有任何疑问、顾虑或请求，请联系我们：</p>
+      <a href="mailto:Hello@vitalsync.app" class="contact-email">Hello@vitalsync.app</a>
+      <p style="margin-top:14px; font-size:13px; color:#64748B;">
+        另请参阅我们的<a href="https://www.termsfeed.com/live/e1112e83-a35d-4eac-8e98-75aa78873b81">隐私政策</a>
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>© 2026 VitalSync · 为患者和家庭用心打造</p>
+      <p style="margin-top:8px;">
+        <a href="/terms">English</a> ·
+        <a href="https://www.termsfeed.com/live/e1112e83-a35d-4eac-8e98-75aa78873b81">隐私政策</a>
+      </p>
+    </div>
+
+  </div>
+</body>
+</html>

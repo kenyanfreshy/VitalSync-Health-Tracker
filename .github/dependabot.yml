@@ -1,0 +1,93 @@
+# VitalSync — Dependabot Configuration
+#
+# Strategy: Group all Expo SDK and React Native packages into a single PR
+# so they are always upgraded together, preventing partial SDK drift.
+#
+# IMPORTANT: Expo native packages must be upgraded as a coordinated set.
+# Never merge individual Expo package upgrades — always wait for the full group PR,
+# then run `npx expo install --fix` and `pnpm check-versions` before merging.
+
+version: 2
+
+updates:
+  # ── pnpm (npm-compatible) ecosystem ────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Los_Angeles"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      # All Expo SDK packages must move together — one PR for the whole set
+      expo-sdk:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # React Native core and community packages
+      react-native-core:
+        patterns:
+          - "react-native"
+          - "react-native-*"
+          - "@react-native-*"
+        update-types:
+          - "minor"
+          - "patch"
+      # React and React DOM — keep in sync
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+        update-types:
+          - "minor"
+          - "patch"
+      # Navigation packages
+      react-navigation:
+        patterns:
+          - "@react-navigation/*"
+        update-types:
+          - "minor"
+          - "patch"
+      # TypeScript tooling
+      typescript-tooling:
+        patterns:
+          - "typescript"
+          - "@types/*"
+          - "eslint*"
+          - "prettier"
+        update-types:
+          - "minor"
+          - "patch"
+    # Ignore major version bumps for native packages — require manual SDK migration
+    ignore:
+      - dependency-name: "expo"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "expo-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-native-*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+
+  # ── GitHub Actions ──────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(ci)"

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://raw.githubusercontent.com/expo/eas-cli/main/packages/eas-json/schema/eas.schema.json",
+  "cli": {
+    "version": ">= 18.0.0",
+    "appVersionSource": "local",
+    "requireCommit": false,
+    "promptToConfigurePushNotifications": true
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "credentialsSource": "remote",
+      "autoIncrement": false,
+      "ios": {
+        "image": "latest",
+        "simulator": false,
+        "buildConfiguration": "Debug",
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "image": "latest",
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug",
+        "resourceClass": "medium"
+      },
+      "env": {
+        "EAS_APS_ENVIRONMENT": "development",
+        "APP_ENV": "development"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "credentialsSource": "remote",
+      "autoIncrement": false,
+      "ios": {
+        "image": "latest",
+        "simulator": false,
+        "buildConfiguration": "Release",
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "image": "latest",
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "resourceClass": "medium"
+      },
+      "env": {
+        "EAS_APS_ENVIRONMENT": "production",
+        "APP_ENV": "preview",
+        "EXPO_PUBLIC_CLARIFAI_PAT": "b051f96470914c34a599e7439adfc129",
+        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "channel": "production",
+      "credentialsSource": "remote",
+      "autoIncrement": false,
+      "ios": {
+        "image": "latest",
+        "buildConfiguration": "Release",
+        "resourceClass": "m-medium"
+      },
+      "android": {
+        "image": "latest",
+        "buildType": "app-bundle",
+        "resourceClass": "medium"
+      },
+      "env": {
+        "EAS_APS_ENVIRONMENT": "production",
+        "APP_ENV": "production",
+        "EAS_BUILD_NO_EXPO_GO_WARNING": "true",
+        "EXPO_PUBLIC_CLARIFAI_PAT": "b051f96470914c34a599e7439adfc129",
+        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "language": "en-US",
+        "appleId": "ak82korir@gmail.com",
+        "ascAppId": "{{NEW_ASC_APP_ID}}",
+        "appleTeamId": "ZKJKD74K2N",
+        "bundleIdentifier": "com.vitalsync.healthtracker"
+      },
+      "android": {
+        "track": "internal",
+        "releaseStatus": "draft",
+        "changesNotSentForReview": false
+      }
+    }
+  }
+}

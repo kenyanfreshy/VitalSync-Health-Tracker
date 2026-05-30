@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Apple SF Pro / System font — applied globally on web.
+   On iOS React Native already uses SF Pro by default.
+   On Android React Native uses Roboto by default.
+   No custom font loading is required. */
+@layer base {
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}

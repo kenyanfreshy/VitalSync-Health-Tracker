@@ -1,0 +1,12 @@
+{
+  "name": "apple-speech",
+  "version": "1.0.0",
+  "description": "Local Expo module for Apple Speech Recognition",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "peerDependencies": {
+    "expo": "*"
+  }
+}

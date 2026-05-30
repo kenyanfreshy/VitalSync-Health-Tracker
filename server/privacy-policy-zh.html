@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>隐私政策 — VitalSync</title>
+  <style>
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --primary: #0D9488;
+      --primary-light: #F0FDF9;
+      --foreground: #0F172A;
+      --muted: #64748B;
+      --border: #E2E8F0;
+      --warning-bg: #FFFBEB;
+      --warning-border: #FDE68A;
+      --warning-text: #92400E;
+      --radius: 14px;
+      --max-width: 760px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--foreground);
+      line-height: 1.85;
+      padding: 0 0 80px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0D9488 0%, #0A7EA4 100%);
+      color: #fff;
+      text-align: center;
+      padding: 52px 24px 44px;
+    }
+    .header-icon { font-size: 40px; margin-bottom: 12px; }
+    .header h1 { font-size: 26px; font-weight: 800; letter-spacing: 0; margin-bottom: 8px; }
+    .header .subtitle { font-size: 15px; opacity: 0.88; max-width: 480px; margin: 0 auto; line-height: 1.6; }
+    .header .date { font-size: 13px; opacity: 0.7; margin-top: 14px; }
+
+    .lang-switch {
+      max-width: var(--max-width);
+      margin: 16px auto 0;
+      padding: 0 20px;
+      text-align: right;
+    }
+    .lang-switch a {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      border: 1px solid var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    .lang-switch a:hover { background: var(--primary-light); }
+
+    .local-banner {
+      max-width: var(--max-width);
+      margin: 20px auto 0;
+      padding: 0 20px;
+    }
+    .local-banner-inner {
+      background: var(--primary-light);
+      border: 1.5px solid #99F6E4;
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .local-banner-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .local-banner-title { font-size: 14px; font-weight: 700; color: #0D9488; margin-bottom: 4px; }
+    .local-banner-body { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    .content {
+      max-width: var(--max-width);
+      margin: 28px auto 0;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 28px 24px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h2 .section-icon { font-size: 18px; }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin: 20px 0 8px;
+    }
+    h3:first-child { margin-top: 0; }
+
+    h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--foreground);
+      margin: 14px 0 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    p {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      line-height: 1.8;
+    }
+    p:last-child { margin-bottom: 0; }
+
+    ul, ol { padding-left: 20px; margin-bottom: 10px; }
+    li {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      line-height: 1.75;
+    }
+    li > ul { margin-top: 6px; margin-bottom: 0; }
+
+    strong { color: var(--foreground); font-weight: 600; }
+
+    a { color: var(--primary); text-decoration: none; word-break: break-all; }
+    a:hover { text-decoration: underline; }
+
+    .disclaimer {
+      background: var(--warning-bg);
+      border: 1.5px solid var(--warning-border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .disclaimer-title { font-size: 13px; font-weight: 700; color: var(--warning-text); margin-bottom: 6px; }
+    .disclaimer p { color: var(--warning-text); font-size: 13px; margin-bottom: 0; }
+
+    .contact-card {
+      background: linear-gradient(135deg, #F0FDF9 0%, #E0F2FE 100%);
+      border: 1.5px solid #99F6E4;
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .contact-card h2 { border: none; padding: 0; margin-bottom: 8px; justify-content: center; font-size: 17px; }
+    .contact-card p { font-size: 14px; margin-bottom: 12px; }
+    .contact-email {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff !important;
+      padding: 10px 24px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .contact-email:hover { opacity: 0.9; text-decoration: none; }
+
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 32px;
+      padding: 0 20px;
+    }
+    .footer a { color: var(--primary); }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-icon">🔒</div>
+    <h1>隐私政策</h1>
+    <p class="subtitle">VitalSync 以隐私优先为核心理念。您的健康数据始终保存在您的设备上。</p>
+    <p class="date">最后更新：2026年3月8日</p>
+  </div>
+
+  <div class="lang-switch">
+    <a href="https://www.termsfeed.com/live/e1112e83-a35d-4eac-8e98-75aa78873b81">🌐 English</a>
+  </div>
+
+  <div class="local-banner">
+    <div class="local-banner-inner">
+      <span class="local-banner-icon">📱</span>
+      <div>
+        <div class="local-banner-title">您的数据仅保存在您的设备上</div>
+        <div class="local-banner-body">所有健康记录——血压、脉搏、睡眠、体成分、药物及心电图数据——均使用设备本地存储，专属保存在您的设备上。VitalSync 不会将您的健康数据传输、上传或分享给任何服务器、云服务或第三方，除非您明确选择导出或分享报告。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 简介 -->
+    <div class="card">
+      <p>本隐私政策描述了我们在您使用本服务时收集、使用和披露您信息的政策与程序，并告知您有关隐私权利及法律如何保护您的信息。</p>
+      <p>我们使用您的个人数据来提供和改进服务。使用本服务即表示您同意按照本隐私政策收集和使用信息。</p>
+    </div>
+
+    <!-- 解释与定义 -->
+    <div class="card">
+      <h2><span class="section-icon">📖</span> 解释与定义</h2>
+      <h3>解释</h3>
+      <p>首字母大写的词语具有以下条件下定义的含义。无论以单数还是复数形式出现，以下定义具有相同的含义。</p>
+      <h3>定义</h3>
+      <p>就本隐私政策而言：</p>
+      <ul>
+        <li><p><strong>账户</strong>是指为您访问我们的服务或服务的某些部分而创建的唯一账户。</p></li>
+        <li><p><strong>关联公司</strong>是指控制某一方、受某一方控制或与某一方处于共同控制下的实体，其中"控制"是指拥有50%或以上有权选举董事或其他管理机构的股份、股权或其他证券。</p></li>
+        <li><p><strong>应用程序</strong>是指由公司提供的软件程序 VitalSync。</p></li>
+        <li><p><strong>公司</strong>（在本隐私政策中称为"公司"、"我们"或"我方"）是指 VitalSync。就 GDPR 而言，公司是数据控制者。</p></li>
+        <li><p><strong>设备</strong>是指可以访问服务的任何设备，例如计算机、手机或数字平板电脑。</p></li>
+        <li><p><strong>个人数据</strong>（或"个人信息"）是指与已识别或可识别个人相关的任何信息。就 GDPR 而言，个人数据是指与您相关的任何信息，例如姓名、身份证号码、位置数据、在线标识符或特定于您的身体、生理、遗传、心理、经济、文化或社会身份的一个或多个因素。就 CCPA/CPRA 而言，个人数据是指识别、涉及、描述或能够与您直接或间接关联的任何信息。</p></li>
+        <li><p><strong>服务</strong>是指本应用程序。</p></li>
+        <li><p><strong>服务提供商</strong>是指代表公司处理数据的任何自然人或法人。它是指公司雇用的第三方公司或个人，用于协助提供服务、代表公司提供服务、执行与服务相关的服务或协助公司分析服务的使用情况。就 GDPR 而言，服务提供商被视为数据处理者。</p></li>
+        <li><p><strong>使用数据</strong>是指在使用服务时自动收集的数据，或从服务基础设施本身生成的数据（例如，页面访问的持续时间）。</p></li>
+        <li><p><strong>您</strong>是指访问或使用服务的个人，或代表其访问或使用服务的公司或其他法律实体（如适用）。</p></li>
+      </ul>
+    </div>
+
+    <!-- 收集与使用 -->
+    <div class="card">
+      <h2><span class="section-icon">📊</span> 收集和使用您的个人数据</h2>
+      <h3>收集的数据类型</h3>
+      <h4>个人数据</h4>
+      <p>在使用我们的服务时，我们可能会要求您提供某些可用于联系或识别您身份的个人身份信息。个人身份信息可能包括但不限于：</p>
+      <h4>使用数据</h4>
+      <p>使用服务时会自动收集使用数据。</p>
+      <p>使用数据可能包括您设备的互联网协议地址（例如 IP 地址）、浏览器类型、浏览器版本、您访问的服务页面、访问的时间和日期、在这些页面上花费的时间、唯一设备标识符和其他诊断数据。</p>
+      <p>当您通过移动设备访问服务时，我们可能会自动收集某些信息，包括但不限于您使用的移动设备类型、您移动设备的唯一 ID、您移动设备的 IP 地址、您的移动操作系统、您使用的移动互联网浏览器类型、唯一设备标识符和其他诊断数据。</p>
+
+      <h3>个人数据的使用</h3>
+      <p>公司可能将个人数据用于以下目的：</p>
+      <ul>
+        <li><p><strong>提供和维护我们的服务</strong>，包括监控我们服务的使用情况。</p></li>
+        <li><p><strong>管理您的账户：</strong>管理您作为服务用户的注册。您提供的个人数据可以让您访问作为注册用户可用的服务的不同功能。</p></li>
+        <li><p><strong>履行合同：</strong>开发、遵守和履行您通过服务购买的产品、商品或服务的购买合同，或与我们签订的任何其他合同。</p></li>
+        <li><p><strong>联系您：</strong>通过电子邮件、电话、短信或其他等效形式的电子通信联系您，例如关于功能、产品或合同服务的更新或信息通信的移动应用程序推送通知，包括在必要或合理时实施安全更新。</p></li>
+        <li><p><strong>管理您的请求：</strong>处理和管理您向我们提出的请求。</p></li>
+        <li><p><strong>业务转让：</strong>我们可能会使用您的个人数据来评估或进行合并、剥离、重组、重整、解散或其他出售或转让我们部分或全部资产的交易。</p></li>
+        <li><p><strong>其他目的：</strong>我们可能会将您的信息用于其他目的，例如数据分析、识别使用趋势、确定我们促销活动的效果以及评估和改进我们的服务、产品、服务、营销和您的体验。</p></li>
+      </ul>
+
+      <h3>保留您的个人数据</h3>
+      <p>公司仅在本隐私政策所述目的所必需的时间内保留您的个人数据。我们将在遵守我们的法律义务（例如，如果我们需要保留您的数据以遵守适用法律）、解决争议和执行我们的法律协议和政策所必需的范围内保留和使用您的个人数据。</p>
+      <ul>
+        <li><p>账户信息：在您的账户关系期间及账户关闭后最多 24 个月内保留，以处理任何终止后的问题或解决争议。</p></li>
+        <li><p>使用数据：应用程序使用统计数据最多保留 24 个月；服务器日志（IP 地址、访问时间）最多保留 24 个月，用于安全监控和故障排除。</p></li>
+        <li><p>财务和交易数据：信用卡/借记卡详细信息不存储在我们的服务器上；交易记录（发票详情、购买历史、金额）保留最多 10 年，以遵守税法和财务法规。</p></li>
+      </ul>
+
+      <h3>转移您的个人数据</h3>
+      <p>您的信息，包括个人数据，在公司的运营办公室以及处理所涉及的各方所在的任何其他地方进行处理。这意味着此信息可能会被传输到并保存在位于您所在州、省、国家或其他政府管辖区以外的计算机上，这些地方的数据保护法律可能与您所在管辖区的法律不同。</p>
+      <p>在适用法律要求的情况下，我们将确保对您的个人数据的国际传输受到适当保障措施的约束。公司将采取一切合理必要的步骤，确保您的数据得到安全处理并符合本隐私政策，除非有足够的控制措施（包括您的数据安全和其他个人信息的安全），否则不会将您的个人数据传输到任何组织或国家。</p>
+
+      <h3>删除您的个人数据</h3>
+      <p>您有权删除或要求我们协助删除我们收集的关于您的个人数据。</p>
+      <p>我们的服务可能使您能够从服务内删除有关您的某些信息。</p>
+      <p>您可以随时通过登录您的账户（如果有）并访问允许您管理个人信息的账户设置部分来更新、修改或删除您的信息。您也可以联系我们，请求访问、更正或删除您提供给我们的任何个人数据。</p>
+
+      <h3>披露您的个人数据</h3>
+      <h4>业务交易</h4>
+      <p>如果公司参与合并、收购或资产出售，您的个人数据可能会被转移。我们将在您的个人数据被转移并受不同隐私政策约束之前提供通知。</p>
+      <h4>执法</h4>
+      <p>在某些情况下，如果法律要求或响应公共机构（例如法院或政府机构）的有效请求，公司可能需要披露您的个人数据。</p>
+      <h4>其他法律要求</h4>
+      <p>公司可能在善意认为此类行动有必要的情况下披露您的个人数据，以：遵守法律义务；保护和捍卫公司的权利或财产；防止或调查与服务相关的可能不当行为；保护服务用户或公众的人身安全；防范法律责任。</p>
+
+      <h3>您个人数据的安全</h3>
+      <p>您的个人数据的安全对我们很重要，但请记住，没有任何通过互联网传输的方法或电子存储方法是 100% 安全的。虽然我们努力使用商业上合理的手段来保护您的个人数据，但我们无法保证其绝对安全。</p>
+    </div>
+
+    <!-- 详细处理信息 -->
+    <div class="card">
+      <h2><span class="section-icon">💳</span> 您个人数据处理的详细信息</h2>
+      <p>我们使用的服务提供商可能有权访问您的个人数据。这些第三方供应商根据其隐私政策收集、存储、使用、处理和传输有关您在我们服务上的活动的信息。</p>
+      <h3>支付</h3>
+      <p>我们可能在服务内提供付费产品和/或服务。在这种情况下，我们可能会使用第三方服务进行支付处理（例如支付处理商）。</p>
+      <p>我们不会存储或收集您的支付卡详细信息。该信息直接提供给我们的第三方支付处理商，其对您个人信息的使用受其隐私政策的约束。这些支付处理商遵守由 PCI 安全标准委员会管理的 PCI-DSS 标准，该委员会是 Visa、Mastercard、American Express 和 Discover 等品牌的联合努力。PCI-DSS 要求有助于确保支付信息的安全处理。</p>
+      <ul>
+        <li><p><strong>Apple Store 应用内支付</strong><br>其隐私政策可在以下网址查看：<a href="https://www.apple.com/legal/privacy/en-ww/" rel="external nofollow noopener" target="_blank">https://www.apple.com/legal/privacy/en-ww/</a></p></li>
+        <li><p><strong>Google Play 应用内支付</strong><br>其隐私政策可在以下网址查看：<a href="https://www.google.com/policies/privacy/" rel="external nofollow noopener" target="_blank">https://www.google.com/policies/privacy/</a></p></li>
+        <li><p><strong>Shopify</strong><br>其隐私政策可在以下网址查看：<a href="https://www.shopify.com/legal/privacy" rel="external nofollow noopener" target="_blank">https://www.shopify.com/legal/privacy</a></p></li>
+        <li><p><strong>微信</strong><br>其隐私政策可在以下网址查看：<a href="https://www.wechat.com/en/privacy_policy.html" rel="external nofollow noopener" target="_blank">https://www.wechat.com/en/privacy_policy.html</a></p></li>
+      </ul>
+    </div>
+
+    <!-- GDPR -->
+    <div class="card">
+      <h2><span class="section-icon">🇪🇺</span> GDPR 隐私</h2>
+      <h3>GDPR 下处理个人数据的法律依据</h3>
+      <p>我们可能在以下条件下处理个人数据：</p>
+      <ul>
+        <li><strong>同意：</strong>您已同意为一个或多个特定目的处理个人数据。</li>
+        <li><strong>履行合同：</strong>提供个人数据对于与您履行协议和/或任何合同前义务是必要的。</li>
+        <li><strong>法律义务：</strong>处理个人数据对于遵守公司所受的法律义务是必要的。</li>
+        <li><strong>重大利益：</strong>处理个人数据对于保护您或其他自然人的重大利益是必要的。</li>
+        <li><strong>公共利益：</strong>处理个人数据与公共利益任务或公司被授予的官方权力的行使有关。</li>
+        <li><strong>合法利益：</strong>处理个人数据对于公司追求的合法利益目的是必要的。</li>
+      </ul>
+
+      <h3>您在 GDPR 下的权利</h3>
+      <p>公司承诺尊重您个人数据的保密性，并保证您可以行使您的权利。</p>
+      <p>如果您在欧盟境内，您有权：</p>
+      <ul>
+        <li><strong>请求访问您的个人数据。</strong>访问、更新或删除我们持有的关于您的信息的权利。</li>
+        <li><strong>请求限制处理。</strong>在某些情况下要求我们限制处理您的个人数据的权利。</li>
+        <li><strong>请求更正我们持有的关于您的个人数据。</strong>要求更正我们持有的关于您的任何不完整或不准确信息的权利。</li>
+        <li><strong>反对处理您的个人数据。</strong>在我们依赖合法利益作为处理法律依据的情况下，您有权反对。</li>
+        <li><strong>请求删除您的个人数据。</strong>在没有充分理由继续处理时，要求我们删除或移除个人数据的权利。</li>
+        <li><strong>请求转移您的个人数据。</strong>以结构化、常用、机器可读格式接收您的个人数据的权利。</li>
+        <li><strong>撤回您的同意。</strong>撤回同意使用您个人数据的权利。</li>
+      </ul>
+
+      <h3>行使您的 GDPR 数据保护权利</h3>
+      <p>您可以通过联系我们来行使您的访问、更正、取消和反对权利。请注意，我们可能会要求您在回应此类请求之前验证您的身份。如果您提出请求，我们将尽力尽快回应您。我们通常在一个月内回应，并可能根据适用法律在必要时延长两个月。</p>
+      <p>您有权就我们收集和使用您的个人数据向数据保护机构投诉。如需更多信息，如果您在欧洲经济区（EEA），请联系您在 EEA 的当地数据保护机构。</p>
+    </div>
+
+    <!-- CCPA/CPRA -->
+    <div class="card">
+      <h2><span class="section-icon">🇺🇸</span> CCPA/CPRA 隐私通知（加州隐私权）</h2>
+      <p>本隐私通知部分针对加州居民，补充了我们隐私政策中包含的信息，仅适用于居住在加利福尼亚州的所有访客、用户和其他人。</p>
+
+      <h3>收集的个人信息类别</h3>
+      <p>我们收集可以识别、涉及、描述、参考、能够与特定消费者或设备关联或合理链接（直接或间接）的信息。以下是我们在过去十二（12）个月内可能从加州居民收集或已收集的个人信息类别列表。</p>
+      <ul>
+        <li><p><strong>A 类：标识符。</strong><br>示例：真实姓名、别名、邮政地址、唯一个人标识符、在线标识符、IP 地址、电子邮件地址、账户名、驾照号码、护照号码或其他类似标识符。<br><strong>已收集：是。</strong></p></li>
+        <li><p><strong>B 类：加州客户记录法规（加州民法典第 1798.80(e) 条）中列出的个人信息类别。</strong><br>示例：姓名、签名、身体特征或描述、地址、电话号码、护照号码、驾照或州身份证号码、保险单号码、教育、就业、就业历史、银行账号、信用卡号码、借记卡号码或任何其他财务信息、医疗信息或健康保险信息。<br><strong>已收集：是。</strong></p></li>
+        <li><p><strong>C 类：加州或联邦法律下受保护的分类特征。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>D 类：商业信息。</strong><br>示例：个人财产记录、购买、获得或考虑的产品或服务，或其他购买或消费历史或趋势。<br><strong>已收集：是。</strong></p></li>
+        <li><p><strong>E 类：生物特征信息。</strong><br>示例：遗传、生理、行为和生物特征，或用于提取模板或其他标识符或识别信息的活动模式，例如指纹、面纹和声纹、虹膜或视网膜扫描、击键、步态或其他物理模式，以及睡眠、健康或运动数据。<br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>F 类：互联网或其他类似网络活动。</strong><br>示例：浏览历史、搜索历史、消费者与网站、应用程序或广告互动的信息。<br><strong>已收集：是。</strong></p></li>
+        <li><p><strong>G 类：地理位置数据。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>H 类：感官数据。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>I 类：专业或与就业相关的信息。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>J 类：非公开教育信息。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>K 类：从其他个人信息推断的信息。</strong><br><strong>已收集：否。</strong></p></li>
+        <li><p><strong>L 类：敏感个人信息。</strong><br>示例：政府颁发的识别号码、财务账户详情、遗传数据、精确地理位置、种族或民族、宗教或哲学信仰、工会成员资格、邮件、电子邮件、短信、生物特征数据、健康数据以及性取向或性生活。<br><strong>已收集：否。</strong></p></li>
+      </ul>
+
+      <h3>您在 CCPA/CPRA 下的权利</h3>
+      <p>CCPA/CPRA 为加州居民提供了关于其个人信息的特定权利。如果您是加州居民，您拥有以下权利：</p>
+      <ul>
+        <li><strong>知情权。</strong>您有权被告知正在收集哪些类别的个人信息以及个人信息的使用目的。</li>
+        <li><strong>知晓/访问权。</strong>您有权要求我们披露有关我们收集、使用、出售、为商业目的披露和共享您个人信息的信息。</li>
+        <li><strong>拒绝出售或共享个人信息的权利（选择退出）。</strong>您有权指示我们不出售您的个人信息。</li>
+        <li><strong>更正个人信息的权利。</strong>您有权更正或纠正我们收集的关于您的任何不准确个人信息。</li>
+        <li><strong>限制使用和披露敏感个人信息的权利。</strong>您有权要求限制使用或披露我们收集的关于您的某些敏感个人信息。</li>
+        <li><strong>删除个人信息的权利。</strong>在某些情况下，您有权要求删除您的个人信息。</li>
+        <li><strong>不受歧视的权利。</strong>您有权不因行使任何消费者权利而受到歧视。</li>
+      </ul>
+
+      <h3>行使您的 CCPA/CPRA 数据保护权利</h3>
+      <p>如果您是加州居民，您可以通过以下方式联系我们行使您的权利：</p>
+      <ul>
+        <li>电子邮件：<a href="mailto:Hello@vitalsync.app">Hello@vitalsync.app</a></li>
+      </ul>
+      <p>我们将在收到您的可验证请求后 45 天内免费披露和提供所需信息。</p>
+    </div>
+
+    <!-- 不跟踪 -->
+    <div class="card">
+      <h2><span class="section-icon">🚫</span> "请勿跟踪"政策（CalOPPA）</h2>
+      <p>我们的服务不响应"请勿跟踪"信号。</p>
+      <p>但是，某些第三方网站确实会跟踪您的浏览活动。如果您访问此类网站，您可以在您的网络浏览器中设置偏好，以告知网站您不希望被跟踪。</p>
+    </div>
+
+    <!-- 儿童隐私 -->
+    <div class="card">
+      <h2><span class="section-icon">🧒</span> 儿童隐私</h2>
+      <p>我们的服务不针对 16 岁以下的任何人。我们不会故意收集 16 岁以下任何人的个人身份信息。如果您是父母或监护人，并且您知道您的孩子向我们提供了个人数据，请联系我们。如果我们意识到我们在未经父母同意的情况下收集了 16 岁以下任何人的个人数据，我们将采取措施从我们的服务器中删除该信息。</p>
+    </div>
+
+    <!-- 其他网站链接 -->
+    <div class="card">
+      <h2><span class="section-icon">🔗</span> 其他网站链接</h2>
+      <p>我们的服务可能包含指向非我们运营的其他网站的链接。如果您点击第三方链接，您将被引导至该第三方的网站。我们强烈建议您查看您访问的每个网站的隐私政策。</p>
+      <p>我们对任何第三方网站或服务的内容、隐私政策或做法没有控制权，也不承担任何责任。</p>
+    </div>
+
+    <!-- 政策变更 -->
+    <div class="card">
+      <h2><span class="section-icon">📝</span> 本隐私政策的变更</h2>
+      <p>我们可能会不时更新我们的隐私政策。我们将通过在此页面上发布新的隐私政策来通知您任何更改。</p>
+      <p>我们将在变更生效之前通过电子邮件和/或在我们服务上的显著通知告知您，并更新本隐私政策顶部的"最后更新"日期。</p>
+      <p>建议您定期查看本隐私政策以了解任何变更。本隐私政策的变更在发布到此页面时生效。</p>
+    </div>
+
+    <!-- 医疗免责声明 -->
+    <div class="disclaimer">
+      <div class="disclaimer-title">⚕️ 医疗免责声明</div>
+      <p>VitalSync 是个人健康追踪工具，不是医疗设备。它不用于诊断、治疗、治愈或预防任何疾病或医疗状况。请始终咨询合格的医疗保健提供者以获取医疗建议。</p>
+    </div>
+
+    <!-- 联系我们 -->
+    <div class="contact-card">
+      <h2>📬 联系我们</h2>
+      <p>如果您对本隐私政策有任何疑问，请联系我们：</p>
+      <a href="mailto:Hello@vitalsync.app" class="contact-email">Hello@vitalsync.app</a>
+    </div>
+
+    <div class="footer">
+      <p>© 2026 VitalSync · 为患者和家庭用心打造</p>
+      <p style="margin-top:8px;"><a href="/terms">使用条款</a> · <a href="https://www.termsfeed.com/live/e1112e83-a35d-4eac-8e98-75aa78873b81">English</a></p>
+    </div>
+
+  </div>
+</body>
+</html>

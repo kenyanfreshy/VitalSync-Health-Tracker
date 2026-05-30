@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#DC2626" />
+  <title>ICE — Emergency Medical Information</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #DC2626;
+      --red-light: #FEF2F2;
+      --red-border: #FECACA;
+      --red-dark: #991B1B;
+      --text: #111827;
+      --muted: #6B7280;
+      --surface: #FFFFFF;
+      --bg: #F9FAFB;
+      --border: #E5E7EB;
+      --green: #16A34A;
+      --amber: #D97706;
+      --purple: #7C3AED;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --text: #F9FAFB;
+        --muted: #9CA3AF;
+        --surface: #1F2937;
+        --bg: #111827;
+        --border: #374151;
+        --red-light: #450A0A;
+        --red-border: #7F1D1D;
+      }
+    }
+
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────────── */
+    .header {
+      background: var(--red);
+      padding: 20px 16px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(220,38,38,0.35);
+    }
+    .header-badge {
+      background: rgba(255,255,255,0.2);
+      border: 1.5px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .header-subtitle {
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      margin-top: 2px;
+    }
+
+    /* ── Warning banner ──────────────────────────────────────────────────── */
+    .warning-banner {
+      background: var(--red-light);
+      border-bottom: 1px solid var(--red-border);
+      padding: 10px 16px;
+      font-size: 12px;
+      color: var(--red);
+      font-weight: 600;
+      text-align: center;
+    }
+
+    /* ── Content ─────────────────────────────────────────────────────────── */
+    .content {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* ── Cards ───────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-icon { font-size: 16px; }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .card-body { padding: 12px 14px; }
+
+    /* ── Blood type ──────────────────────────────────────────────────────── */
+    .blood-type-display {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .blood-type-badge {
+      background: var(--red);
+      color: #fff;
+      font-size: 32px;
+      font-weight: 900;
+      border-radius: 12px;
+      padding: 8px 16px;
+      letter-spacing: -0.5px;
+    }
+    .blood-type-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* ── Chips ───────────────────────────────────────────────────────────── */
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 20px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid;
+    }
+    .chip-red    { color: var(--red);    background: rgba(220,38,38,0.08);   border-color: rgba(220,38,38,0.25); }
+    .chip-amber  { color: var(--amber);  background: rgba(217,119,6,0.08);   border-color: rgba(217,119,6,0.25); }
+    .chip-purple { color: var(--purple); background: rgba(124,58,237,0.08);  border-color: rgba(124,58,237,0.25); }
+
+    /* ── Directives ──────────────────────────────────────────────────────── */
+    .directive-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .directive-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      border: 1px solid;
+    }
+    .directive-yes  { color: var(--green);  background: rgba(22,163,74,0.08);  border-color: rgba(22,163,74,0.25); }
+    .directive-no   { color: var(--red);    background: rgba(220,38,38,0.08);  border-color: rgba(220,38,38,0.25); }
+    .directive-unk  { color: var(--muted);  background: rgba(107,114,128,0.08); border-color: rgba(107,114,128,0.25); }
+
+    /* ── Contacts ────────────────────────────────────────────────────────── */
+    .contact-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .contact-row:last-child { border-bottom: none; }
+    .contact-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 20px;
+      background: var(--red);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+    .contact-info { flex: 1; min-width: 0; }
+    .contact-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .contact-rel {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .contact-call-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--red);
+      color: #fff;
+      text-decoration: none;
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ── Notes ───────────────────────────────────────────────────────────── */
+    .notes-box {
+      background: rgba(220,38,38,0.05);
+      border: 1px solid rgba(220,38,38,0.2);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────────── */
+    .empty { color: var(--muted); font-size: 13px; font-style: italic; }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+    .footer {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 12px 16px 32px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .footer strong { color: var(--red); }
+
+    /* ── Error ───────────────────────────────────────────────────────────── */
+    .error-page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      padding: 32px 16px;
+      text-align: center;
+      gap: 12px;
+    }
+    .error-icon { font-size: 48px; }
+    .error-title { font-size: 20px; font-weight: 700; color: var(--text); }
+    .error-msg { font-size: 14px; color: var(--muted); max-width: 320px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // ── Parse and render ICE data ────────────────────────────────────────────
+    (function () {
+      const root = document.getElementById('root');
+
+      function render(html) { root.innerHTML = html; }
+
+      function escHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function chipList(items, cls) {
+        if (!items || items.length === 0) return '<span class="empty">None recorded</span>';
+        return '<div class="chip-list">' +
+          items.map(i => `<span class="chip ${cls}">${escHtml(i)}</span>`).join('') +
+          '</div>';
+      }
+
+      function directivePill(label, value) {
+        if (value === null || value === undefined) {
+          return `<span class="directive-pill directive-unk">❓ ${escHtml(label)}: Unknown</span>`;
+        }
+        const cls = value ? 'directive-yes' : 'directive-no';
+        const icon = value ? '✓' : '✗';
+        return `<span class="directive-pill ${cls}">${icon} ${escHtml(label)}: ${value ? 'Yes' : 'No'}</span>`;
+      }
+
+      // ── Decode the ?d= query param ─────────────────────────────────────
+      let data = null;
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const encoded = params.get('d');
+        if (!encoded) throw new Error('No data');
+        // Decode base64url → JSON
+        const json = atob(encoded.replace(/-/g, '+').replace(/_/g, '/'));
+        data = JSON.parse(json);
+      } catch (e) {
+        render(`
+          <div class="header">
+            <div class="header-badge">ICE</div>
+            <div>
+              <div class="header-title">Emergency Information</div>
+              <div class="header-subtitle">VitalSync Clinical Hub</div>
+            </div>
+          </div>
+          <div class="error-page">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">QR Code Expired or Invalid</div>
+            <div class="error-msg">
+              This QR code could not be decoded. Ask the patient to regenerate their ICE QR code in VitalSync.
+            </div>
+          </div>
+        `);
+        return;
+      }
+
+      // ── Contacts section ───────────────────────────────────────────────
+      function contactsHtml(contacts) {
+        if (!contacts || contacts.length === 0) {
+          return '<span class="empty">No emergency contacts recorded</span>';
+        }
+        return contacts.map(c => {
+          const initials = c.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+          return `
+            <div class="contact-row">
+              <div class="contact-avatar">${escHtml(initials)}</div>
+              <div class="contact-info">
+                <div class="contact-name">${escHtml(c.name)}${c.isPrimary ? ' ★' : ''}</div>
+                <div class="contact-rel">${escHtml(c.relationship)}</div>
+              </div>
+              ${c.phone ? `<a class="contact-call-btn" href="tel:${escHtml(c.phone)}">📞 Call</a>` : ''}
+            </div>
+          `;
+        }).join('');
+      }
+
+      // ── Last updated ───────────────────────────────────────────────────
+      function formatDate(iso) {
+        if (!iso) return 'Unknown';
+        try {
+          return new Date(iso).toLocaleString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+          });
+        } catch { return iso; }
+      }
+
+      // ── Render full page ───────────────────────────────────────────────
+      render(`
+        <div class="header">
+          <div class="header-badge">ICE</div>
+          <div>
+            <div class="header-title">Emergency Medical Information</div>
+            <div class="header-subtitle">VitalSync Clinical Hub · For first responders</div>
+          </div>
+        </div>
+
+        <div class="warning-banner">
+          ⚠️ This information is provided for emergency medical use only. Do not share or distribute.
+        </div>
+
+        <div class="content">
+
+          <!-- Blood Type -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🩸</span>
+              <span class="card-title">Blood Type</span>
+            </div>
+            <div class="card-body">
+              <div class="blood-type-display">
+                <div class="blood-type-badge">${escHtml(data.bloodType ?? 'Unknown')}</div>
+                <div class="blood-type-label">ABO/Rh Blood Group</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Critical Conditions -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">🩺</span>
+              <span class="card-title">Critical Conditions</span>
+            </div>
+            <div class="card-body">
+              ${chipList(data.criticalConditions, 'chip-red')}
+            </div>
+          </div>
+
+          <!-- Allergies -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">⚠️</span>
+              <span class="card-title">Allergies &amp; Contraindications</span>
+            </div>
+            <div class="card-body">
+              ${chipList(data.allergies, 'chip-amber')}
+            </div>
+          </div>
+
+          <!-- Medications -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">💊</span>
+              <span class="card-title">Critical Medications</span>
+            </div>
+            <div class="card-body">
+              ${chipList(data.criticalMedications, 'chip-purple')}
+            </div>
+          </div>
+
+          <!-- Directives -->
+          ${(data.organDonor !== null || data.dnrStatus !== null) ? `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📋</span>
+              <span class="card-title">Advance Directives</span>
+            </div>
+            <div class="card-body">
+              <div class="directive-row">
+                ${data.organDonor !== null ? directivePill('Organ Donor', data.organDonor) : ''}
+                ${data.dnrStatus !== null ? directivePill('DNR / DNAR', data.dnrStatus) : ''}
+              </div>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Notes -->
+          ${data.criticalNotes && data.criticalNotes.trim() ? `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📝</span>
+              <span class="card-title">Clinical Notes</span>
+            </div>
+            <div class="card-body">
+              <div class="notes-box">${escHtml(data.criticalNotes.trim())}</div>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Emergency Contacts -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">📞</span>
+              <span class="card-title">Emergency Contacts</span>
+            </div>
+            <div class="card-body">
+              ${contactsHtml(data.emergencyContacts)}
+            </div>
+          </div>
+
+        </div>
+
+        <div class="footer">
+          <strong>VitalSync Clinical Hub</strong> · ICE Emergency Card<br/>
+          Last updated by patient: ${formatDate(data.lastUpdated)}<br/>
+          This page is read-only and contains no tracking or analytics.
+        </div>
+      `);
+    })();
+  </script>
+</body>
+</html>
