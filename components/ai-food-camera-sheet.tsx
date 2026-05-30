@@ -1553,34 +1553,24 @@ export function AiFoodCameraSheet({
       const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
 
       if (recognition.labels.length === 0) {
-        // Nothing detected — fall back to server Smart photo analysis
-        const scan = await analysePhotoMutation.mutateAsync({
-          imageBase64: `data:image/jpeg;base64,${result.assets[0].base64}`,
-          mimeType: 'image/jpeg',
-        });
+        // Nothing detected — show a generic fallback preview
         setPreview({
-          foodDescription: scan.foodDescription || 'Meal photo',
-          calories: scan.calories ?? null,
-          carbsG: scan.carbsG ?? null,
-          proteinG: scan.proteinG ?? null,
-          fatG: scan.fatG ?? null,
-          fiberG: scan.fiberG ?? null,
-          sugarG: scan.sugarG ?? null,
-          glycemicLoad: scan.glycemicLoad ?? null,
-          sodiumMg: scan.sodiumMg ?? 0,
-          confidence: scan.confidence as 'high' | 'medium' | 'low',
-          reasoning: scan.reasoning,
+          foodDescription: 'Meal photo',
+          calories: null,
+          carbsG: null,
+          proteinG: null,
+          fatG: null,
+          fiberG: null,
+          sugarG: null,
+          glycemicLoad: null,
+          sodiumMg: 0,
+          confidence: 'low',
+          reasoning: 'Could not identify food items. Try a clearer, well-lit photo or search by name.',
           source: 'ai-photo',
         });
         setMode('plate');
-        if (scan.confidence === 'low') {
-          setLowConfToast(true);
-          // Persist as fallback estimate with 30-min TTL
-          const _pe = { kcal: scan.calories ?? 0, name: scan.foodDescription ?? '', ts: Date.now() };
-          safeSetItem(PREV_ESTIMATE_KEY, JSON.stringify(_pe)).catch(() => {});
-          setPrevEstimate({ kcal: _pe.kcal, name: _pe.name });
-          setTimeout(() => setLowConfToast(false), 4000);
-        }
+        setLowConfToast(true);
+        setTimeout(() => setLowConfToast(false), 4000);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         return;
       }
@@ -1642,7 +1632,7 @@ export function AiFoodCameraSheet({
     } finally {
       setScanning(false);
     }
-  }, [analysePhotoMutation, onScanMealPress]);
+  }, [onScanMealPress]);
 
   // ── Barcode scan — native on-device scanner → Open Food Facts API ──────────
   const handleBarcodeScan = useCallback(() => {

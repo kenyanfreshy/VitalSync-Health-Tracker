@@ -1,23 +1,18 @@
 /**
- * Apple Vision / Core ML food recognition — privacy-first, on-device.
+ * Food recognition via Gemini Vision API — works in production without a backend server.
  *
  * Recognition pipeline:
- *   1. Apple Vision (VNClassifyImageRequest) — on-device, no network, iOS 13+
- *      Uses the built-in MobileNet-based food classifier via expo-image-manipulator
- *      + the server's built-in LLM vision endpoint (multimodal, no external key needed)
- *   2. Clarifai food-item-recognition — fallback when Vision confidence is low
- *      or on Android/web where Apple Vision is unavailable
+ *   1. Gemini Vision (gemini-2.0-flash) — direct API call, no server needed
+ *   2. Clarifai food-item-recognition — fallback when Gemini returns nothing
  *
  * The result is a ranked list of food labels that the caller passes to USDA for
  * macro lookup. No nutrition data is returned here — that's USDA's job.
  */
 
-// _Platform removed — not a valid export
-
 export interface FoodLabel {
   name: string;
   confidence: number; // 0-1
-  source: 'apple-vision' | 'clarifai' | 'server-vision';
+  source: 'gemini-vision' | 'clarifai' | 'server-vision';
 }
 
 export interface FoodRecognitionResult {
@@ -30,47 +25,64 @@ export interface FoodRecognitionResult {
   usedFallback: boolean;
 }
 
-// ─── Apple Vision via server multimodal LLM ───────────────────────────────────
-// On iOS, we use the server's built-in multimodal LLM (which uses Apple Vision
-// internally on-device when available, or the server's vision model).
-// This is privacy-preserving: the image is sent to OUR server (not a third party)
-// and the server uses the built-in LLM — no external API key required.
+// ─── Gemini Vision API ────────────────────────────────────────────────────────
 
-async function recogniseViaServerVision(
+const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+async function recogniseViaGemini(
   base64Image: string,
 ): Promise<FoodLabel[]> {
-  // Use a direct fetch to the tRPC endpoint — the `trpc` export from lib/trpc
-  // is a React hook creator (createTRPCReact) and cannot be called outside a
-  // React component. We call the nutrition.analysePhoto mutation directly via
-  // the tRPC HTTP batch protocol instead.
   try {
-    const { getApiBaseUrl } = await import('@/constants/oauth');
-    const url = `${getApiBaseUrl()}/api/trpc/nutrition.analysePhoto`;
     const body = JSON.stringify({
-      json: {
-        imageBase64: `data:image/jpeg;base64,${base64Image}`,
-        mimeType: 'image/jpeg',
+      contents: [
+        {
+          parts: [
+            {
+              text: 'Identify all food items visible in this image. List each food item on a separate line, most prominent first. Use simple common names (e.g. "grilled chicken", "white rice", "broccoli"). Only list actual food items, no descriptions or explanations. Maximum 8 items.',
+            },
+            {
+              inlineData: {
+                mimeType: 'image/jpeg',
+                data: base64Image,
+              },
+            },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 256,
       },
     });
-    const response = await fetch(url, {
+
+    const response = await fetch(GEMINI_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
-      credentials: 'include',
     });
+
     if (!response.ok) return [];
-    const data = await response.json() as { result?: { data?: { json?: { foodDescription?: string } } } };
-    const desc: string = data?.result?.data?.json?.foodDescription ?? '';
-    if (!desc) return [];
-    const items = desc
-      .split(/[,;]/)
-      .map((s: string) => s.trim())
+
+    const data = await response.json() as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+      }>;
+    };
+
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!text) return [];
+
+    const items = text
+      .split(/[\n,;]/)
+      .map((s: string) => s.replace(/^[-•*\d.)\s]+/, '').trim())
       .filter((s: string) => s.length > 1 && s.length < 60)
       .slice(0, 8);
+
     return items.map((name: string, i: number) => ({
       name,
-      confidence: Math.max(0.3, 0.95 - i * 0.1),
-      source: 'server-vision' as const,
+      confidence: Math.max(0.3, 0.95 - i * 0.08),
+      source: 'gemini-vision' as const,
     }));
   } catch (_unused) {
     return [];
@@ -100,7 +112,7 @@ async function recogniseViaClarifai(
 /**
  * Recognise food items in a base64-encoded JPEG image.
  *
- * On iOS: Uses the server's built-in multimodal LLM (Apple Vision-backed).
+ * Primary: Gemini Vision API (direct, no backend server needed).
  * Fallback: Clarifai food-item-recognition model.
  *
  * @param base64Image  Raw base64 JPEG (no data: prefix)
@@ -113,14 +125,14 @@ export async function recogniseFoodInImage(
   let labels: FoodLabel[] = [];
   let usedFallback = false;
 
-  // Primary: server multimodal LLM (uses Apple Vision on iOS)
+  // Primary: Gemini Vision API
   try {
-    labels = await recogniseViaServerVision(base64Image);
+    labels = await recogniseViaGemini(base64Image);
   } catch (_unused) {
     labels = [];
   }
 
-  // Fallback: Clarifai if primary returned nothing or low confidence
+  // Fallback: Clarifai if Gemini returned nothing or low confidence
   const topConfidence = labels[0]?.confidence ?? 0;
   if (labels.length === 0 || topConfidence < minConfidence) {
     try {

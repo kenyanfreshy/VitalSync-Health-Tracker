@@ -654,12 +654,26 @@ export function SmartNutritionCard({
       };
 
       if (plateResult.missingCredentials) {
-        // Clarifai PAT not configured — fall back to server-side analysis
-        const serverScan = await analysePhotoMutation.mutateAsync({
-          imageBase64: `data:image/jpeg;base64,${result.assets[0].base64}`,
-          mimeType: 'image/jpeg',
-        });
-        scan = serverScan;
+        // Clarifai PAT not configured — fall back to Gemini Vision
+        const { recogniseFoodInImage } = await import('@/lib/nutrition/apple-vision-food');
+        const { lookupBestUsdaMatch } = await import('@/lib/nutrition/usda-fdc');
+        const recognition = await recogniseFoodInImage(result.assets[0].base64);
+        if (recognition.primaryFood) {
+          const usdaItem = await lookupBestUsdaMatch(recognition.primaryFood);
+          scan = {
+            sodiumMg: usdaItem?.sodiumMg ?? 0,
+            foodDescription: usdaItem?.description ?? recognition.primaryFood,
+            calories: usdaItem?.calories ?? null,
+            carbsG: usdaItem?.carbsG ?? null,
+            sugarG: usdaItem?.sugarG ?? null,
+            fatG: usdaItem?.fatG ?? null,
+            proteinG: usdaItem?.proteinG ?? null,
+            fiberG: usdaItem?.fiberG ?? null,
+            glycemicLoad: usdaItem?.glycemicLoad ?? null,
+          };
+        } else {
+          scan = { sodiumMg: 0, foodDescription: 'Meal photo' };
+        }
       } else if (plateResult.nutrition) {
         const n = plateResult.nutrition;
         scan = {
@@ -712,7 +726,7 @@ export function SmartNutritionCard({
     } finally {
       setScanning(false);
     }
-  }, [analysePhotoMutation, addSodium, fetchInsights]);
+  }, [addSodium, fetchInsights]);
 
   // ── Barcode scan ────────────────────────────────────────────────────────
   const _handleBarcodePress = useCallback(() => {
