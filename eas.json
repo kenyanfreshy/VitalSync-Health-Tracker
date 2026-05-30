@@ -51,7 +51,8 @@
         "EAS_APS_ENVIRONMENT": "production",
         "APP_ENV": "preview",
         "EXPO_PUBLIC_CLARIFAI_PAT": "b051f96470914c34a599e7439adfc129",
-        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM"
+        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk"
       }
     },
     "production": {
@@ -74,7 +75,8 @@
         "APP_ENV": "production",
         "EAS_BUILD_NO_EXPO_GO_WARNING": "true",
         "EXPO_PUBLIC_CLARIFAI_PAT": "b051f96470914c34a599e7439adfc129",
-        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM"
+        "EXPO_PUBLIC_USDA_API_KEY": "PD32mUsgsjPN627SMMHdTPqn427Oj6JZORjENbTM",
+        "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk"
       }
     }
   },

@@ -39,7 +39,7 @@ export interface DirectNutritionResult {
 
 // ─── Gemini Vision API ────────────────────────────────────────────────────────
 
-const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 const FOOD_SCAN_PROMPT = `Analyze this food image. Identify the dishes or ingredients present, estimate the portion sizes, and provide an approximate breakdown of calories, protein, carbs, and fats.

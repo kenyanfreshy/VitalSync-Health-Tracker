@@ -5,7 +5,7 @@
  * structured medication fields. Works in production without a backend server.
  */
 
-const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export interface GeminiScribeResult {

@@ -315,7 +315,7 @@ export async function lookupBestUsdaMatchWithFallback(
  * Returns a synthetic UsdaFoodItem with confidence 'medium'.
  */
 async function estimateNutritionWithGemini(foodName: string): Promise<UsdaFoodItem | null> {
-  const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
+  const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
   const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
   const prompt = `You are a registered dietitian. Provide the nutritional values per 100g for: "${foodName}"
