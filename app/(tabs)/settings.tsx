@@ -306,14 +306,14 @@ export default function SettingsScreen() {
     subscriptionExpiryMs: subExpiryMs,
   } = useSubscription();
   // ── Derived plan display info ─────────────────────────────────────────────
-  const activePlanName = subActiveProductId === 'vitalsyncpersonalwellnesshub.pro.annual' ? 'Annual' :
-    subActiveProductId === 'com.vitalsyncpersonalwellnesshub.pro.monthly' ? 'Monthly' : null;
+  const activePlanName = subActiveProductId === 'vitalsync.healthtracker.premium_annual' ? 'Annual' :
+    subActiveProductId === 'vitalsync.healthtracker.premium_monthly' ? 'Monthly' : null;
   const renewalDateStr = subExpiryMs
     ? new Date(subExpiryMs).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
   // Stable fallback prices — shown when StoreKit/Play hasn't loaded yet
-  const monthlyProduct = subProducts.find((p) => p.id === 'com.vitalsyncpersonalwellnesshub.pro.monthly');
-  const yearlyProduct  = subProducts.find((p) => p.id === 'vitalsyncpersonalwellnesshub.pro.annual');
+  const monthlyProduct = subProducts.find((p) => p.id === 'vitalsync.healthtracker.premium_monthly');
+  const yearlyProduct  = subProducts.find((p) => p.id === 'vitalsync.healthtracker.premium_annual');
   const monthlyPrice = (monthlyProduct as (typeof monthlyProduct & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$6.99';
   const yearlyPrice  = (yearlyProduct  as (typeof yearlyProduct  & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$69.99';
 

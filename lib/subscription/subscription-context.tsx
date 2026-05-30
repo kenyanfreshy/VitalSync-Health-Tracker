@@ -10,7 +10,7 @@
  *  - AsyncStorage persistence for offline access state
  *
  * Product IDs:
- *  iOS/Android: com.vitalsyncpersonalwellnesshub.pro.monthly, vitalsyncpersonalwellnesshub.pro.annual
+ *  iOS/Android: vitalsync.healthtracker.premium_monthly, vitalsync.healthtracker.premium_annual
  */
 
 import React, {
@@ -47,20 +47,20 @@ import {
 // ─── Product IDs ─────────────────────────────────────────────────────────────
 
 export const PRODUCT_IDS = {
-  monthly: "com.vitalsyncpersonalwellnesshub.pro.monthly",
-  yearly: "vitalsyncpersonalwellnesshub.pro.annual",
+  monthly: "vitalsync.healthtracker.premium_monthly",
+  yearly: "vitalsync.healthtracker.premium_annual",
 } as const;
 
 // ─── Static display data ──────────────────────────────────────────────────────
 export const SUBSCRIPTION_DATA = {
   monthly: {
-    id: "com.vitalsyncpersonalwellnesshub.pro.monthly",
+    id: "vitalsync.healthtracker.premium_monthly",
     price: "$6.99",
     period: "Month",
     trialDays: 14,
   },
   annual: {
-    id: "vitalsyncpersonalwellnesshub.pro.annual",
+    id: "vitalsync.healthtracker.premium_annual",
     price: "$69.99",
     period: "Year",
     savings: "16%",
@@ -116,7 +116,7 @@ export interface SubscriptionContextValue {
   trialDaysRemaining: number;
   /** Active subscription expiry date (ms) or null */
   subscriptionExpiryMs: number | null;
-  /** Active product ID (e.g. 'com.vitalsyncpersonalwellnesshub.pro.monthly') or null */
+  /** Active product ID (e.g. 'vitalsync.healthtracker.premium_monthly') or null */
   activeProductId: ProductId | null;
   /** True while loadPersistedState is running — prevents premature paywall gating */
   isLoading: boolean;
