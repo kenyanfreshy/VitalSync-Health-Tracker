@@ -240,3 +240,150 @@ export function scaleToServing(
     servingWeightG,
   };
 }
+
+/**
+ * Try multiple food name variants to find the best USDA match.
+ * Also simplifies names (removes cooking method qualifiers) for retry.
+ * Falls back to Gemini nutrition estimate if USDA returns no high/medium confidence match.
+ */
+export async function lookupBestUsdaMatchWithFallback(
+  foodNames: string[],
+): Promise<UsdaFoodItem | null> {
+  const priority = ['usda-foundation', 'usda-sr-legacy', 'usda-survey', 'usda-branded'];
+
+  // Build a list of search terms: original names + simplified versions
+  const searchTerms: string[] = [];
+  for (const name of foodNames.slice(0, 4)) {
+    searchTerms.push(name);
+    // Simplified version: strip cooking qualifiers for better USDA matching
+    const simplified = name
+      .replace(/,?\s*(cooked|raw|fresh|grilled|roasted|baked|boiled|steamed|fried|broiled|sauteed|poached|smoked|dried|frozen|canned|whole|sliced|diced|chopped|minced|ground|shredded|mashed|pureed|peeled|pitted|skinless|boneless|lean|extra lean|low-fat|reduced-fat|fat-free|organic|natural|plain|unsalted|salted|sweetened|unsweetened)\b/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (simplified !== name && simplified.length > 2) {
+      searchTerms.push(simplified);
+    }
+  }
+
+  // Deduplicate
+  const uniqueTerms = [...new Set(searchTerms)];
+
+  let bestItem: UsdaFoodItem | null = null;
+
+  for (const term of uniqueTerms) {
+    try {
+      const result = await searchUsdaFoods(term, 8);
+      if (result.items.length === 0) continue;
+
+      const sorted = [...result.items].sort(
+        (a, b) => priority.indexOf(a.source) - priority.indexOf(b.source),
+      );
+      const candidate = sorted[0];
+
+      // If we found a high or medium confidence match, use it immediately
+      if (candidate.confidence === 'high' || candidate.confidence === 'medium') {
+        return candidate;
+      }
+
+      // Keep the best low-confidence result as fallback
+      if (!bestItem) {
+        bestItem = candidate;
+      }
+    } catch (_unused) {
+      continue;
+    }
+  }
+
+  // If we only have a low-confidence USDA result, try Gemini nutrition estimate
+  if (!bestItem || bestItem.confidence === 'low') {
+    const primaryName = foodNames[0];
+    if (primaryName) {
+      try {
+        const geminiItem = await estimateNutritionWithGemini(primaryName);
+        if (geminiItem) return geminiItem;
+      } catch (_unused) {
+        // Gemini failed — return the low-confidence USDA result if we have one
+      }
+    }
+  }
+
+  return bestItem;
+}
+
+/**
+ * Use Gemini to estimate nutrition for a food item when USDA has no good match.
+ * Returns a synthetic UsdaFoodItem with confidence 'medium'.
+ */
+async function estimateNutritionWithGemini(foodName: string): Promise<UsdaFoodItem | null> {
+  const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
+  const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+  const prompt = `You are a registered dietitian. Provide the nutritional values per 100g for: "${foodName}"
+
+Return ONLY a JSON object with these exact fields (numbers only, no units):
+{
+  "calories": <kcal per 100g>,
+  "protein_g": <grams>,
+  "carbs_g": <grams>,
+  "fat_g": <grams>,
+  "fiber_g": <grams>,
+  "sugar_g": <grams>,
+  "sodium_mg": <milligrams>,
+  "potassium_mg": <milligrams>,
+  "serving_description": "<typical serving description>",
+  "serving_weight_g": <typical serving weight in grams>
+}
+
+Use USDA FoodData Central reference values. Return only the JSON, no explanation.`;
+
+  try {
+    const response = await fetch(GEMINI_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 256 },
+      }),
+    });
+
+    if (!response.ok) return null;
+
+    const data = await response.json() as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!rawText) return null;
+
+    const jsonText = rawText
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/, '')
+      .trim();
+
+    const parsed = JSON.parse(jsonText);
+
+    const carbsG = parsed.carbs_g != null ? Number(parsed.carbs_g) : null;
+
+    return {
+      fdcId: -1,
+      description: foodName,
+      brandOwner: undefined,
+      dataType: 'Survey (FNDDS)',
+      calories: parsed.calories != null ? Number(parsed.calories) : null,
+      proteinG: parsed.protein_g != null ? Number(parsed.protein_g) : null,
+      carbsG,
+      fatG: parsed.fat_g != null ? Number(parsed.fat_g) : null,
+      fiberG: parsed.fiber_g != null ? Number(parsed.fiber_g) : null,
+      sugarG: parsed.sugar_g != null ? Number(parsed.sugar_g) : null,
+      sodiumMg: parsed.sodium_mg != null ? Number(parsed.sodium_mg) : null,
+      potassiumMg: parsed.potassium_mg != null ? Number(parsed.potassium_mg) : null,
+      glycemicLoad: estimateGlycemicLoad(carbsG, foodName),
+      servingDescription: parsed.serving_description ?? null,
+      servingWeightG: parsed.serving_weight_g != null ? Number(parsed.serving_weight_g) : null,
+      confidence: 'medium',
+      source: 'usda-survey',
+    };
+  } catch (_unused) {
+    return null;
+  }
+}

@@ -2,7 +2,7 @@
  * Food recognition via Gemini Vision API — works in production without a backend server.
  *
  * Recognition pipeline:
- *   1. Gemini Vision (gemini-2.0-flash) — direct API call, no server needed
+ *   1. Gemini Vision (gemini-2.0-flash) — direct API call, returns USDA-searchable names
  *   2. Clarifai food-item-recognition — fallback when Gemini returns nothing
  *
  * The result is a ranked list of food labels that the caller passes to USDA for
@@ -39,7 +39,26 @@ async function recogniseViaGemini(
         {
           parts: [
             {
-              text: 'Identify all food items visible in this image. List each food item on a separate line, most prominent first. Use simple common names (e.g. "grilled chicken", "white rice", "broccoli"). Only list actual food items, no descriptions or explanations. Maximum 8 items.',
+              text: `You are a nutrition database expert. Identify all food items visible in this image.
+
+For each food item, provide the name in USDA FoodData Central format — use the same naming convention as USDA entries (e.g. "Chicken, broilers or fryers, breast, meat only, cooked, roasted" or simply "Chicken breast, cooked" or "White rice, cooked").
+
+Rules:
+- List each distinct food item on a separate line
+- Use USDA-style names that will match Foundation or SR Legacy database entries
+- Most prominent/largest portion first
+- Maximum 6 items
+- Only list actual food items visible, no descriptions or explanations
+- Do NOT include brand names unless clearly visible on packaging
+
+Examples of good USDA-style names:
+- Chicken breast, cooked, roasted
+- Rice, white, cooked
+- Broccoli, cooked, boiled
+- Salmon, Atlantic, cooked
+- Egg, whole, cooked, scrambled
+- Bread, whole-wheat
+- Apple, raw`,
             },
             {
               inlineData: {
@@ -51,8 +70,8 @@ async function recogniseViaGemini(
         },
       ],
       generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 256,
+        temperature: 0.1,
+        maxOutputTokens: 300,
       },
     });
 
@@ -74,14 +93,14 @@ async function recogniseViaGemini(
     if (!text) return [];
 
     const items = text
-      .split(/[\n,;]/)
+      .split(/\n/)
       .map((s: string) => s.replace(/^[-•*\d.)\s]+/, '').trim())
-      .filter((s: string) => s.length > 1 && s.length < 60)
-      .slice(0, 8);
+      .filter((s: string) => s.length > 2 && s.length < 80)
+      .slice(0, 6);
 
     return items.map((name: string, i: number) => ({
       name,
-      confidence: Math.max(0.3, 0.95 - i * 0.08),
+      confidence: Math.max(0.5, 0.95 - i * 0.08),
       source: 'gemini-vision' as const,
     }));
   } catch (_unused) {
@@ -116,11 +135,11 @@ async function recogniseViaClarifai(
  * Fallback: Clarifai food-item-recognition model.
  *
  * @param base64Image  Raw base64 JPEG (no data: prefix)
- * @param minConfidence  Minimum confidence threshold (default: 0.4)
+ * @param minConfidence  Minimum confidence threshold (default: 0.35)
  */
 export async function recogniseFoodInImage(
   base64Image: string,
-  minConfidence = 0.4,
+  minConfidence = 0.35,
 ): Promise<FoodRecognitionResult> {
   let labels: FoodLabel[] = [];
   let usedFallback = false;
@@ -132,9 +151,8 @@ export async function recogniseFoodInImage(
     labels = [];
   }
 
-  // Fallback: Clarifai if Gemini returned nothing or low confidence
-  const topConfidence = labels[0]?.confidence ?? 0;
-  if (labels.length === 0 || topConfidence < minConfidence) {
+  // Fallback: Clarifai if Gemini returned nothing
+  if (labels.length === 0) {
     try {
       const clarifaiLabels = await recogniseViaClarifai(base64Image);
       if (clarifaiLabels.length > 0) {
@@ -174,7 +192,8 @@ export async function recogniseFoodInImage(
 
 /**
  * Convenience: recognise food and immediately look up the best USDA match.
- * Returns both the recognition result and the USDA food item.
+ * Tries multiple search terms to maximise the chance of a high-confidence match.
+ * Falls back to Gemini nutrition estimate if USDA has no match.
  */
 export async function recogniseAndLookup(base64Image: string) {
   const recognition = await recogniseFoodInImage(base64Image);
@@ -182,8 +201,8 @@ export async function recogniseAndLookup(base64Image: string) {
     return { recognition, usdaItem: null };
   }
 
-  const { lookupBestUsdaMatch } = await import('./usda-fdc');
-  const usdaItem = await lookupBestUsdaMatch(recognition.primaryFood);
+  const { lookupBestUsdaMatchWithFallback } = await import('./usda-fdc');
+  const usdaItem = await lookupBestUsdaMatchWithFallback(recognition.labels.map(l => l.name));
 
   return { recognition, usdaItem };
 }
