@@ -2555,7 +2555,8 @@ function MedicationsScreenInner() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flashScribeHighlight, formIndication, setFormName, setFormGenericName, setFormDose, setFormForm, setFormFreq, setFormTimes, setFormRoute, setFormIndication, setFormPharmacyName, setFormPharmacyPhone, setFormQuantity, setFormRefillAt, setFormNotes, setFormStartDate, setFormRxNumber, setFormRefillsRemaining]);
 
-  const scribePhotoMutation = trpc.medication.scribePhoto.useMutation();
+  // Gemini Vision replaces the tRPC server call for prescription scanning
+  const scribePhotoMutation = null; // kept for type safety, unused
 
   const handleScribePhoto = React.useCallback(async () => {
     try {
@@ -2577,34 +2578,15 @@ function MedicationsScreenInner() {
         let scribeResult: Parameters<typeof applyScribeResult>[0];
         let usedLlm = false;
 
-        // ── Primary path: server LLM vision (Gemini) ──────────────────────────
+        // ── Primary path: Gemini Vision API (direct, no server needed) ──────
         if (asset.base64) {
           try {
-            const llmResult = await scribePhotoMutation.mutateAsync({
-              imageBase64: `data:image/jpeg;base64,${asset.base64}`,
-              mimeType: 'image/jpeg',
-            });
-            scribeResult = {
-              name: llmResult.name,
-              genericName: llmResult.genericName,
-              dose: llmResult.dose,
-              form: llmResult.form,
-              frequency: llmResult.frequency,
-              scheduleTimes: llmResult.scheduleTimes,
-              route: llmResult.route,
-              indication: llmResult.indication,
-              prescriber: llmResult.prescriber,
-              pharmacyName: llmResult.pharmacyName,
-              pharmacyPhone: llmResult.pharmacyPhone,
-              quantity: llmResult.quantity,
-              refillAt: llmResult.refillAt,
-              notes: llmResult.notes,
-              confidence: llmResult.confidence,
-              fieldsFound: llmResult.fieldsFound,
-            };
+            const { geminiScribePrescription } = await import('@/lib/medication/gemini-scribe');
+            const llmResult = await geminiScribePrescription(asset.base64, 'image/jpeg');
+            scribeResult = llmResult;
             usedLlm = true;
           } catch (llmErr) {
-            console.warn('[Prescription Scan] LLM vision failed, falling back to Apple Vision OCR:', llmErr);
+            console.warn('[Prescription Scan] Gemini Vision failed, falling back to Apple Vision OCR:', llmErr);
           }
         }
 
@@ -2665,7 +2647,7 @@ function MedicationsScreenInner() {
     } catch (_unused) {
       Alert.alert('Error', 'Could not open camera.');
     }
-  }, [applyScribeResult, scribePhotoMutation]);
+  }, [applyScribeResult]);
 
   const _showScribePicker = React.useCallback(() => {
     handleScribePhoto();
@@ -2788,34 +2770,15 @@ function MedicationsScreenInner() {
         let scribeResult: Parameters<typeof applyScribeResult>[0];
         let usedLlm = false;
 
-        // ── Primary path: server LLM vision (Gemini) ──────────────────────────
+        // ── Primary path: Gemini Vision API (direct, no server needed) ──────
         if (asset.base64) {
           try {
-            const llmResult = await scribePhotoMutation.mutateAsync({
-              imageBase64: `data:image/jpeg;base64,${asset.base64}`,
-              mimeType: 'image/jpeg',
-            });
-            scribeResult = {
-              name: llmResult.name,
-              genericName: llmResult.genericName,
-              dose: llmResult.dose,
-              form: llmResult.form,
-              frequency: llmResult.frequency,
-              scheduleTimes: llmResult.scheduleTimes,
-              route: llmResult.route,
-              indication: llmResult.indication,
-              prescriber: llmResult.prescriber,
-              pharmacyName: llmResult.pharmacyName,
-              pharmacyPhone: llmResult.pharmacyPhone,
-              quantity: llmResult.quantity,
-              refillAt: llmResult.refillAt,
-              notes: llmResult.notes,
-              confidence: llmResult.confidence,
-              fieldsFound: llmResult.fieldsFound,
-            };
+            const { geminiScribePrescription } = await import('@/lib/medication/gemini-scribe');
+            const llmResult = await geminiScribePrescription(asset.base64, 'image/jpeg');
+            scribeResult = llmResult;
             usedLlm = true;
           } catch (llmErr) {
-            console.warn('[Prescription Scan] LLM vision failed, falling back to Apple Vision OCR:', llmErr);
+            console.warn('[Prescription Scan] Gemini Vision failed, falling back to Apple Vision OCR:', llmErr);
           }
         }
 
@@ -2877,7 +2840,7 @@ function MedicationsScreenInner() {
     } catch (_unused) {
       Alert.alert('Error', 'Could not open camera.');
     }
-  }, [handlePrescriptionScanComplete, applyScribeResult, scribePhotoMutation]);
+  }, [handlePrescriptionScanComplete, applyScribeResult]);
 
   const handleDictationSubmit = React.useCallback(async () => {
     const text = dictationText.trim();
