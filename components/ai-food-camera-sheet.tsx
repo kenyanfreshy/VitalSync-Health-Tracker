@@ -1422,7 +1422,8 @@ export function AiFoodCameraSheet({
   // lookupBarcodeMutation kept for fallback; primary path now uses Open Food Facts
   const _lookupBarcodeMutation  = trpc.nutrition.lookupBarcode.useMutation();
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
-  const searchFoodMutation     = trpc.nutritionAI.searchFood.useMutation();
+  // searchFoodMutation replaced with direct Gemini call — no server needed
+  const searchFoodMutation = null; // unused, kept to avoid ref errors
   // Voice search: keyboard dictation only — no server recording
   const searchInputRef = useRef<TextInput>(null);
   const { pref: hkPref, savePref: saveHkPref } = useHealthKitNutritionPref();
@@ -1715,14 +1716,19 @@ export function AiFoodCameraSheet({
     setPreview(null);
     setTrayItems([]);
     setShowTray(false);
-    searchFoodMutation.mutate(
-      { query: query.trim() },
-      {
-        onSuccess: (res) => { setSearchResults(res.results as SearchResult[]); setScanning(false); },
-        onError: () => { Alert.alert('Search failed', 'Could not reach the USDA database.'); setScanning(false); },
+    // Direct Gemini food search — no server needed
+    (async () => {
+      try {
+        const { searchFoodWithGemini } = await import('@/lib/nutrition/gemini-food-search');
+        const res = await searchFoodWithGemini(query.trim());
+        setSearchResults(res.results as SearchResult[]);
+      } catch (_err) {
+        Alert.alert('Search failed', 'Could not retrieve nutrition data. Please check your connection and try again.');
+      } finally {
+        setScanning(false);
       }
-    );
-  }, [searchFoodMutation]);
+    })();
+  }, []);
 
   // Single-item quick-preview (fast path when tray is empty)
   const handleSelectSearchResult = useCallback((item: SearchResult) => {
