@@ -1,12 +1,10 @@
 /**
- * Food recognition via Gemini Vision API — works in production without a backend server.
+ * Food recognition via Gemini Vision API — single-step approach.
  *
- * Recognition pipeline:
- *   1. Gemini Vision (gemini-2.0-flash) — direct API call, returns USDA-searchable names
- *   2. Clarifai food-item-recognition — fallback when Gemini returns nothing
+ * Sends the image directly to Gemini and gets back structured nutrition data
+ * (calories, protein, carbs, fat) in one call — no separate USDA lookup needed.
  *
- * The result is a ranked list of food labels that the caller passes to USDA for
- * macro lookup. No nutrition data is returned here — that's USDA's job.
+ * Fallback: Clarifai food-item-recognition → USDA FoodData Central
  */
 
 export interface FoodLabel {
@@ -25,53 +23,70 @@ export interface FoodRecognitionResult {
   usedFallback: boolean;
 }
 
+export interface DirectNutritionResult {
+  food_identified: string[];
+  estimated_calories: number;
+  macros: {
+    protein_g: number;
+    carbs_g: number;
+    fat_g: number;
+    fiber_g?: number;
+    sodium_mg?: number;
+  };
+  confidence_score: 'high' | 'medium' | 'low';
+  serving_description?: string;
+}
+
 // ─── Gemini Vision API ────────────────────────────────────────────────────────
 
 const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-async function recogniseViaGemini(
+const FOOD_SCAN_PROMPT = `Analyze this food image. Identify the dishes or ingredients present, estimate the portion sizes, and provide an approximate breakdown of calories, protein, carbs, and fats.
+
+Return the response strictly as a JSON object with the following format:
+{
+  "food_identified": ["item1", "item2"],
+  "estimated_calories": 0,
+  "macros": {
+    "protein_g": 0,
+    "carbs_g": 0,
+    "fat_g": 0,
+    "fiber_g": 0,
+    "sodium_mg": 0
+  },
+  "confidence_score": "high",
+  "serving_description": "1 plate (~350g)"
+}
+
+Use USDA FoodData Central reference values. Be precise with macros. Return ONLY the JSON object.`;
+
+/**
+ * Analyse a food image using Gemini Vision — returns direct nutrition data.
+ * This is the single-step approach: image → nutrition JSON (no USDA needed).
+ */
+export async function analyseImageWithGemini(
   base64Image: string,
-): Promise<FoodLabel[]> {
+): Promise<DirectNutritionResult | null> {
   try {
     const body = JSON.stringify({
       contents: [
         {
           parts: [
             {
-              text: `You are a nutrition database expert. Identify all food items visible in this image.
-
-For each food item, provide the name in USDA FoodData Central format — use the same naming convention as USDA entries (e.g. "Chicken, broilers or fryers, breast, meat only, cooked, roasted" or simply "Chicken breast, cooked" or "White rice, cooked").
-
-Rules:
-- List each distinct food item on a separate line
-- Use USDA-style names that will match Foundation or SR Legacy database entries
-- Most prominent/largest portion first
-- Maximum 6 items
-- Only list actual food items visible, no descriptions or explanations
-- Do NOT include brand names unless clearly visible on packaging
-
-Examples of good USDA-style names:
-- Chicken breast, cooked, roasted
-- Rice, white, cooked
-- Broccoli, cooked, boiled
-- Salmon, Atlantic, cooked
-- Egg, whole, cooked, scrambled
-- Bread, whole-wheat
-- Apple, raw`,
-            },
-            {
               inlineData: {
                 mimeType: 'image/jpeg',
                 data: base64Image,
               },
             },
+            { text: FOOD_SCAN_PROMPT },
           ],
         },
       ],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 300,
+        maxOutputTokens: 512,
+        responseMimeType: 'application/json',
       },
     });
 
@@ -81,7 +96,10 @@ Examples of good USDA-style names:
       body,
     });
 
-    if (!response.ok) return [];
+    if (!response.ok) {
+      // 429 = quota exhausted — signal caller to use fallback
+      return null;
+    }
 
     const data = await response.json() as {
       candidates?: Array<{
@@ -89,22 +107,34 @@ Examples of good USDA-style names:
       }>;
     };
 
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    if (!text) return [];
+    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!rawText) return null;
 
-    const items = text
-      .split(/\n/)
-      .map((s: string) => s.replace(/^[-•*\d.)\s]+/, '').trim())
-      .filter((s: string) => s.length > 2 && s.length < 80)
-      .slice(0, 6);
+    const jsonText = rawText
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```\s*$/, '')
+      .trim();
 
-    return items.map((name: string, i: number) => ({
-      name,
-      confidence: Math.max(0.5, 0.95 - i * 0.08),
-      source: 'gemini-vision' as const,
-    }));
+    const parsed = JSON.parse(jsonText) as DirectNutritionResult;
+
+    // Validate required fields
+    if (!parsed.food_identified || !parsed.macros) return null;
+
+    return {
+      food_identified: Array.isArray(parsed.food_identified) ? parsed.food_identified : [],
+      estimated_calories: Number(parsed.estimated_calories ?? 0),
+      macros: {
+        protein_g: Number(parsed.macros.protein_g ?? 0),
+        carbs_g: Number(parsed.macros.carbs_g ?? 0),
+        fat_g: Number(parsed.macros.fat_g ?? 0),
+        fiber_g: parsed.macros.fiber_g != null ? Number(parsed.macros.fiber_g) : undefined,
+        sodium_mg: parsed.macros.sodium_mg != null ? Number(parsed.macros.sodium_mg) : undefined,
+      },
+      confidence_score: parsed.confidence_score ?? 'medium',
+      serving_description: parsed.serving_description,
+    };
   } catch (_unused) {
-    return [];
+    return null;
   }
 }
 
@@ -126,83 +156,98 @@ async function recogniseViaClarifai(
   }
 }
 
-// ─── Main entry point ─────────────────────────────────────────────────────────
+// ─── Legacy recognition (for USDA lookup path) ───────────────────────────────
 
-/**
- * Recognise food items in a base64-encoded JPEG image.
- *
- * Primary: Gemini Vision API (direct, no backend server needed).
- * Fallback: Clarifai food-item-recognition model.
- *
- * @param base64Image  Raw base64 JPEG (no data: prefix)
- * @param minConfidence  Minimum confidence threshold (default: 0.35)
- */
 export async function recogniseFoodInImage(
   base64Image: string,
-  minConfidence = 0.35,
+  _minConfidence = 0.35,
 ): Promise<FoodRecognitionResult> {
-  let labels: FoodLabel[] = [];
-  let usedFallback = false;
+  // Try Clarifai for label-based recognition (used as fallback path)
+  const labels = await recogniseViaClarifai(base64Image);
 
-  // Primary: Gemini Vision API
-  try {
-    labels = await recogniseViaGemini(base64Image);
-  } catch (_unused) {
-    labels = [];
-  }
-
-  // Fallback: Clarifai if Gemini returned nothing
   if (labels.length === 0) {
-    try {
-      const clarifaiLabels = await recogniseViaClarifai(base64Image);
-      if (clarifaiLabels.length > 0) {
-        labels = clarifaiLabels;
-        usedFallback = true;
-      }
-    } catch (_unused) {
-      // Both failed — return empty
-    }
-  }
-
-  // Filter by confidence threshold
-  const filtered = labels.filter((l) => l.confidence >= minConfidence);
-
-  if (filtered.length === 0) {
     return {
       labels: [],
       primaryFood: '',
       summary: 'No food items detected. Try a clearer, well-lit photo.',
-      usedFallback,
+      usedFallback: true,
     };
   }
 
-  const primaryFood = filtered[0].name;
-  const topFive = filtered.slice(0, 5);
+  const primaryFood = labels[0].name;
+  const topFive = labels.slice(0, 5);
   const summary = topFive
     .map((l) => `${l.name} (${Math.round(l.confidence * 100)}%)`)
     .join(', ');
 
   return {
-    labels: filtered,
+    labels,
     primaryFood,
     summary: `Detected: ${summary}`,
-    usedFallback,
+    usedFallback: true,
   };
 }
 
 /**
- * Convenience: recognise food and immediately look up the best USDA match.
- * Tries multiple search terms to maximise the chance of a high-confidence match.
- * Falls back to Gemini nutrition estimate if USDA has no match.
+ * Main entry point: analyse food image and return nutrition data.
+ *
+ * Step 1: Gemini Vision → direct nutrition JSON (single call, no USDA needed)
+ * Step 2: If Gemini fails (quota/error) → Clarifai labels → USDA lookup
  */
 export async function recogniseAndLookup(base64Image: string) {
+  // Primary: Gemini single-step analysis
+  const geminiResult = await analyseImageWithGemini(base64Image);
+
+  if (geminiResult && geminiResult.food_identified.length > 0) {
+    // Convert to the UsdaFoodItem-compatible shape expected by the caller
+    const { UsdaFoodItem } = await import('./usda-fdc').catch(() => ({ UsdaFoodItem: null }));
+    const primaryName = geminiResult.food_identified.join(', ');
+    const carbsG = geminiResult.macros.carbs_g;
+
+    const syntheticItem = {
+      fdcId: -1,
+      description: primaryName,
+      brandOwner: undefined,
+      dataType: 'Survey (FNDDS)',
+      calories: geminiResult.estimated_calories,
+      proteinG: geminiResult.macros.protein_g,
+      carbsG,
+      fatG: geminiResult.macros.fat_g,
+      fiberG: geminiResult.macros.fiber_g ?? null,
+      sugarG: null,
+      sodiumMg: geminiResult.macros.sodium_mg ?? null,
+      potassiumMg: null,
+      glycemicLoad: null,
+      servingDescription: geminiResult.serving_description ?? null,
+      servingWeightG: null,
+      confidence: geminiResult.confidence_score as 'high' | 'medium' | 'low',
+      source: 'usda-survey' as const,
+    };
+
+    const recognition: FoodRecognitionResult = {
+      labels: geminiResult.food_identified.map((name, i) => ({
+        name,
+        confidence: Math.max(0.5, 0.9 - i * 0.1),
+        source: 'gemini-vision' as const,
+      })),
+      primaryFood: geminiResult.food_identified[0] ?? '',
+      summary: `Detected: ${primaryName}`,
+      usedFallback: false,
+    };
+
+    return { recognition, usdaItem: syntheticItem };
+  }
+
+  // Fallback: Clarifai → USDA
   const recognition = await recogniseFoodInImage(base64Image);
   if (!recognition.primaryFood) {
     return { recognition, usdaItem: null };
   }
 
   const { lookupBestUsdaMatchWithFallback } = await import('./usda-fdc');
-  const usdaItem = await lookupBestUsdaMatchWithFallback(recognition.labels.map(l => l.name));
+  const usdaItem = await lookupBestUsdaMatchWithFallback(
+    recognition.labels.map((l) => l.name),
+  );
 
   return { recognition, usdaItem };
 }

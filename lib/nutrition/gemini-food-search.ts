@@ -1,8 +1,10 @@
 /**
- * Gemini-powered food search — replaces the tRPC nutritionAI.searchFood server call.
+ * Food text search — USDA FoodData Central primary, Gemini AI fallback.
  *
- * Uses Gemini to act as a registered dietitian and return structured nutrition
- * data for a natural-language food query. Works in production without a backend.
+ * Primary: USDA FoodData Central (no AI quota needed, lab-verified data)
+ * Fallback: Gemini AI nutrition estimate (when USDA has no match)
+ *
+ * This ensures food search works even when Gemini quota is exhausted.
  */
 
 const GEMINI_API_KEY = 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
@@ -29,9 +31,47 @@ export interface FoodSearchResult {
 
 export interface FoodSearchResponse {
   results: FoodSearchResult[];
+  source: 'usda' | 'gemini';
 }
 
-const SYSTEM_PROMPT = `You are a registered dietitian with access to the USDA FoodData Central (2024) and NCCDB databases.
+// ─── USDA Primary Search ──────────────────────────────────────────────────────
+
+async function searchViaUsda(query: string): Promise<FoodSearchResult[]> {
+  const { searchUsdaFoods } = await import('./usda-fdc');
+  const result = await searchUsdaFoods(query, 10);
+
+  if (result.items.length === 0) return [];
+
+  // Sort: Foundation > SR Legacy > Survey > Branded
+  const priority = ['usda-foundation', 'usda-sr-legacy', 'usda-survey', 'usda-branded'];
+  const sorted = [...result.items].sort(
+    (a, b) => priority.indexOf(a.source) - priority.indexOf(b.source),
+  );
+
+  return sorted.slice(0, 8).map((item, i) => ({
+    id: `usda-${item.fdcId}`,
+    name: item.description,
+    brand: item.brandOwner ?? 'USDA',
+    serving_size: item.servingDescription ?? '100g',
+    serving_g: item.servingWeightG ?? 100,
+    calories: item.calories ?? 0,
+    protein_g: item.proteinG ?? 0,
+    carbs_g: item.carbsG ?? 0,
+    fat_g: item.fatG ?? 0,
+    fiber_g: item.fiberG ?? 0,
+    sodium_mg: item.sodiumMg ?? 0,
+    potassium_mg: item.potassiumMg ?? 0,
+    phosphorus_mg: 0,
+    glycemic_index: item.glycemicLoad,
+    usda_category: item.dataType,
+    clinical_notes: `Source: ${item.source === 'usda-foundation' ? 'USDA Foundation (lab-verified)' : item.source === 'usda-sr-legacy' ? 'USDA SR Legacy' : item.source === 'usda-survey' ? 'USDA Survey (FNDDS)' : 'USDA Branded'}. Confidence: ${item.confidence}.`,
+  }));
+}
+
+// ─── Gemini Fallback Search ───────────────────────────────────────────────────
+
+async function searchViaGemini(query: string): Promise<FoodSearchResult[]> {
+  const SYSTEM_PROMPT = `You are a registered dietitian with access to the USDA FoodData Central (2024) and NCCDB databases.
 The user has described a food item or meal in natural language. Identify the most likely food items and return their nutritional profiles.
 For each item, use USDA reference values for a standard serving size. Be precise with macros.
 Return a JSON object with a 'results' array of up to 8 items. Each item must have:
@@ -54,33 +94,23 @@ Return a JSON object with a 'results' array of up to 8 items. Each item must hav
 
 Return ONLY the JSON object, no explanation or markdown.`;
 
-export async function searchFoodWithGemini(
-  query: string,
-  dietProtocol?: string,
-): Promise<FoodSearchResponse> {
-  const userMessage = dietProtocol
-    ? `Search query: "${query}"\nDiet protocol: ${dietProtocol}`
-    : `Search query: "${query}"`;
-
-  const body = JSON.stringify({
-    contents: [
-      {
-        parts: [
-          { text: SYSTEM_PROMPT },
-          { text: userMessage },
-        ],
-      },
-    ],
-    generationConfig: {
-      temperature: 0.2,
-      maxOutputTokens: 2048,
-    },
-  });
-
   const response = await fetch(GEMINI_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body,
+    body: JSON.stringify({
+      contents: [
+        {
+          parts: [
+            { text: SYSTEM_PROMPT },
+            { text: `Search query: "${query}"` },
+          ],
+        },
+      ],
+      generationConfig: {
+        temperature: 0.2,
+        maxOutputTokens: 2048,
+      },
+    }),
   });
 
   if (!response.ok) {
@@ -94,24 +124,16 @@ export async function searchFoodWithGemini(
   };
 
   const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  if (!rawText) {
-    throw new Error('Gemini returned empty response');
-  }
+  if (!rawText) throw new Error('Gemini returned empty response');
 
-  // Strip markdown code fences if present
   const jsonText = rawText
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```\s*$/, '')
     .trim();
 
-  let parsed: { results?: any[] };
-  try {
-    parsed = JSON.parse(jsonText);
-  } catch {
-    throw new Error('Gemini returned invalid JSON');
-  }
+  const parsed = JSON.parse(jsonText) as { results?: any[] };
 
-  const results: FoodSearchResult[] = (parsed.results ?? []).slice(0, 8).map((r: any, i: number) => ({
+  return (parsed.results ?? []).slice(0, 8).map((r: any, i: number) => ({
     id: String(r.id ?? `food-${i}`),
     name: String(r.name ?? '').slice(0, 120),
     brand: String(r.brand ?? 'Generic').slice(0, 60),
@@ -129,6 +151,37 @@ export async function searchFoodWithGemini(
     usda_category: String(r.usda_category ?? 'Other').slice(0, 60),
     clinical_notes: String(r.clinical_notes ?? '').slice(0, 200),
   }));
+}
 
-  return { results };
+// ─── Main export ──────────────────────────────────────────────────────────────
+
+/**
+ * Search for food nutrition data.
+ * Primary: USDA FoodData Central (no quota, lab-verified)
+ * Fallback: Gemini AI (when USDA has no results)
+ */
+export async function searchFoodWithGemini(
+  query: string,
+  _dietProtocol?: string,
+): Promise<FoodSearchResponse> {
+  // Primary: USDA direct search
+  try {
+    const usdaResults = await searchViaUsda(query);
+    if (usdaResults.length > 0) {
+      return { results: usdaResults, source: 'usda' };
+    }
+  } catch (_unused) {
+    // USDA failed — try Gemini
+  }
+
+  // Fallback: Gemini AI
+  try {
+    const geminiResults = await searchViaGemini(query);
+    return { results: geminiResults, source: 'gemini' };
+  } catch (err: any) {
+    if (err?.message?.includes('429') || err?.message?.includes('quota')) {
+      throw new Error('Nutrition database temporarily unavailable. Please try again later.');
+    }
+    throw err;
+  }
 }
