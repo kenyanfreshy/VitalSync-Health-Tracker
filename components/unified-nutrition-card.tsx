@@ -68,7 +68,7 @@ export function UnifiedNutritionCard({
   spo2,
 }: UnifiedNutritionCardProps) {
   const colors = useColors();
-  const { state } = useHealth();
+  const { state, forceSync } = useHealth();
   const { dietType } = useDietType();
   const [cameraSheetVisible, setCameraSheetVisible] = useState(false);
   const [cameraInitialMode, setCameraInitialMode] = useState<'home' | 'plate' | 'barcode' | 'search'>('home');
@@ -277,6 +277,10 @@ export function UnifiedNutritionCard({
         visible={cameraSheetVisible}
         onClose={() => setCameraSheetVisible(false)}
         initialMode={cameraInitialMode}
+        onMealLogged={() => {
+          setCameraSheetVisible(false);
+          forceSync().catch(() => {});
+        }}
         onScanMealPress={
           cameraInitialMode === 'search'
             ? requireScanMealPremium(() => openCameraSheet('home'), { feature: fc.scanMealTitle ?? 'Scan Meal' })
