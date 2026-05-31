@@ -1553,8 +1553,8 @@ export function AiFoodCameraSheet({
       const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
       const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
 
-      if (recognition.labels.length === 0) {
-        // Nothing detected — show a generic fallback preview
+      // No food detected at all (both Gemini and fallback failed)
+      if (!usdaItem && !recognition.primaryFood) {
         setPreview({
           foodDescription: 'Meal photo',
           calories: null,

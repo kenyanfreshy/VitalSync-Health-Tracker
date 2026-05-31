@@ -41,10 +41,12 @@ export interface DirectNutritionResult {
 
 const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
 
-// Primary model — gemini-2.0-flash
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-// Fallback model — gemini-1.5-flash (more reliable for vision tasks)
-const GEMINI_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+// Primary model — gemini-2.5-flash (confirmed working with this API key)
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+// Fallback model — gemini-2.5-flash-lite (faster, lower cost, confirmed working)
+const GEMINI_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+// Last resort — gemini-flash-latest (alias, always points to latest stable flash)
+const GEMINI_LAST_RESORT_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
 
 const FOOD_SCAN_PROMPT = `You are a nutrition expert. Look at this food image and identify what foods are present.
 
@@ -119,7 +121,9 @@ async function callGeminiVision(
     });
 
     if (!response.ok) {
-      // Log status for debugging but don't throw
+      // Log the error so it's visible in Expo logs
+      const errBody = await response.text().catch(() => '');
+      console.warn(`[GeminiVision] HTTP ${response.status} from ${apiUrl.split('models/')[1]?.split(':')[0] ?? 'unknown'}: ${errBody.slice(0, 200)}`);
       return null;
     }
 
@@ -133,6 +137,7 @@ async function callGeminiVision(
 
     // Check for API-level errors
     if (data.error) {
+      console.warn(`[GeminiVision] API error from ${apiUrl.split('models/')[1]?.split(':')[0] ?? 'unknown'}: ${data.error.message ?? JSON.stringify(data.error)}`);
       return null;
     }
 
@@ -181,23 +186,23 @@ async function callGeminiVision(
  * Analyse a food image using Gemini Vision — returns direct nutrition data.
  *
  * Tries in order:
- *   1. gemini-2.0-flash with detailed prompt
- *   2. gemini-1.5-flash with detailed prompt (fallback model)
- *   3. gemini-1.5-flash with simple prompt (last resort)
+ *   1. gemini-2.5-flash with detailed prompt (primary — paid, latest)
+ *   2. gemini-2.0-flash-lite with detailed prompt (faster fallback)
+ *   3. gemini-2.0-flash-001 with simple prompt (stable versioned last resort)
  */
 export async function analyseImageWithGemini(
   base64Image: string,
 ): Promise<DirectNutritionResult | null> {
-  // Attempt 1: primary model, detailed prompt
+  // Attempt 1: gemini-2.5-flash, detailed prompt
   const result1 = await callGeminiVision(base64Image, GEMINI_API_URL, FOOD_SCAN_PROMPT);
   if (result1 && result1.food_identified.length > 0) return result1;
 
-  // Attempt 2: fallback model, detailed prompt
+  // Attempt 2: gemini-2.0-flash-lite, detailed prompt
   const result2 = await callGeminiVision(base64Image, GEMINI_FALLBACK_URL, FOOD_SCAN_PROMPT);
   if (result2 && result2.food_identified.length > 0) return result2;
 
-  // Attempt 3: fallback model, simple prompt
-  const result3 = await callGeminiVision(base64Image, GEMINI_FALLBACK_URL, FOOD_SCAN_SIMPLE_PROMPT);
+  // Attempt 3: gemini-2.0-flash-001, simple prompt
+  const result3 = await callGeminiVision(base64Image, GEMINI_LAST_RESORT_URL, FOOD_SCAN_SIMPLE_PROMPT);
   if (result3 && result3.food_identified.length > 0) return result3;
 
   return null;
