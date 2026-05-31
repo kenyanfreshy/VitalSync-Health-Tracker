@@ -115,8 +115,17 @@ import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
 import { useSubscription } from '@/lib/subscription/subscription-context';
 import { useUpsell } from '@/hooks/use-upsell';
 import { logEvent } from '@/lib/analytics';
+import { MedicalScanAnalysisOverlay, type ScanStep } from '@/components/medical-scan-analysis-overlay';
 
 const MED_ACTIVE_TAB_KEY = '@vsht:med_active_tab';
+
+const INITIAL_RX_STEPS: import('@/components/medical-scan-analysis-overlay').ScanStep[] = [
+  { id: 'capture',  label: 'Image captured',             status: 'pending' },
+  { id: 'upload',   label: 'Sending to Gemini Vision',   status: 'pending' },
+  { id: 'reading',  label: 'Reading prescription label', status: 'pending' },
+  { id: 'extract',  label: 'Extracting medication fields', status: 'pending' },
+  { id: 'validate', label: 'Validating extracted data',  status: 'pending' },
+];
 const LOW_STOCK_THRESHOLD_KEY = '@vsht:low_stock_threshold_v1';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
@@ -2479,6 +2488,21 @@ function MedicationsScreenInner() {
   const [scribeLoading, setScribeLoading] = useState(false);
   const [ocrReviewFields, setOcrReviewFields] = useState<OcrReviewField[] | null>(null);
   const [scribeScanMethod, setScribeScanMethod] = useState<'smart' | 'ocr'>('ocr');
+  // Prescription scan overlay state
+  const [rxScanOverlayVisible, setRxScanOverlayVisible] = useState(false);
+  const [rxScanImageUri, setRxScanImageUri] = useState<string>('');
+  const [rxScanProgress, setRxScanProgress] = useState(0);
+  const [rxScanError, setRxScanError] = useState<string | null>(null);
+  const [rxScanSteps, setRxScanSteps] = useState<ScanStep[]>([
+    { id: 'capture',  label: 'Image captured',            status: 'pending' },
+    { id: 'upload',   label: 'Sending to Gemini Vision',  status: 'pending' },
+    { id: 'reading',  label: 'Reading prescription label', status: 'pending' },
+    { id: 'extract',  label: 'Extracting medication fields', status: 'pending' },
+    { id: 'validate', label: 'Validating extracted data',  status: 'pending' },
+  ]);
+  const updateRxStep = React.useCallback((id: string, status: ScanStep['status']) => {
+    setRxScanSteps(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+  }, []);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scribeVoiceError, setScribeVoiceError] = useState<string | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -2765,74 +2789,135 @@ function MedicationsScreenInner() {
       });
       if (result.canceled || !result.assets?.[0]) return;
       const asset = result.assets[0];
-      setScribeLoading(true);
-      try {
-        let scribeResult: Parameters<typeof applyScribeResult>[0];
-        let usedLlm = false;
 
-        // ── Primary path: Gemini Vision API (direct, no server needed) ──────
+      // ── Show live analysis overlay ────────────────────────────────────────
+      setRxScanImageUri(asset.uri);
+      setRxScanSteps(INITIAL_RX_STEPS);
+      setRxScanProgress(0);
+      setRxScanError(null);
+      setRxScanOverlayVisible(true);
+      setScribeLoading(true);
+
+      try {
+        updateRxStep('capture', 'done');
+        setRxScanProgress(20);
+        updateRxStep('upload', 'active');
+
+        let usedLlm = false;
+        let reviewFields: OcrReviewField[] = [];
+
+        // ── Primary: Gemini 2.5-flash Vision ──────────────────────────────
         if (asset.base64) {
           try {
-            const { geminiScribePrescription } = await import('@/lib/medication/gemini-scribe');
-            const llmResult = await geminiScribePrescription(asset.base64, 'image/jpeg');
-            scribeResult = llmResult;
-            usedLlm = true;
+            updateRxStep('upload', 'done');
+            setRxScanProgress(40);
+            updateRxStep('reading', 'active');
+
+            const { parsePrescriptionWithGemini } = await import('@/lib/medication/gemini-prescription-parser');
+            const result2 = await parsePrescriptionWithGemini(asset.base64, 'image/jpeg');
+
+            updateRxStep('reading', 'done');
+            setRxScanProgress(70);
+            updateRxStep('extract', 'active');
+
+            if (!result2.error && result2.medications.length > 0) {
+              const med = result2.medications[0];
+              // Apply to form
+              if (med.name && !formName.trim()) setFormName(med.name);
+              if (med.strength && !formDose.trim()) setFormDose(med.strength);
+              if (med.dose && !formDose.trim()) setFormDose(med.dose);
+              if (med.instructions && !formNotes.trim()) setFormNotes(med.instructions);
+              if (med.prescriberName && !formPrescriber.trim()) setFormPrescriber(med.prescriberName);
+              if (med.pharmacyName && !formPharmacyName.trim()) setFormPharmacyName(med.pharmacyName);
+              if (med.quantity && !formQuantity.trim()) setFormQuantity(med.quantity);
+              if (med.refills) setFormDaysSupply(med.refills);
+              // Frequency mapping
+              if (med.frequency) {
+                const freqLower = med.frequency.toLowerCase();
+                if (freqLower.includes('twice') || freqLower.includes('bid')) setFormFreq('twice_daily');
+                else if (freqLower.includes('three') || freqLower.includes('tid')) setFormFreq('three_times_daily');
+                else if (freqLower.includes('once') || freqLower.includes('daily') || freqLower.includes('qd')) setFormFreq('daily');
+                else if (freqLower.includes('needed') || freqLower.includes('prn')) setFormFreq('as_needed');
+              }
+              // Route mapping
+              if (med.route) {
+                const routeLower = med.route.toLowerCase();
+                if (routeLower.includes('oral') || routeLower.includes('mouth')) setFormRoute('oral');
+                else if (routeLower.includes('topical') || routeLower.includes('skin')) setFormRoute('topical');
+                else if (routeLower.includes('inject') || routeLower.includes('subq') || routeLower.includes('im')) setFormRoute('subq');
+                else if (routeLower.includes('inhal') || routeLower.includes('breath')) setFormRoute('inhaled');
+              }
+              // Build review fields
+              reviewFields = [
+                { label: 'Medication Name', value: med.name,          extracted: !!med.name,          confidence: med.confidence },
+                { label: 'Strength',        value: med.strength,      extracted: !!med.strength,      confidence: med.confidence },
+                { label: 'Dose',            value: med.dose,          extracted: !!med.dose,          confidence: med.confidence },
+                { label: 'Frequency',       value: med.frequency,     extracted: !!med.frequency,     confidence: med.confidence },
+                { label: 'Route',           value: med.route,         extracted: !!med.route,         confidence: med.confidence },
+                { label: 'Quantity',        value: med.quantity,      extracted: !!med.quantity,      confidence: med.confidence },
+                { label: 'Refills',         value: med.refills,       extracted: !!med.refills,       confidence: med.confidence },
+                { label: 'Instructions',    value: med.instructions,  extracted: !!med.instructions,  confidence: med.confidence },
+                { label: 'Prescriber',      value: med.prescriberName, extracted: !!med.prescriberName, confidence: med.confidence },
+                { label: 'Pharmacy',        value: med.pharmacyName,  extracted: !!med.pharmacyName,  confidence: med.confidence },
+              ].filter(f => f.value);
+              usedLlm = true;
+            } else if (result2.error) {
+              throw new Error(result2.error);
+            }
           } catch (llmErr) {
-            console.warn('[Prescription Scan] Gemini Vision failed, falling back to Apple Vision OCR:', llmErr);
+            console.warn('[Prescription Scan] Gemini Vision failed, falling back to OCR:', llmErr);
+            updateRxStep('reading', 'error');
           }
         }
 
-        // ── Fallback: Apple Vision OCR + local regex parser ───────────────────
+        // ── Fallback: Apple Vision OCR ────────────────────────────────────
         if (!usedLlm) {
+          updateRxStep('upload', 'done');
+          setRxScanProgress(40);
+          updateRxStep('reading', 'active');
           const lines = await extractTextFromImage(asset.uri);
           const rawText = lines.join(' ');
+          updateRxStep('reading', 'done');
+          setRxScanProgress(70);
+          updateRxStep('extract', 'active');
           await handlePrescriptionScanComplete(rawText);
           const parsed = parseMedicationTranscript(rawText);
-          const fieldsFound: string[] = [];
-          if (parsed.name) fieldsFound.push('name');
-          if (parsed.dose) fieldsFound.push('dose');
-          if (parsed.frequency) fieldsFound.push('frequency');
-          if (parsed.route) fieldsFound.push('route');
-          if (parsed.indication) fieldsFound.push('indication');
-          if (parsed.prescriber) fieldsFound.push('prescriber');
-          scribeResult = {
-            name: parsed.name ?? null,
-            genericName: null,
-            dose: parsed.dose ?? null,
-            form: null,
-            frequency: parsed.frequency ?? null,
-            scheduleTimes: null,
-            route: parsed.route ?? null,
-            indication: parsed.indication ?? null,
-            prescriber: parsed.prescriber ?? null,
-            pharmacyName: null,
-            pharmacyPhone: null,
-            quantity: null,
-            refillAt: null,
-            notes: parsed.note ?? null,
-            confidence: 0.5,
-            fieldsFound,
-          };
+          reviewFields = [
+            { label: 'Medication Name', value: parsed.name,      extracted: !!parsed.name },
+            { label: 'Dose',           value: parsed.dose,      extracted: !!parsed.dose },
+            { label: 'Frequency',      value: parsed.frequency, extracted: !!parsed.frequency },
+            { label: 'Route',          value: parsed.route,     extracted: !!parsed.route },
+            { label: 'Prescriber',     value: parsed.prescriber, extracted: !!parsed.prescriber },
+          ].filter(f => f.value);
         }
 
-        applyScribeResult(scribeResult!);
-        // Build diff-style review card fields
-        const reviewFields2: OcrReviewField[] = [
-          { label: 'Medication Name', value: scribeResult!.name,       extracted: !!scribeResult!.name },
-          { label: 'Dose',           value: scribeResult!.dose,       extracted: !!scribeResult!.dose },
-          { label: 'Frequency',      value: scribeResult!.frequency,  extracted: !!scribeResult!.frequency },
-          { label: 'Route',          value: scribeResult!.route,      extracted: !!scribeResult!.route },
-          { label: 'Indication',     value: scribeResult!.indication, extracted: !!scribeResult!.indication },
-          { label: 'Prescriber',     value: scribeResult!.prescriber, extracted: !!scribeResult!.prescriber },
-          { label: 'Notes',          value: scribeResult!.notes,      extracted: !!scribeResult!.notes },
-        ];
-        if (scribeResult!.pharmacyName) reviewFields2.push({ label: 'Pharmacy', value: scribeResult!.pharmacyName, extracted: true });
-        if (scribeResult!.pharmacyPhone) reviewFields2.push({ label: 'Pharmacy Phone', value: scribeResult!.pharmacyPhone, extracted: true });
+        updateRxStep('extract', 'done');
+        setRxScanProgress(90);
+        updateRxStep('validate', 'active');
+
+        // Validate at least one field was found
+        if (reviewFields.length === 0) {
+          throw new Error("We couldn't read the label clearly. Try better lighting or enter details manually.");
+        }
+
+        updateRxStep('validate', 'done');
+        setRxScanProgress(100);
         setScribeScanMethod(usedLlm ? 'smart' : 'ocr');
-        setOcrReviewFields(reviewFields2);
+        setOcrReviewFields(reviewFields);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      } catch (_unused) {
-        if (isMounted.current) setScanError("We couldn't read the label clearly. Try better lighting or enter details manually.");
+
+        // Close overlay after short success pause
+        setTimeout(() => {
+          if (isMounted.current) setRxScanOverlayVisible(false);
+        }, 600);
+
+      } catch (err: any) {
+        const msg = err?.message ?? "We couldn't read the label clearly. Try better lighting or enter details manually.";
+        if (isMounted.current) {
+          setRxScanError(msg);
+          setScanError(msg);
+          setRxScanSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
+        }
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       } finally {
         if (isMounted.current) setScribeLoading(false);
@@ -2840,7 +2925,7 @@ function MedicationsScreenInner() {
     } catch (_unused) {
       Alert.alert('Error', 'Could not open camera.');
     }
-  }, [handlePrescriptionScanComplete, applyScribeResult]);
+  }, [handlePrescriptionScanComplete, applyScribeResult, updateRxStep, formName, formDose, formNotes, formPrescriber, formPharmacyName, formQuantity]);
 
   const handleDictationSubmit = React.useCallback(async () => {
     const text = dictationText.trim();
@@ -3572,6 +3657,40 @@ function MedicationsScreenInner() {
               <Text style={styles.disclaimerBtnText}>{t.disclaimerAccept}</Text>
             </Pressable>
           </View>
+        </View>
+      </Modal>
+
+      {/* Prescription Scan Analysis Overlay */}
+      <Modal
+        visible={rxScanOverlayVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => {
+          if (!scribeLoading) setRxScanOverlayVisible(false);
+        }}
+      >
+        <View style={{ flex: 1, backgroundColor: '#0D1117' }}>
+          {/* Close button — always visible */}
+          <Pressable
+            onPress={() => setRxScanOverlayVisible(false)}
+            style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' }}
+            hitSlop={12}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>✕</Text>
+          </Pressable>
+          {rxScanImageUri ? (
+            <MedicalScanAnalysisOverlay
+              type="prescription"
+              imageUri={rxScanImageUri}
+              steps={rxScanSteps}
+              progress={rxScanProgress}
+              isAnalyzing={scribeLoading}
+              error={rxScanError}
+              onRetry={() => { setRxScanOverlayVisible(false); setTimeout(openPrescriptionScanner, 300); }}
+              onUploadNew={() => { setRxScanOverlayVisible(false); setTimeout(openPrescriptionScanner, 300); }}
+              onManualEntry={() => setRxScanOverlayVisible(false)}
+            />
+          ) : null}
         </View>
       </Modal>
 

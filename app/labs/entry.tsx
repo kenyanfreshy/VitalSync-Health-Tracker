@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as SafeImagePicker from '@/lib/safe-image-picker';
-import { trpc } from '@/lib/trpc';
+import { MedicalScanAnalysisOverlay, type ScanStep } from '@/components/medical-scan-analysis-overlay';
 import { extractTextFromImage } from 'expo-text-extractor';
 import { parseLabOcr } from '@/lib/scribe/parsers';
 import { OcrReviewCard, type OcrReviewField } from '@/components/ocr-review-card';
@@ -286,7 +286,28 @@ export default function LabEntryScreen() {
   }, [selectedPanel]);
 
   // ── Lab Report Scan: LLM vision primary, Apple Vision OCR fallback ─────────
-  const parseOcrMutation = trpc.lab.parseOcr.useMutation();
+  // Lab scan overlay state
+  const [labScanOverlayVisible, setLabScanOverlayVisible] = useState(false);
+  const [labScanImageUri, setLabScanImageUri] = useState<string>('');
+  const [labScanProgress, setLabScanProgress] = useState(0);
+  const [labScanError, setLabScanError] = useState<string | null>(null);
+  const [labScanSteps, setLabScanSteps] = useState<ScanStep[]>([
+    { id: 'capture',  label: 'Image captured',           status: 'pending' },
+    { id: 'upload',   label: 'Sending to Gemini Vision', status: 'pending' },
+    { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
+    { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
+    { id: 'validate', label: 'Validating results',       status: 'pending' },
+  ]);
+  const INITIAL_LAB_STEPS: ScanStep[] = [
+    { id: 'capture',  label: 'Image captured',           status: 'pending' },
+    { id: 'upload',   label: 'Sending to Gemini Vision', status: 'pending' },
+    { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
+    { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
+    { id: 'validate', label: 'Validating results',       status: 'pending' },
+  ];
+  const updateLabStep = useCallback((id: string, status: ScanStep['status']) => {
+    setLabScanSteps(prev => prev.map(s => s.id === id ? { ...s, status } : s));
+  }, []);
 
   const handleOcrScan = useCallback(async () => {
     try {
@@ -302,85 +323,135 @@ export default function LabEntryScreen() {
         allowsEditing: false,
       });
       if (result.canceled || !result.assets?.[0]) return;
+
+      const asset = result.assets[0];
+
+      // ── Show live analysis overlay ────────────────────────────────────────
+      setLabScanImageUri(asset.uri);
+      setLabScanSteps(INITIAL_LAB_STEPS);
+      setLabScanProgress(0);
+      setLabScanError(null);
+      setLabScanOverlayVisible(true);
       setOcrLoading(true);
       setOcrError(null);
       setOcrReviewFields([]);
 
-      const asset = result.assets[0];
       let extracted: Record<string, string> = {};
       let usedLlm = false;
 
-      // ── Primary path: server LLM vision (Gemini) ──────────────────────────
-      if (asset.base64) {
-        try {
-          const llmResult = await parseOcrMutation.mutateAsync({
-            imageBase64: asset.base64,
-            mimeType: 'image/jpeg',
-          });
-          // Convert LLM numeric values to strings for the form
-          for (const [k, v] of Object.entries(llmResult.values)) {
-            extracted[k] = String(v);
+      try {
+        updateLabStep('capture', 'done');
+        setLabScanProgress(20);
+        updateLabStep('upload', 'active');
+
+        // ── Primary: Gemini 2.5-flash Vision (client-side, no server needed) ───
+        if (asset.base64) {
+          try {
+            updateLabStep('upload', 'done');
+            setLabScanProgress(40);
+            updateLabStep('reading', 'active');
+
+            const { parseLabReportWithGemini } = await import('@/lib/labs/gemini-lab-parser');
+            const llmResult = await parseLabReportWithGemini(asset.base64, 'image/jpeg');
+
+            updateLabStep('reading', 'done');
+            setLabScanProgress(70);
+            updateLabStep('extract', 'active');
+
+            if (!llmResult.error && llmResult.results.length > 0) {
+              // Map Gemini results to extracted key-value pairs
+              for (const r of llmResult.results) {
+                if (r.value !== null && r.value !== undefined) {
+                  extracted[r.analyteId ?? r.testName.toLowerCase().replace(/\s+/g, '_')] = String(r.value);
+                }
+              }
+              if (llmResult.labName) extracted.__labName = llmResult.labName;
+              if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
+              // Auto-select panel from detected analytes
+              const detectedKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
+              let bestPanel: LabPanelId = selectedPanel;
+              let bestMatches = 0;
+              for (const panel of PANELS) {
+                const matches = detectedKeys.filter(k => (PANEL_ANALYTES[panel] as string[]).includes(k)).length;
+                if (matches > bestMatches) { bestMatches = matches; bestPanel = panel; }
+              }
+              if (bestMatches > 0) setSelectedPanel(bestPanel);
+              usedLlm = true;
+            } else if (llmResult.error) {
+              throw new Error(llmResult.error);
+            }
+          } catch (llmErr) {
+            console.warn('[Lab Scan] Gemini Vision failed, falling back to Apple Vision OCR:', llmErr);
+            updateLabStep('reading', 'error');
           }
-          if (llmResult.labName) extracted.__labName = llmResult.labName;
-          if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
-          // Auto-select panel from LLM result
-          if (llmResult.panel && llmResult.panel !== selectedPanel) {
-            setSelectedPanel(llmResult.panel);
-          }
-          usedLlm = true;
-        } catch (llmErr) {
-          // LLM failed (offline or server error) — fall through to Apple Vision OCR
-          console.warn('[Lab Scan] LLM vision failed, falling back to Apple Vision OCR:', llmErr);
         }
+
+        // ── Fallback: Apple Vision OCR + local regex parser ─────────────────
+        if (!usedLlm) {
+          updateLabStep('upload', 'done');
+          setLabScanProgress(40);
+          updateLabStep('reading', 'active');
+          const lines = await extractTextFromImage(asset.uri);
+          extracted = parseLabOcr(lines);
+          updateLabStep('reading', 'done');
+          setLabScanProgress(70);
+          updateLabStep('extract', 'active');
+        }
+
+        updateLabStep('extract', 'done');
+        setLabScanProgress(90);
+        updateLabStep('validate', 'active');
+
+        const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
+        if (analyteKeys.length === 0) {
+          throw new Error(usedLlm ? ls.ocrNoValuesFound : ls.ocrScanFailed);
+        }
+
+        updateLabStep('validate', 'done');
+        setLabScanProgress(100);
+
+        // Merge with previously accumulated values
+        const merged = { ...ocrAccumulated, ...extracted };
+        setOcrAccumulated(merged);
+        setOcrPageCount(prev => prev + 1);
+
+        // Rebuild review fields from merged data
+        const mergedAnalyteKeys = Object.keys(merged).filter(k => !k.startsWith('__'));
+        const allPanelAnalytes = PANEL_ANALYTES[selectedPanel];
+        const allKnownAnalytes = PANELS.flatMap(p => PANEL_ANALYTES[p]);
+        const extraAnalytes = mergedAnalyteKeys.filter(
+          k => !allPanelAnalytes.includes(k as LabAnalyteId) && allKnownAnalytes.includes(k as LabAnalyteId)
+        ) as LabAnalyteId[];
+        const reviewAnalytes = [...allPanelAnalytes, ...extraAnalytes];
+        const mergedReviewFields: OcrReviewField[] = reviewAnalytes.map(id => ({
+          label: REFERENCE_RANGES[id]?.label ?? id,
+          value: merged[id] ?? null,
+          extracted: !!merged[id],
+        }));
+        if (merged.__labName) mergedReviewFields.push({ label: ls.labFacility, value: merged.__labName, extracted: true });
+        if (merged.__collectionDate) mergedReviewFields.push({ label: ls.collectionDate, value: merged.__collectionDate, extracted: true });
+        setOcrReviewFields(mergedReviewFields);
+        ocrPendingRef.current = merged;
+        ocrUsedLlmRef.current = usedLlm;
+
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+        // Close overlay after short success pause
+        setTimeout(() => setLabScanOverlayVisible(false), 600);
+
+      } catch (innerErr: any) {
+        const msg = innerErr?.message ?? ls.ocrScanFailed;
+        setLabScanError(msg);
+        setOcrError(msg);
+        setLabScanSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } finally {
+        setOcrLoading(false);
       }
-
-      // ── Fallback: Apple Vision OCR + local regex parser ───────────────────
-      if (!usedLlm) {
-        const lines = await extractTextFromImage(asset.uri);
-        extracted = parseLabOcr(lines);
-      }
-
-      const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
-      if (analyteKeys.length === 0) {
-        setOcrError(
-          usedLlm
-            ? ls.ocrNoValuesFound
-            : ls.ocrScanFailed,
-        );
-        return;
-      }
-
-      // Merge with previously accumulated values (new page values override old for same key)
-      const merged = { ...ocrAccumulated, ...extracted };
-      setOcrAccumulated(merged);
-      setOcrPageCount(prev => prev + 1);
-
-      // Rebuild review fields from merged data
-      const mergedAnalyteKeys = Object.keys(merged).filter(k => !k.startsWith('__'));
-      const allPanelAnalytes = PANEL_ANALYTES[selectedPanel];
-      // Also include analytes from other panels that were found in merged data
-      const allKnownAnalytes = PANELS.flatMap(p => PANEL_ANALYTES[p]);
-      const extraAnalytes = mergedAnalyteKeys.filter(
-        k => !allPanelAnalytes.includes(k as LabAnalyteId) && allKnownAnalytes.includes(k as LabAnalyteId)
-      ) as LabAnalyteId[];
-      const reviewAnalytes = [...allPanelAnalytes, ...extraAnalytes];
-      const mergedReviewFields: OcrReviewField[] = reviewAnalytes.map(id => ({
-        label: REFERENCE_RANGES[id]?.label ?? id,
-        value: merged[id] ?? null,
-        extracted: !!merged[id],
-      }));
-      if (merged.__labName) mergedReviewFields.push({ label: ls.labFacility, value: merged.__labName, extracted: true });
-      if (merged.__collectionDate) mergedReviewFields.push({ label: ls.collectionDate, value: merged.__collectionDate, extracted: true });
-      setOcrReviewFields(mergedReviewFields);
-      // Store merged for apply-on-confirm via stable refs (avoids stale closure on re-render)
-      ocrPendingRef.current = merged;
-      ocrUsedLlmRef.current = usedLlm;
     } catch (err: any) {
       setOcrError(err?.message ?? ls.ocrScanFailed);
-    } finally {
-      setOcrLoading(false);
     }
-  }, [selectedPanel, parseOcrMutation, ocrAccumulated]);
+  }, [selectedPanel, ocrAccumulated, updateLabStep]);
 
   // ── Save ──────────────────────────────────────────────────────────────────────────────
 
@@ -609,6 +680,33 @@ placeholder={ls.facilityPlaceholder}
           }
         </Pressable>
       </ScrollView>
+
+      {/* Lab Scan Analysis Overlay */}
+      {labScanOverlayVisible && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0D1117', zIndex: 100 }}>
+          {/* Close button — always visible */}
+          <Pressable
+            onPress={() => setLabScanOverlayVisible(false)}
+            style={{ position: 'absolute', top: insets.top + 12, right: 16, zIndex: 10, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' }}
+            hitSlop={12}
+          >
+            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>✕</Text>
+          </Pressable>
+          {labScanImageUri ? (
+            <MedicalScanAnalysisOverlay
+              type="lab"
+              imageUri={labScanImageUri}
+              steps={labScanSteps}
+              progress={labScanProgress}
+              isAnalyzing={ocrLoading}
+              error={labScanError}
+              onRetry={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
+              onUploadNew={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
+              onManualEntry={() => setLabScanOverlayVisible(false)}
+            />
+          ) : null}
+        </View>
+      )}
     </View>
   );
 }
