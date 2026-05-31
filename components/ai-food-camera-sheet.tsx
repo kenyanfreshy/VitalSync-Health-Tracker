@@ -1798,7 +1798,7 @@ export function AiFoodCameraSheet({
       resetAnalysisState();
       setCapturedUri(capturedPhotoUri);
       setScanning(true);
-      setMode('plate');
+      // Keep mode as 'home' so HomeScreen stays mounted under the overlay
 
       // Start elapsed timer
       analysisElapsedRef.current = setInterval(() => {
@@ -2516,7 +2516,7 @@ export function AiFoodCameraSheet({
               />
             ) : (
               <>
-                {!preview && !capturedUri ? (
+                {!preview ? (
                   <>
                     <HomeScreen
                       scanning={scanning}
@@ -2557,36 +2557,39 @@ export function AiFoodCameraSheet({
                         setTimeout(() => setHkToast(false), 2000);
                       }}
                     />
-                    {/* Premium analysis overlay — shown as soon as image is captured */}
+
+                    {/* Premium analysis overlay — shown as absolute overlay on top of HomeScreen */}
                     {capturedUri && scanning && (
-                      <MealAnalysisOverlay
-                        imageUri={capturedUri}
-                        stepStates={analysisStepStates}
-                        detectedFoods={analysisDetectedFoods}
-                        progress={analysisProgress}
-                        isAnalysing={scanning}
-                        usingFallback={analysisUsingFallback}
-                        elapsedSeconds={analysisElapsed}
-                        isDark={isDark}
-                        onRetry={() => {
-                          setCapturedUri(null);
-                          setScanning(false);
-                          resetAnalysisState();
-                          handlePlateScan();
-                        }}
-                        onFoodSearch={() => {
-                          setCapturedUri(null);
-                          setScanning(false);
-                          resetAnalysisState();
-                          setMode('search');
-                        }}
-                        onManualEntry={() => {
-                          setCapturedUri(null);
-                          setScanning(false);
-                          resetAnalysisState();
-                          setMode('home');
-                        }}
-                      />
+                      <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
+                        <MealAnalysisOverlay
+                          imageUri={capturedUri}
+                          stepStates={analysisStepStates}
+                          detectedFoods={analysisDetectedFoods}
+                          progress={analysisProgress}
+                          isAnalysing={scanning}
+                          usingFallback={analysisUsingFallback}
+                          elapsedSeconds={analysisElapsed}
+                          isDark={isDark}
+                          onRetry={() => {
+                            setCapturedUri(null);
+                            setScanning(false);
+                            resetAnalysisState();
+                            handlePlateScan();
+                          }}
+                          onFoodSearch={() => {
+                            setCapturedUri(null);
+                            setScanning(false);
+                            resetAnalysisState();
+                            setMode('search');
+                          }}
+                          onManualEntry={() => {
+                            setCapturedUri(null);
+                            setScanning(false);
+                            resetAnalysisState();
+                            setMode('home');
+                          }}
+                        />
+                      </View>
                     )}
 
                     {/* Opening camera spinner */}
