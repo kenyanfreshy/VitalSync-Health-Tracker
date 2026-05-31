@@ -1057,8 +1057,9 @@ interface HomeScreenProps {
   fc: typeof foodCameraStrings.en;
   onReLog: (meal: SodiumRecordLike) => void;
   prevEstimate?: { kcal: number; name: string } | null;
+  scanBtnSpinAnim?: Animated.Value;
 }
-function HomeScreen({ scanning, mode, onPlateScan, onBarcodeScan, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate }: HomeScreenProps) {
+function HomeScreen({ scanning, mode, onPlateScan, onBarcodeScan, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
   return (
     <>
       <View style={styles.homeGrid}>
@@ -1072,8 +1073,26 @@ function HomeScreen({ scanning, mode, onPlateScan, onBarcodeScan, recentMeals, s
           onPress={onPlateScan}
           disabled={scanning}
         >
-          {scanning && mode === 'home' ? (
-            <ActivityIndicator color={EMERALD} size="large" />
+          {scanning && mode === 'home' && scanBtnSpinAnim ? (
+            <>
+              <Animated.Text
+                style={[
+                  styles.homeBtnIcon,
+                  {
+                    transform: [{
+                      rotate: scanBtnSpinAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ['0deg', '360deg'],
+                      }),
+                    }],
+                  },
+                ]}
+              >
+                📷
+              </Animated.Text>
+              <Text style={[styles.homeBtnTitle, { color: EMERALD }]}>{fc.scanMealTitle ?? 'Scan Meal'}</Text>
+              <Text style={[styles.homeBtnSub, { color: EMERALD + 'AA', fontSize: 10 }]}>Opening camera…</Text>
+            </>
           ) : (
             <>
               <Text style={styles.homeBtnIcon}>📷</Text>
@@ -1484,6 +1503,7 @@ export function AiFoodCameraSheet({
   // Scanner ring spin animation
   const scanSpinAnim = useRef(new Animated.Value(0)).current;
   const scanCompleteAnim = useRef(new Animated.Value(0)).current;
+  const scanBtnSpinAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
@@ -1540,6 +1560,24 @@ export function AiFoodCameraSheet({
       scanSpinAnim.stopAnimation();
     }
   }, [scanning, scanSpinAnim]);
+
+  // Spin the scan button icon while scanning
+  useEffect(() => {
+    if (scanning) {
+      scanBtnSpinAnim.setValue(0);
+      Animated.loop(
+        Animated.timing(scanBtnSpinAnim, {
+          toValue: 1,
+          duration: 1000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      scanBtnSpinAnim.stopAnimation();
+      scanBtnSpinAnim.setValue(0);
+    }
+  }, [scanning, scanBtnSpinAnim]);
 
   // Animate scan-complete popup in
   useEffect(() => {
@@ -1659,11 +1697,9 @@ export function AiFoodCameraSheet({
           source: 'ai-photo',
         };
       }
-      // Store preview and show the scan-complete popup
+      // Store preview — MacroPreviewPanel renders inline below the photo
       setPreview(builtPreview);
       setMode('plate');
-      // Show scan-complete popup so user knows analysis is done
-      setShowScanComplete(true);
       // Show low-confidence toast when confidence is low
       const finalConf = usdaItem ? usdaItem.confidence : 'low';
       if (finalConf === 'low') {
@@ -2037,6 +2073,8 @@ export function AiFoodCameraSheet({
             {
               backgroundColor: colors.surface,
               transform: [{ translateY }],
+              // Expand to full screen during scan flow
+              ...(scanning || capturedUri ? { maxHeight: '100%', borderTopLeftRadius: 0, borderTopRightRadius: 0 } : {}),
             },
           ]}
         >
@@ -2189,7 +2227,7 @@ export function AiFoodCameraSheet({
               />
             ) : (
               <>
-                {!preview ? (
+                {!preview && !capturedUri ? (
                   <>
                     <HomeScreen
                       scanning={scanning}
@@ -2205,6 +2243,7 @@ export function AiFoodCameraSheet({
                       mutedColor={colors.muted}
                       prevEstimate={prevEstimate}
                       fc={fc}
+                      scanBtnSpinAnim={scanBtnSpinAnim}
                       onReLog={async (meal) => {
                         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                         const record: SodiumRecord = {
@@ -2228,8 +2267,8 @@ export function AiFoodCameraSheet({
                         setTimeout(() => setHkToast(false), 2000);
                       }}
                     />
-                    {scanning && capturedUri ? (
-                      // Photo + spinning scanner overlay
+                    {/* Photo + scanner overlay — shown while scanning or after analysis */}
+                    {capturedUri ? (
                       <View style={styles.scanPhotoContainer}>
                         <Image
                           source={{ uri: capturedUri }}
@@ -2243,30 +2282,40 @@ export function AiFoodCameraSheet({
                         <View style={[styles.scanCorner, styles.scanCornerTR, { borderColor: EMERALD }]} />
                         <View style={[styles.scanCorner, styles.scanCornerBL, { borderColor: EMERALD }]} />
                         <View style={[styles.scanCorner, styles.scanCornerBR, { borderColor: EMERALD }]} />
-                        {/* Spinning ring */}
-                        <Animated.View
-                          style={[
-                            styles.scanRing,
-                            {
-                              borderColor: EMERALD,
-                              transform: [{
-                                rotate: scanSpinAnim.interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: ['0deg', '360deg'],
-                                }),
-                              }],
-                            },
-                          ]}
-                        />
+                        {/* Spinning ring — only while scanning */}
+                        {scanning && (
+                          <Animated.View
+                            style={[
+                              styles.scanRing,
+                              {
+                                borderColor: EMERALD,
+                                transform: [{
+                                  rotate: scanSpinAnim.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: ['0deg', '360deg'],
+                                  }),
+                                }],
+                              },
+                            ]}
+                          />
+                        )}
                         {/* Inner static ring */}
-                        <View style={[styles.scanRingInner, { borderColor: EMERALD + '44' }]} />
-                        {/* Status badge */}
-                        <View style={styles.scanStatusBadge}>
-                          <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 6 }} />
-                          <Text style={styles.scanStatusText}>
-                            {fc.identifyingFood ?? 'Analysing meal…'}
-                          </Text>
-                        </View>
+                        <View style={[styles.scanRingInner, { borderColor: scanning ? EMERALD + '44' : EMERALD + '22' }]} />
+                        {/* Status badge — only while scanning */}
+                        {scanning && (
+                          <View style={styles.scanStatusBadge}>
+                            <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 6 }} />
+                            <Text style={styles.scanStatusText}>
+                              {fc.identifyingFood ?? 'Analysing meal…'}
+                            </Text>
+                          </View>
+                        )}
+                        {/* Done badge — when analysis complete */}
+                        {!scanning && preview && (
+                          <View style={[styles.scanStatusBadge, { backgroundColor: EMERALD + 'DD' }]}>
+                            <Text style={[styles.scanStatusText, { color: '#FFFFFF' }]}>✓ {fc.analysisComplete ?? 'Analysis complete'}</Text>
+                          </View>
+                        )}
                       </View>
                     ) : scanning ? (
                       <View style={styles.scanningOverlay}>
@@ -2276,6 +2325,17 @@ export function AiFoodCameraSheet({
                         </Text>
                       </View>
                     ) : null}
+
+                    {/* Log Meal + button — shown while scanning (disabled) */}
+                    {scanning && (
+                      <View style={[styles.logMealPendingBtn, { backgroundColor: EMERALD + '22', borderColor: EMERALD + '44' }]}>
+                        <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 8 }} />
+                        <Text style={[styles.logMealPendingText, { color: EMERALD }]}>
+                          {fc.logMealPlus ?? 'Log Meal +'}
+                        </Text>
+                      </View>
+                    )}
+
                     {openingCamera && (
                       <View style={styles.scanningOverlay}>
                         <ActivityIndicator color={EMERALD} size="large" />
@@ -2285,7 +2345,10 @@ export function AiFoodCameraSheet({
                       </View>
                     )}
                   </>
-                ) : (
+                ) : null}
+
+                {/* MacroPreviewPanel — shown inline below the photo when analysis is done */}
+                {preview && (
                   <MacroPreviewPanel
                     preview={preview}
                     servingMult={servingMult}
@@ -2316,17 +2379,16 @@ export function AiFoodCameraSheet({
                     onSearchByName={(name) => {
                       setMode('search');
                       setPreview(null);
+                      setCapturedUri(null);
                       setCustomGrams('');
-                      // Trigger search with detected name
                       handleSubmitSearch(name, () => {});
                     }}
                     onScanAgain={() => {
-                      // Save current estimate as fallback chip on HomeScreen
                       if (preview?.calories != null) {
                         setPrevEstimate({ kcal: preview.calories, name: preview.foodDescription });
                       }
-                      // Clear preview so HomeScreen renders, show indicator, then open correct camera
                       setPreview(null);
+                      setCapturedUri(null);
                       setKeepEstimateTapped(false);
                       setMode('home');
                       setOpeningCamera(true);
@@ -2340,9 +2402,9 @@ export function AiFoodCameraSheet({
                     }}
                     onKeepEstimate={() => setKeepEstimateTapped(true)}
                     onScanAnother={() => {
-                      // After logging, let the user immediately scan a new item
                       if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       setPreview(null);
+                      setCapturedUri(null);
                       setLogged(false);
                       setLoggedSummary(undefined);
                       setServingMult(1);
@@ -2396,97 +2458,7 @@ export function AiFoodCameraSheet({
       onClose={() => setShowBarcodeScanner(false)}
     />
 
-    {/* Scan-complete popup — appears when Gemini finishes analysing */}
-    <Modal
-      visible={showScanComplete}
-      transparent
-      animationType="none"
-      onRequestClose={() => setShowScanComplete(false)}
-      statusBarTranslucent
-    >
-      <TouchableWithoutFeedback onPress={() => setShowScanComplete(false)}>
-        <View style={styles.scanCompleteBackdrop} />
-      </TouchableWithoutFeedback>
-      <Animated.View
-        style={[
-          styles.scanCompleteSheet,
-          {
-            backgroundColor: isDark ? '#1A2332' : '#FFFFFF',
-            transform: [
-              {
-                translateY: scanCompleteAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [400, 0],
-                }),
-              },
-            ],
-          },
-        ]}
-      >
-        {/* Handle */}
-        <View style={styles.handleBar}>
-          <View style={[styles.handle, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
-        </View>
 
-        {/* Success icon */}
-        <View style={styles.scanCompleteIconRow}>
-          <View style={[styles.scanCompleteIconCircle, { backgroundColor: EMERALD + '22', borderColor: EMERALD + '55' }]}>
-            <Text style={{ fontSize: 32 }}>✅</Text>
-          </View>
-        </View>
-
-        {/* Food name */}
-        <Text style={[styles.scanCompleteFoodName, { color: isDark ? '#ECEDEE' : '#11181C' }]} numberOfLines={2}>
-          {preview?.foodDescription ?? 'Meal Identified'}
-        </Text>
-
-        {/* Calorie chip */}
-        {preview?.calories != null && (
-          <View style={[styles.scanCompleteCalChip, { backgroundColor: EMERALD + '18', borderColor: EMERALD + '44' }]}>
-            <Text style={[styles.scanCompleteCalText, { color: EMERALD }]}>
-              {Math.round(preview.calories * servingMult)} kcal
-            </Text>
-            {preview.proteinG != null && (
-              <Text style={[styles.scanCompleteCalText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
-                {'  ·  '}{Math.round(preview.proteinG * servingMult)}g protein
-              </Text>
-            )}
-            {preview.carbsG != null && (
-              <Text style={[styles.scanCompleteCalText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
-                {'  ·  '}{Math.round(preview.carbsG * servingMult)}g carbs
-              </Text>
-            )}
-          </View>
-        )}
-
-        {/* Log This Meal button */}
-        <Pressable
-          style={({ pressed }) => [
-            styles.scanCompleteLogBtn,
-            { backgroundColor: EMERALD, opacity: pressed ? 0.85 : 1, transform: pressed ? [{ scale: 0.97 }] : [] },
-          ]}
-          onPress={() => {
-            setShowScanComplete(false);
-            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            handleLog();
-          }}
-        >
-          <Text style={styles.scanCompleteLogBtnText}>Log This Meal</Text>
-        </Pressable>
-
-        {/* View Details link */}
-        <Pressable
-          style={({ pressed }) => [styles.scanCompleteDetailsBtn, pressed && { opacity: 0.6 }]}
-          onPress={() => setShowScanComplete(false)}
-        >
-          <Text style={[styles.scanCompleteDetailsBtnText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
-            View Details
-          </Text>
-        </Pressable>
-
-        <View style={{ height: 24 }} />
-      </Animated.View>
-    </Modal>
     </>
   );
 }
@@ -2778,6 +2750,21 @@ const styles = StyleSheet.create({
   scanCompleteDetailsBtnText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  // Log Meal pending button (shown while scanning)
+  logMealPendingBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 14,
+    marginTop: 12,
+  },
+  logMealPendingText: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   // Macro preview panel
   previewPanel: {

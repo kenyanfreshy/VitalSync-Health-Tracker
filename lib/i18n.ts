@@ -19621,6 +19621,8 @@ export const foodCameraStrings = {
       insight: 'Insights',
       identifyingFood: 'Identifying food…',
       openingCamera: 'Opening camera…',
+      analysisComplete: 'Analysis complete',
+      logMealPlus: 'Log Meal +',
       scanAnotherItem: '📷 Scan another item →',
     itemsLogged: '1 item logged',
     itemsLoggedPlural: '{n} items logged',
