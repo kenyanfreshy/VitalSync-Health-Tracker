@@ -49,7 +49,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useColorScheme, useColors, useFoodCameraStrings } from '@/hooks';
-import { useDietType } from '@/lib/health/diet-type';
+import { useDietType } from '@/hooks/use-diet-type';
 import { useHealth } from '@/lib/health/health-context';
 import { saveMealToHealthKit } from '@/lib/health/healthkit-write';
 import { trpc } from '@/lib/trpc';

@@ -470,3 +470,25 @@ export async function loadCustomDietConfig(): Promise<CustomDietConfig> {
 export async function saveCustomDietConfig(config: CustomDietConfig): Promise<void> {
   await safeSetItem(CUSTOM_DIET_KEY, JSON.stringify(config));
 }
+
+// ─── React hook ───────────────────────────────────────────────────────────────
+import { useState, useEffect } from 'react';
+
+/**
+ * React hook that reads the active diet type from AsyncStorage and keeps it
+ * in sync when the component mounts. Returns { dietType, setDietType }.
+ */
+export function useDietType(): { dietType: DietType; setDietType: (d: DietType) => Promise<void> } {
+  const [dietType, setDietTypeState] = useState<DietType>('balanced');
+
+  useEffect(() => {
+    loadDietType().then(setDietTypeState).catch(() => {});
+  }, []);
+
+  const setDietType = async (d: DietType) => {
+    await saveDietType(d);
+    setDietTypeState(d);
+  };
+
+  return { dietType, setDietType };
+}
