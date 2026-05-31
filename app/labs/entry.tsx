@@ -248,6 +248,8 @@ export default function LabEntryScreen() {
   // Stable refs so onConfirm always reads the latest pending data regardless of re-renders
   const ocrPendingRef = useRef<Record<string, string> | null>(null);
   const ocrUsedLlmRef = useRef(false);
+  // Store raw Gemini labs array for direct form population (bypasses slug-matching)
+  const geminiLabsRef = useRef<import('@/lib/labs/gemini-lab-parser').LabResultItem[] | null>(null);
 
   const analytes = PANEL_ANALYTES[selectedPanel];
   const accentColor = PANEL_COLORS[selectedPanel];
@@ -260,6 +262,101 @@ export default function LabEntryScreen() {
   const handleValueChange = useCallback((analyteId: LabAnalyteId, val: string) => {
     setValues(prev => ({ ...prev, [analyteId]: val }));
   }, []);
+
+  // ── Comprehensive test-name → LabAnalyteId alias map ────────────────────
+  // Covers common lab report variations: full names, abbreviations, mixed case
+  const LAB_ALIAS_MAP: Record<string, LabAnalyteId> = {
+    // Glucose
+    'glucose': 'glucose', 'blood glucose': 'glucose', 'fasting glucose': 'glucose', 'glu': 'glucose', 'bgl': 'glucose',
+    // BUN
+    'bun': 'bun', 'blood urea nitrogen': 'bun', 'urea nitrogen': 'bun', 'urea': 'bun',
+    // Creatinine
+    'creatinine': 'creatinine', 'creat': 'creatinine', 'cr': 'creatinine', 'serum creatinine': 'creatinine',
+    // eGFR
+    'egfr': 'egfr', 'gfr': 'egfr', 'estimated gfr': 'egfr', 'glomerular filtration rate': 'egfr', 'gfr-aa': 'egfr', 'gfr_aa': 'egfr',
+    // Sodium
+    'sodium': 'sodium', 'na': 'sodium', 'na+': 'sodium', 'serum sodium': 'sodium',
+    // Potassium
+    'potassium': 'potassium', 'k': 'potassium', 'k+': 'potassium', 'serum potassium': 'potassium',
+    // Chloride
+    'chloride': 'chloride', 'cl': 'chloride', 'cl-': 'chloride', 'serum chloride': 'chloride',
+    // CO2
+    'co2': 'co2', 'carbon dioxide': 'co2', 'bicarbonate': 'co2', 'bicarb': 'co2', 'hco3': 'co2', 'co₂': 'co2', 'co2 (bicarb)': 'co2',
+    // Calcium
+    'calcium': 'calcium', 'ca': 'calcium', 'ca2+': 'calcium', 'serum calcium': 'calcium', 'total calcium': 'calcium',
+    // Total Protein
+    'total protein': 'totalProtein', 'protein': 'totalProtein', 'tp': 'totalProtein', 'serum protein': 'totalProtein',
+    // Albumin
+    'albumin': 'albumin', 'alb': 'albumin', 'serum albumin': 'albumin',
+    // Total Bilirubin
+    'total bilirubin': 'totalBilirubin', 'bilirubin': 'totalBilirubin', 't.bili': 'totalBilirubin', 'tbili': 'totalBilirubin', 'tbil': 'totalBilirubin',
+    // ALT
+    'alt': 'alt', 'alanine aminotransferase': 'alt', 'sgpt': 'alt', 'alanine transaminase': 'alt',
+    // AST
+    'ast': 'ast', 'aspartate aminotransferase': 'ast', 'sgot': 'ast', 'aspartate transaminase': 'ast',
+    // WBC
+    'wbc': 'wbc', 'white blood cell': 'wbc', 'white blood cells': 'wbc', 'leukocytes': 'wbc', 'white cell count': 'wbc', 'wbc count': 'wbc',
+    // RBC
+    'rbc': 'rbc', 'red blood cell': 'rbc', 'red blood cells': 'rbc', 'erythrocytes': 'rbc', 'red cell count': 'rbc',
+    // Hemoglobin
+    'hemoglobin': 'hemoglobin', 'haemoglobin': 'hemoglobin', 'hgb': 'hemoglobin', 'hb': 'hemoglobin', 'hbg': 'hemoglobin',
+    // Hematocrit
+    'hematocrit': 'hematocrit', 'haematocrit': 'hematocrit', 'hct': 'hematocrit', 'packed cell volume': 'hematocrit', 'pcv': 'hematocrit',
+    // MCV
+    'mcv': 'mcv', 'mean corpuscular volume': 'mcv', 'mean cell volume': 'mcv',
+    // MCH
+    'mch': 'mch', 'mean corpuscular hemoglobin': 'mch', 'mean cell hemoglobin': 'mch',
+    // MCHC
+    'mchc': 'mchc', 'mean corpuscular hemoglobin concentration': 'mchc', 'mean cell hemoglobin concentration': 'mchc',
+    // RDW
+    'rdw': 'rdw', 'red cell distribution width': 'rdw', 'red blood cell distribution width': 'rdw', 'rdw-cv': 'rdw', 'rdw_cv': 'rdw',
+    // Platelets
+    'platelets': 'platelets', 'platelet count': 'platelets', 'plt': 'platelets', 'thrombocytes': 'platelets', 'platelet': 'platelets',
+    // Neutrophils
+    'neutrophils': 'neutrophils', 'neutrophil': 'neutrophils', 'neutrophil %': 'neutrophils', 'neutrophil%': 'neutrophils',
+    'neut': 'neutrophils', 'neut %': 'neutrophils', 'neutrophil count': 'neutrophils', 'neutrophils %': 'neutrophils',
+    'seg neutrophils': 'neutrophils', 'segs': 'neutrophils', 'polymorphonuclear': 'neutrophils', 'pmn': 'neutrophils',
+    // Magnesium
+    'magnesium': 'magnesium', 'mg': 'magnesium', 'mg2+': 'magnesium', 'serum magnesium': 'magnesium',
+    // Phosphorus
+    'phosphorus': 'phosphorus', 'phosphate': 'phosphorus', 'phos': 'phosphorus', 'p': 'phosphorus', 'inorganic phosphorus': 'phosphorus',
+    // Lipids
+    'total cholesterol': 'totalCholesterol', 'cholesterol': 'totalCholesterol', 'tc': 'totalCholesterol',
+    'ldl': 'ldl', 'ldl cholesterol': 'ldl', 'ldl-c': 'ldl', 'low density lipoprotein': 'ldl',
+    'hdl': 'hdl', 'hdl cholesterol': 'hdl', 'hdl-c': 'hdl', 'high density lipoprotein': 'hdl',
+    'triglycerides': 'triglycerides', 'triglyceride': 'triglycerides', 'tg': 'triglycerides', 'trigs': 'triglycerides',
+    'non-hdl': 'nonHdl', 'non hdl': 'nonHdl', 'non-hdl cholesterol': 'nonHdl',
+    // A1C
+    'a1c': 'a1c', 'hba1c': 'a1c', 'hemoglobin a1c': 'a1c', 'haemoglobin a1c': 'a1c', 'glycated hemoglobin': 'a1c', 'glycohemoglobin': 'a1c',
+    // Anion Gap (map to co2 as closest CMP field)
+    'anion gap': 'co2',
+  };
+
+  // ── Apply Gemini labs directly to form (bypasses slug-matching) ───────────
+  const applyLabsFromGemini = useCallback((labs: import('@/lib/labs/gemini-lab-parser').LabResultItem[], labName_: string, collectionDate_: string) => {
+    const newValues: Partial<Record<LabAnalyteId, string>> = {};
+    for (const lab of labs) {
+      if (!lab.result) continue;
+      const key = lab.test.toLowerCase().trim();
+      const analyteId = LAB_ALIAS_MAP[key];
+      if (analyteId) newValues[analyteId] = lab.result;
+    }
+    // Auto-detect best panel
+    const matchedIds = Object.keys(newValues) as LabAnalyteId[];
+    let bestPanel: LabPanelId = selectedPanel;
+    let bestMatches = 0;
+    for (const panel of PANELS) {
+      const matches = matchedIds.filter(k => (PANEL_ANALYTES[panel] as string[]).includes(k)).length;
+      if (matches > bestMatches) { bestMatches = matches; bestPanel = panel; }
+    }
+    if (bestMatches > 0) setSelectedPanel(bestPanel);
+    if (Object.keys(newValues).length > 0) setValues(newValues);
+    if (labName_) setLabName(labName_);
+    if (collectionDate_) setCollectionDate(collectionDate_.slice(0, 10));
+    setOcrError(null);
+    setOcrReviewFields([]);
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [selectedPanel]);
 
   // ── Apply extracted OCR data to form ─────────────────────────────────────
   const applyExtracted = useCallback((extracted: Record<string, string>) => {
@@ -361,17 +458,8 @@ export default function LabEntryScreen() {
             updateLabStep('extract', 'active');
 
             if (!llmResult.error && llmResult.labs && llmResult.labs.length > 0) {
-              // Map Gemini results to extracted key-value pairs
-              // Parser returns: llmResult.labs[].test, .result, .unit, .referenceRange, .status
-              // and llmResult.laboratoryName, llmResult.collectionDate
-              for (const r of llmResult.labs) {
-                const val = r.result;
-                if (val !== null && val !== undefined && val !== '') {
-                  // Try to match test name to a known analyte ID, otherwise use slugified test name
-                  const slug = r.test.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
-                  extracted[slug] = String(val);
-                }
-              }
+              // Store raw Gemini labs for direct form population via applyLabsFromGemini
+              geminiLabsRef.current = llmResult.labs;
               if (llmResult.laboratoryName) extracted.__labName = llmResult.laboratoryName;
               if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
               // Store partial data for overlay display
@@ -384,15 +472,6 @@ export default function LabEntryScreen() {
                 totalCount: llmResult.labs.length,
               });
               ocrPendingRef.current = extracted;
-              // Auto-select panel from detected analytes
-              const detectedKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
-              let bestPanel: LabPanelId = selectedPanel;
-              let bestMatches = 0;
-              for (const panel of PANELS) {
-                const matches = detectedKeys.filter(k => (PANEL_ANALYTES[panel] as string[]).includes(k)).length;
-                if (matches > bestMatches) { bestMatches = matches; bestPanel = panel; }
-              }
-              if (bestMatches > 0) setSelectedPanel(bestPanel);
               usedLlm = true;
             } else if (llmResult.error) {
               throw new Error(llmResult.error);
@@ -419,42 +498,52 @@ export default function LabEntryScreen() {
         setLabScanProgress(90);
         updateLabStep('validate', 'active');
 
+        // Validation: for Gemini path check raw labs array; for Apple Vision check slug-based keys
+        const hasGeminiLabs = usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0;
         const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
-        if (analyteKeys.length === 0) {
+        if (!hasGeminiLabs && analyteKeys.length === 0) {
           throw new Error(usedLlm ? ls.ocrNoValuesFound : ls.ocrScanFailed);
         }
 
         updateLabStep('validate', 'done');
         setLabScanProgress(100);
-
-        // Merge with previously accumulated values
-        const merged = { ...ocrAccumulated, ...extracted };
-        setOcrAccumulated(merged);
-        setOcrPageCount(prev => prev + 1);
-
-        // Rebuild review fields from merged data
-        const mergedAnalyteKeys = Object.keys(merged).filter(k => !k.startsWith('__'));
-        const allPanelAnalytes = PANEL_ANALYTES[selectedPanel];
-        const allKnownAnalytes = PANELS.flatMap(p => PANEL_ANALYTES[p]);
-        const extraAnalytes = mergedAnalyteKeys.filter(
-          k => !allPanelAnalytes.includes(k as LabAnalyteId) && allKnownAnalytes.includes(k as LabAnalyteId)
-        ) as LabAnalyteId[];
-        const reviewAnalytes = [...allPanelAnalytes, ...extraAnalytes];
-        const mergedReviewFields: OcrReviewField[] = reviewAnalytes.map(id => ({
-          label: REFERENCE_RANGES[id]?.label ?? id,
-          value: merged[id] ?? null,
-          extracted: !!merged[id],
-        }));
-        if (merged.__labName) mergedReviewFields.push({ label: ls.labFacility, value: merged.__labName, extracted: true });
-        if (merged.__collectionDate) mergedReviewFields.push({ label: ls.collectionDate, value: merged.__collectionDate, extracted: true });
-        setOcrReviewFields(mergedReviewFields);
-        ocrPendingRef.current = merged;
         ocrUsedLlmRef.current = usedLlm;
 
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        if (usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0) {
+          // Gemini path: use alias-map based population directly
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          applyLabsFromGemini(
+            geminiLabsRef.current,
+            extracted.__labName ?? '',
+            extracted.__collectionDate ?? '',
+          );
+          setTimeout(() => setLabScanOverlayVisible(false), 600);
+        } else {
+          // Apple Vision OCR fallback path: use slug-based merge
+          const merged = { ...ocrAccumulated, ...extracted };
+          setOcrAccumulated(merged);
+          setOcrPageCount(prev => prev + 1);
 
-        // Close overlay after short success pause
-        setTimeout(() => setLabScanOverlayVisible(false), 600);
+          const mergedAnalyteKeys = Object.keys(merged).filter(k => !k.startsWith('__'));
+          const allPanelAnalytes = PANEL_ANALYTES[selectedPanel];
+          const allKnownAnalytes = PANELS.flatMap(p => PANEL_ANALYTES[p]);
+          const extraAnalytes = mergedAnalyteKeys.filter(
+            k => !allPanelAnalytes.includes(k as LabAnalyteId) && allKnownAnalytes.includes(k as LabAnalyteId)
+          ) as LabAnalyteId[];
+          const reviewAnalytes = [...allPanelAnalytes, ...extraAnalytes];
+          const mergedReviewFields: OcrReviewField[] = reviewAnalytes.map(id => ({
+            label: REFERENCE_RANGES[id]?.label ?? id,
+            value: merged[id] ?? null,
+            extracted: !!merged[id],
+          }));
+          if (merged.__labName) mergedReviewFields.push({ label: ls.labFacility, value: merged.__labName, extracted: true });
+          if (merged.__collectionDate) mergedReviewFields.push({ label: ls.collectionDate, value: merged.__collectionDate, extracted: true });
+          setOcrReviewFields(mergedReviewFields);
+          ocrPendingRef.current = merged;
+
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setTimeout(() => setLabScanOverlayVisible(false), 600);
+        }
 
       } catch (innerErr: any) {
         const msg = innerErr?.message ?? ls.ocrScanFailed;
@@ -722,9 +811,15 @@ placeholder={ls.facilityPlaceholder}
               onUploadNew={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
               onManualEntry={() => {
                 setLabScanOverlayVisible(false);
-                // Pre-populate form with whatever was extracted
-                if (ocrPendingRef.current && Object.keys(ocrPendingRef.current).length > 0) {
-                  applyExtracted(ocrPendingRef.current);
+                // Pre-populate form: prefer Gemini alias-map path; fall back to Apple Vision OCR slug path
+                if (geminiLabsRef.current && geminiLabsRef.current.length > 0) {
+                  applyLabsFromGemini(
+                    geminiLabsRef.current,
+                    labScanPartialData?.labName ?? ocrPendingRef.current?.__labName ?? '',
+                    labScanPartialData?.collectionDate ?? ocrPendingRef.current?.__collectionDate ?? '',
+                  );
+                } else if (ocrPendingRef.current && Object.keys(ocrPendingRef.current).length > 0) {
+                  applyExtracted(ocrPendingRef.current); // Apple Vision OCR fallback
                 }
               }}
             />
