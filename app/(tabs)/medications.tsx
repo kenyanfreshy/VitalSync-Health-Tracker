@@ -121,7 +121,7 @@ const MED_ACTIVE_TAB_KEY = '@vsht:med_active_tab';
 
 const INITIAL_RX_STEPS: import('@/components/medical-scan-analysis-overlay').ScanStep[] = [
   { id: 'capture',  label: 'Image captured',             status: 'pending' },
-  { id: 'upload',   label: 'Sending to Gemini Vision',   status: 'pending' },
+  { id: 'upload',   label: 'Analyzing prescription',     status: 'pending' },
   { id: 'reading',  label: 'Reading prescription label', status: 'pending' },
   { id: 'extract',  label: 'Extracting medication fields', status: 'pending' },
   { id: 'validate', label: 'Validating extracted data',  status: 'pending' },
@@ -2493,9 +2493,11 @@ function MedicationsScreenInner() {
   const [rxScanImageUri, setRxScanImageUri] = useState<string>('');
   const [rxScanProgress, setRxScanProgress] = useState(0);
   const [rxScanError, setRxScanError] = useState<string | null>(null);
+  const [rxScanPartialData, setRxScanPartialData] = useState<import('@/components/medical-scan-analysis-overlay').PartialScanData | undefined>(undefined);
+  const rxScanPartialResultRef = React.useRef<Parameters<typeof applyScribeResult>[0] | null>(null);
   const [rxScanSteps, setRxScanSteps] = useState<ScanStep[]>([
     { id: 'capture',  label: 'Image captured',            status: 'pending' },
-    { id: 'upload',   label: 'Sending to Gemini Vision',  status: 'pending' },
+    { id: 'upload',   label: 'Analyzing prescription',    status: 'pending' },
     { id: 'reading',  label: 'Reading prescription label', status: 'pending' },
     { id: 'extract',  label: 'Extracting medication fields', status: 'pending' },
     { id: 'validate', label: 'Validating extracted data',  status: 'pending' },
@@ -2674,8 +2676,8 @@ function MedicationsScreenInner() {
   }, [applyScribeResult]);
 
   const _showScribePicker = React.useCallback(() => {
-    handleScribePhoto();
-  }, [handleScribePhoto]);
+    openPrescriptionScanner();
+  }, [openPrescriptionScanner]);
 
   // ── Voice scribe handlers ──────────────────────────────────────────────────────
   // Audio voice scribe removed — use the keyboard dictation box (Gboard/iOS mic) instead
@@ -2795,6 +2797,8 @@ function MedicationsScreenInner() {
       setRxScanSteps(INITIAL_RX_STEPS);
       setRxScanProgress(0);
       setRxScanError(null);
+      setRxScanPartialData(undefined);
+      rxScanPartialResultRef.current = null;
       setRxScanOverlayVisible(true);
       setScribeLoading(true);
 
@@ -2822,6 +2826,29 @@ function MedicationsScreenInner() {
 
             if (!result2.error && result2.medications.length > 0) {
               const med = result2.medications[0];
+              // Store partial result for Manual Entry pre-population
+              const partialScribeResult = {
+                name: med.name || null,
+                genericName: null,
+                dose: med.dose || med.strength || null,
+                form: null,
+                frequency: med.frequency || null,
+                scheduleTimes: null,
+                route: med.route || null,
+                indication: null,
+                prescriber: med.prescriberName || null,
+                pharmacyName: med.pharmacyName || null,
+                pharmacyPhone: null,
+                quantity: null,
+                refillAt: null,
+                notes: med.instructions || null,
+                confidence: med.confidence ?? 0.8,
+                fieldsFound: Object.entries(med).filter(([, v]) => v && v !== '').map(([k]) => k),
+                rxNumber: null,
+                startDate: null,
+                refillsRemaining: null,
+              };
+              rxScanPartialResultRef.current = partialScribeResult;
               // Apply to form
               if (med.name && !formName.trim()) setFormName(med.name);
               if (med.strength && !formDose.trim()) setFormDose(med.strength);
@@ -2860,6 +2887,12 @@ function MedicationsScreenInner() {
                 { label: 'Prescriber',      value: med.prescriberName, extracted: !!med.prescriberName, confidence: med.confidence },
                 { label: 'Pharmacy',        value: med.pharmacyName,  extracted: !!med.pharmacyName,  confidence: med.confidence },
               ].filter(f => f.value);
+              // Store partial data for overlay display
+              setRxScanPartialData({
+                extractedItems: reviewFields.map(f => `${f.label}: ${f.value}`),
+                extractedCount: reviewFields.length,
+                totalCount: 10,
+              });
               usedLlm = true;
             } else if (result2.error) {
               throw new Error(result2.error);
@@ -3686,9 +3719,18 @@ function MedicationsScreenInner() {
               progress={rxScanProgress}
               isAnalyzing={scribeLoading}
               error={rxScanError}
+              partialData={rxScanPartialData}
               onRetry={() => { setRxScanOverlayVisible(false); setTimeout(openPrescriptionScanner, 300); }}
               onUploadNew={() => { setRxScanOverlayVisible(false); setTimeout(openPrescriptionScanner, 300); }}
-              onManualEntry={() => setRxScanOverlayVisible(false)}
+              onManualEntry={() => {
+                setRxScanOverlayVisible(false);
+                if (rxScanPartialResultRef.current) {
+                  applyScribeResult(rxScanPartialResultRef.current);
+                }
+                setTimeout(() => {
+                  if (isMounted.current) setShowAddModal(true);
+                }, 350);
+              }}
             />
           ) : null}
         </View>
@@ -3762,7 +3804,7 @@ function MedicationsScreenInner() {
                 fields={ocrReviewFields}
                 scanMethod={scribeScanMethod}
                 onConfirm={() => setOcrReviewFields(null)}
-                onRetake={handleScribePhoto}
+                onRetake={openPrescriptionScanner}
                 onManual={() => { setOcrReviewFields(null); setScanError(null); }}
               />
             )}

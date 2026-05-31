@@ -42,6 +42,15 @@ export interface ScanStep {
   status: StepStatus;
 }
 
+export interface PartialScanData {
+  /** Extracted items to show on error (e.g. medication names or lab test names) */
+  extractedItems?: string[];
+  /** Count of fields successfully extracted */
+  extractedCount?: number;
+  /** Total fields expected */
+  totalCount?: number;
+}
+
 export interface MedicalScanAnalysisOverlayProps {
   type: MedicalScanType;
   imageUri: string;
@@ -49,6 +58,8 @@ export interface MedicalScanAnalysisOverlayProps {
   progress: number; // 0–100
   isAnalyzing: boolean;
   error: string | null;
+  /** Partial data extracted before failure — used to show what was found and pre-populate manual entry */
+  partialData?: PartialScanData;
   onRetry: () => void;
   onUploadNew: () => void;
   onManualEntry: () => void;
@@ -175,6 +186,7 @@ export function MedicalScanAnalysisOverlay({
   progress,
   isAnalyzing,
   error,
+  partialData,
   onRetry,
   onUploadNew,
   onManualEntry,
@@ -218,8 +230,34 @@ export function MedicalScanAnalysisOverlay({
         {/* Error recovery */}
         {error && !isAnalyzing && (
           <View style={styles.errorCard}>
-            <Text style={styles.errorTitle}>We couldn't complete the scan.</Text>
-            <Text style={styles.errorDetail}>{error}</Text>
+            <Text style={styles.errorTitle}>Scan incomplete</Text>
+
+            {/* Show what was successfully extracted */}
+            {partialData && (partialData.extractedCount ?? 0) > 0 ? (
+              <View style={styles.partialResultBox}>
+                <Text style={styles.partialResultTitle}>
+                  {partialData.extractedCount} of {partialData.totalCount ?? '?'} fields extracted
+                </Text>
+                {(partialData.extractedItems ?? []).slice(0, 5).map((item, i) => (
+                  <View key={i} style={styles.partialResultRow}>
+                    <Text style={[styles.stepIcon, { color: COLORS.success }]}>✓</Text>
+                    <Text style={styles.partialResultItem}>{item}</Text>
+                  </View>
+                ))}
+                {(partialData.extractedItems?.length ?? 0) > 5 && (
+                  <Text style={styles.partialResultMore}>
+                    +{(partialData.extractedItems?.length ?? 0) - 5} more extracted
+                  </Text>
+                )}
+              </View>
+            ) : (
+              <Text style={styles.errorDetail}>{error}</Text>
+            )}
+
+            <Text style={styles.manualEntryHint}>
+              Tap "Manual Entry" to review and complete the extracted data.
+            </Text>
+
             <View style={styles.recoveryButtons}>
               <TouchableOpacity style={[styles.recoveryBtn, { borderColor: accentColor }]} onPress={onRetry}>
                 <Text style={[styles.recoveryBtnText, { color: accentColor }]}>Retry Scan</Text>
@@ -227,8 +265,13 @@ export function MedicalScanAnalysisOverlay({
               <TouchableOpacity style={[styles.recoveryBtn, { borderColor: COLORS.muted }]} onPress={onUploadNew}>
                 <Text style={[styles.recoveryBtnText, { color: COLORS.muted }]}>Upload New Image</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.recoveryBtn, { borderColor: COLORS.muted }]} onPress={onManualEntry}>
-                <Text style={[styles.recoveryBtnText, { color: COLORS.muted }]}>Manual Entry</Text>
+              <TouchableOpacity
+                style={[styles.recoveryBtn, { borderColor: accentColor, backgroundColor: accentColor + '18' }]}
+                onPress={onManualEntry}
+              >
+                <Text style={[styles.recoveryBtnText, { color: accentColor }]}>
+                  {(partialData?.extractedCount ?? 0) > 0 ? 'Complete with Manual Entry' : 'Manual Entry'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -341,6 +384,41 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: COLORS.muted,
     lineHeight: 18,
+  },
+  partialResultBox: {
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.20)',
+    borderRadius: 8,
+    padding: 10,
+    gap: 6,
+  },
+  partialResultTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: COLORS.success,
+    marginBottom: 4,
+  },
+  partialResultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  partialResultItem: {
+    fontSize: 13,
+    color: COLORS.text,
+    flex: 1,
+  },
+  partialResultMore: {
+    fontSize: 11,
+    color: COLORS.muted,
+    marginTop: 2,
+  },
+  manualEntryHint: {
+    fontSize: 12,
+    color: COLORS.muted,
+    lineHeight: 16,
+    fontStyle: 'italic',
   },
   recoveryButtons: {
     gap: 8,

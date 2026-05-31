@@ -90,7 +90,7 @@ const STATUS_MESSAGES = [
 
 const CARD_STEPS: { key: AnalysisStep; label: string }[] = [
   { key: 'image_received',       label: 'Image received' },
-  { key: 'ai_started',           label: 'AI analysis started' },
+  { key: 'ai_started',           label: 'Analyzing food' },
   { key: 'detecting_foods',      label: 'Detecting food items' },
   { key: 'estimating_portions',  label: 'Estimating portions' },
   { key: 'calculating_nutrition',label: 'Calculating nutrition' },

@@ -291,16 +291,17 @@ export default function LabEntryScreen() {
   const [labScanImageUri, setLabScanImageUri] = useState<string>('');
   const [labScanProgress, setLabScanProgress] = useState(0);
   const [labScanError, setLabScanError] = useState<string | null>(null);
+  const [labScanPartialData, setLabScanPartialData] = useState<import('@/components/medical-scan-analysis-overlay').PartialScanData | undefined>(undefined);
   const [labScanSteps, setLabScanSteps] = useState<ScanStep[]>([
     { id: 'capture',  label: 'Image captured',           status: 'pending' },
-    { id: 'upload',   label: 'Sending to Gemini Vision', status: 'pending' },
+    { id: 'upload',   label: 'Analyzing lab report',     status: 'pending' },
     { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
     { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
     { id: 'validate', label: 'Validating results',       status: 'pending' },
   ]);
   const INITIAL_LAB_STEPS: ScanStep[] = [
     { id: 'capture',  label: 'Image captured',           status: 'pending' },
-    { id: 'upload',   label: 'Sending to Gemini Vision', status: 'pending' },
+    { id: 'upload',   label: 'Analyzing lab report',     status: 'pending' },
     { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
     { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
     { id: 'validate', label: 'Validating results',       status: 'pending' },
@@ -331,6 +332,7 @@ export default function LabEntryScreen() {
       setLabScanSteps(INITIAL_LAB_STEPS);
       setLabScanProgress(0);
       setLabScanError(null);
+      setLabScanPartialData(undefined);
       setLabScanOverlayVisible(true);
       setOcrLoading(true);
       setOcrError(null);
@@ -358,15 +360,30 @@ export default function LabEntryScreen() {
             setLabScanProgress(70);
             updateLabStep('extract', 'active');
 
-            if (!llmResult.error && llmResult.results.length > 0) {
+            if (!llmResult.error && llmResult.labs && llmResult.labs.length > 0) {
               // Map Gemini results to extracted key-value pairs
-              for (const r of llmResult.results) {
-                if (r.value !== null && r.value !== undefined) {
-                  extracted[r.analyteId ?? r.testName.toLowerCase().replace(/\s+/g, '_')] = String(r.value);
+              // Parser returns: llmResult.labs[].test, .result, .unit, .referenceRange, .status
+              // and llmResult.laboratoryName, llmResult.collectionDate
+              for (const r of llmResult.labs) {
+                const val = r.result;
+                if (val !== null && val !== undefined && val !== '') {
+                  // Try to match test name to a known analyte ID, otherwise use slugified test name
+                  const slug = r.test.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                  extracted[slug] = String(val);
                 }
               }
-              if (llmResult.labName) extracted.__labName = llmResult.labName;
+              if (llmResult.laboratoryName) extracted.__labName = llmResult.laboratoryName;
               if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
+              // Store partial data for overlay display
+              const extractedItems = llmResult.labs
+                .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
+                .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
+              setLabScanPartialData({
+                extractedItems,
+                extractedCount: extractedItems.length,
+                totalCount: llmResult.labs.length,
+              });
+              ocrPendingRef.current = extracted;
               // Auto-select panel from detected analytes
               const detectedKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
               let bestPanel: LabPanelId = selectedPanel;
@@ -700,9 +717,16 @@ placeholder={ls.facilityPlaceholder}
               progress={labScanProgress}
               isAnalyzing={ocrLoading}
               error={labScanError}
+              partialData={labScanPartialData}
               onRetry={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
               onUploadNew={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
-              onManualEntry={() => setLabScanOverlayVisible(false)}
+              onManualEntry={() => {
+                setLabScanOverlayVisible(false);
+                // Pre-populate form with whatever was extracted
+                if (ocrPendingRef.current && Object.keys(ocrPendingRef.current).length > 0) {
+                  applyExtracted(ocrPendingRef.current);
+                }
+              }}
             />
           ) : null}
         </View>
