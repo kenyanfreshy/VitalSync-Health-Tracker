@@ -1262,6 +1262,10 @@ function SearchScreen({
       </View>
 
 
+      {/* Powered-by badge */}
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4, marginBottom: 2 }}>
+        <Text style={{ fontSize: 10, color: mutedColor }}>🤖 AI-powered · USDA Reference Values</Text>
+      </View>
       <Pressable
         style={({ pressed }) => [
           styles.searchSubmitBtn,
@@ -1306,7 +1310,7 @@ function SearchScreen({
           <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
           <Text style={{ fontSize: 15, fontWeight: '600', color: foregroundColor, marginBottom: 4 }}>No results found</Text>
           <Text style={{ fontSize: 13, color: mutedColor, textAlign: 'center' }}>
-            No USDA matches for "{initialQuery}". Try a simpler term (e.g. "chicken" instead of "grilled chicken breast").
+            No matches found for "{initialQuery}". Try a more specific term (e.g. "grilled salmon 150g" or "oatmeal with banana").
           </Text>
         </View>
       )}
@@ -1315,7 +1319,7 @@ function SearchScreen({
       {searchResults.length > 0 && !preview && !showTray && (
         <View style={styles.resultsList}>
           <Text style={[styles.resultsHeader, { color: mutedColor }]}>
-            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} — tap to select
+            {searchResults.length} result{searchResults.length !== 1 ? 's' : ''} — tap to select, long-press for multi-select
           </Text>
           {searchResults.map((item) => {
             const isSelected = trayItems.some(t => t.result.id === item.id);
@@ -1455,8 +1459,8 @@ export function AiFoodCameraSheet({
   // lookupBarcodeMutation kept for fallback; primary path now uses Open Food Facts
   const _lookupBarcodeMutation  = trpc.nutrition.lookupBarcode.useMutation();
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
-  // searchFoodMutation replaced with direct Gemini call — no server needed
-  const searchFoodMutation = null; // unused, kept to avoid ref errors
+  // Server-side food search via tRPC (uses built-in LLM + USDA reference values)
+  const searchFoodMutation = trpc.nutritionAI.searchFood.useMutation();
   // Voice search: keyboard dictation only — no server recording
   const searchInputRef = useRef<TextInput>(null);
   const { pref: hkPref, savePref: saveHkPref } = useHealthKitNutritionPref();
@@ -1813,30 +1817,27 @@ export function AiFoodCameraSheet({
     setPreview(null);
     setTrayItems([]);
     setShowTray(false);
-    // Direct USDA food search — no server or AI quota needed
-    (async () => {
-      try {
-        const { searchFoodWithGemini } = await import('@/lib/nutrition/gemini-food-search');
-        const res = await searchFoodWithGemini(query.trim());
+    // Server-side food search via tRPC (uses built-in LLM + USDA reference values)
+    searchFoodMutation.mutateAsync({ query: query.trim() })
+      .then((res) => {
         if (res.results.length === 0) {
-          // Show empty state inline — not an error alert
           setSearchResults([]);
         } else {
           setSearchResults(res.results as SearchResult[]);
         }
-      } catch (err: any) {
-        // "No results" is not a network error — show empty state
+      })
+      .catch((err: any) => {
         const msg: string = err?.message ?? '';
-        if (msg.toLowerCase().includes('no results')) {
+        if (msg.toLowerCase().includes('no results') || msg.toLowerCase().includes('not found')) {
           setSearchResults([]);
         } else {
           Alert.alert('Search failed', 'Could not connect to the nutrition database. Please check your network and try again.');
         }
-      } finally {
+      })
+      .finally(() => {
         setScanning(false);
-      }
-    })();
-  }, []);
+      });
+  }, [searchFoodMutation]);
 
   // Single-item quick-preview (fast path when tray is empty)
   const handleSelectSearchResult = useCallback((item: SearchResult) => {
@@ -2503,6 +2504,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
+    flex: 1,
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',

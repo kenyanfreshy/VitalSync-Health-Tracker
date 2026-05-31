@@ -223,7 +223,7 @@ export function UnifiedNutritionCard({
                       styles.cameraBtn,
                       { backgroundColor: pressed ? '#10B981' + '30' : '#10B981' + '16', borderColor: '#10B981' + '55' },
                     ]}
-                    onPress={requireScanMealPremium(() => openCameraSheet('home'), { feature: fc.scanMealTitle ?? 'Scan Meal' })}
+                    onPress={requireScanMealPremium(() => openCameraSheet('home'), { feature: 'Scan a Meal' })}
                     accessibilityLabel="Photograph your plate to log a meal"
                   >
                     <Text style={styles.cameraBtnIcon}>📷</Text>
@@ -283,7 +283,7 @@ export function UnifiedNutritionCard({
         }}
         onScanMealPress={
           cameraInitialMode === 'search'
-            ? requireScanMealPremium(() => openCameraSheet('home'), { feature: fc.scanMealTitle ?? 'Scan Meal' })
+            ? requireScanMealPremium(() => openCameraSheet('home'), { feature: 'Scan a Meal' })
             : undefined
         }
         onBarcodeScanPress={
@@ -291,7 +291,7 @@ export function UnifiedNutritionCard({
             ? requireScanMealPremium(() => {
                 logEvent('barcode_scan_gate_tap', { source: 'unified_nutrition_card' });
                 openCameraSheet('barcode');
-              }, { feature: fc.scanBarcodeTitle ?? 'Scan Barcode' })
+              }, { feature: 'Scan Barcode' })
             : undefined
         }
       />

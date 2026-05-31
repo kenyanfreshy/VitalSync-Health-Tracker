@@ -511,6 +511,7 @@ export function SmartNutritionCard({
   const _dietLabel = hasDietProfile && dietOption ? dietOption.label : null;
   const { requirePremium, PremiumGateSheet: ScanMealGateSheet } = usePremiumGate();
   const [searchSheetVisible, setSearchSheetVisible] = useState(false);
+  const [cameraInitialMode, setCameraInitialMode] = useState<'home' | 'plate' | 'barcode' | 'search'>('search');
   const [period, setPeriod] = useState<'today' | '7d' | '14d' | '30d'>('7d');
   const [expanded, setExpanded] = useCardExpanded('smart-nutrition', defaultExpanded, overrideExpanded);
   const [refsExpanded, setRefsExpanded] = useState(false);
@@ -857,24 +858,19 @@ export function SmartNutritionCard({
             <Pressable
               onPress={requirePremium(() => {
                 if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                handleCameraPress();
-              }, { feature: fc.scanMealTitle ?? 'Scan Meal' })}
-              disabled={scanning || analysePhotoMutation.isPending}
+                setCameraInitialMode('home');
+                setSearchSheetVisible(true);
+              }, { feature: 'Scan a Meal' })}
               style={({ pressed }) => [
                 styles.scanMealBtn,
                 pressed && { opacity: 0.75 },
-                (scanning || analysePhotoMutation.isPending) && { opacity: 0.45 },
               ]}
               accessibilityLabel="Scan meal"
             >
-              {scanning || analysePhotoMutation.isPending ? (
-                <ActivityIndicator size="small" color={EMERALD} />
-              ) : (
-                <>
-                  <Text style={styles.scanMealBtnIcon}>📷</Text>
-                  <Text style={[styles.scanMealBtnText, { color: EMERALD }]}>{ds.scanMeal}</Text>
-                </>
-              )}
+              <>
+                <Text style={styles.scanMealBtnIcon}>📷</Text>
+                <Text style={[styles.scanMealBtnText, { color: EMERALD }]}>{ds.scanMeal}</Text>
+              </>
             </Pressable>
 
             {/* Search Food — violet border, search icon */}
@@ -1146,25 +1142,34 @@ export function SmartNutritionCard({
     {/* ── Smart Food Search Sheet (Search Food button) ─────────────────────────────────────────────────────────────────────── */}
     <AiFoodCameraSheet
       visible={searchSheetVisible}
-      onClose={() => setSearchSheetVisible(false)}
-      initialMode="search"
+      onClose={() => { setSearchSheetVisible(false); setCameraInitialMode('search'); }}
+      initialMode={cameraInitialMode}
       onMealLogged={() => {
         setSearchSheetVisible(false);
+        setCameraInitialMode('search');
         lastFetchRef.current = '';
         fetchInsights();
       }}
-      onScanMealPress={requirePremium(() => {
-        // Close the search sheet and open the full camera sheet in scan mode
-        setSearchSheetVisible(false);
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        handleCameraPress();
-      }, { feature: fc.scanMealTitle ?? 'Scan Meal' })}
-      onBarcodeScanPress={requirePremium(() => {
-        setSearchSheetVisible(false);
-        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        logEvent('barcode_scan_gate_tap', { source: 'smart_nutrition_card' });
-        setShowBarcodeScanner(true);
-      }, { feature: fc.scanBarcodeTitle ?? 'Scan Barcode' })}
+      onScanMealPress={
+        cameraInitialMode === 'search'
+          ? requirePremium(() => {
+              // Switch to home (scan) mode within the same sheet
+              setCameraInitialMode('home');
+              setSearchSheetVisible(false);
+              setTimeout(() => setSearchSheetVisible(true), 50);
+            }, { feature: 'Scan a Meal' })
+          : undefined
+      }
+      onBarcodeScanPress={
+        cameraInitialMode === 'search'
+          ? requirePremium(() => {
+              logEvent('barcode_scan_gate_tap', { source: 'smart_nutrition_card' });
+              setCameraInitialMode('barcode');
+              setSearchSheetVisible(false);
+              setTimeout(() => setSearchSheetVisible(true), 50);
+            }, { feature: 'Scan Barcode' })
+          : undefined
+      }
     />
     {ScanMealGateSheet}
     </>
