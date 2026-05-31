@@ -314,7 +314,7 @@ export async function lookupBestUsdaMatchWithFallback(
  * Use Gemini to estimate nutrition for a food item when USDA has no good match.
  * Returns a synthetic UsdaFoodItem with confidence 'medium'.
  */
-async function estimateNutritionWithGemini(foodName: string): Promise<UsdaFoodItem | null> {
+export async function estimateNutritionWithGemini(foodName: string): Promise<UsdaFoodItem | null> {
   const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
   const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 

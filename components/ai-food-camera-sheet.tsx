@@ -52,7 +52,7 @@ import { useColorScheme, useColors, useFoodCameraStrings } from '@/hooks';
 import { useDietType } from '@/hooks/use-diet-type';
 import { useHealth } from '@/lib/health/health-context';
 import { saveMealToHealthKit } from '@/lib/health/healthkit-write';
-import { trpc } from '@/lib/trpc';
+import { searchFood } from '@/lib/nutrition/food-search-engine';
 import * as SafeImagePicker from '@/lib/safe-image-picker';
 import { useHealthKitNutritionPref } from '@/hooks/use-healthkit-nutrition-pref';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -1555,14 +1555,8 @@ export function AiFoodCameraSheet({
   const recentMeals = (healthState.data?.sodiumIntake ?? []).slice(0, 5);
   const { dietType } = useDietType();
 
-  // tRPC mutations
-  // analysePhotoMutation kept for server-side fallback (dev/sandbox only)
-  const analysePhotoMutation   = trpc.nutrition.analysePhoto.useMutation();
-  // lookupBarcodeMutation kept for fallback; primary path now uses Open Food Facts
-  const _lookupBarcodeMutation  = trpc.nutrition.lookupBarcode.useMutation();
+  // No tRPC mutations needed — all search/scan runs client-side
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
-  // Server-side food search via tRPC (uses built-in LLM + USDA reference values)
-  const searchFoodMutation = trpc.nutritionAI.searchFood.useMutation();
   // Voice search: keyboard dictation only — no server recording
   const searchInputRef = useRef<TextInput>(null);
   const { pref: hkPref, savePref: saveHkPref } = useHealthKitNutritionPref();
@@ -1763,8 +1757,15 @@ export function AiFoodCameraSheet({
       setScanning(true);
 
       // Step 1: Recognise food via Gemini Vision (primary) → fallback chain
+      // Wrapped in a 30-second timeout so the spinner never freezes
       const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
-      const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
+      const SCAN_TIMEOUT_MS = 30_000;
+      const scanWithTimeout = <T,>(p: Promise<T>): Promise<T> =>
+        new Promise<T>((resolve, reject) => {
+          const t = setTimeout(() => reject(new Error('Analysis timed out. Please try again.')), SCAN_TIMEOUT_MS);
+          p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
+        });
+      const { recognition, usdaItem } = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
 
       // No food detected at all (all Gemini attempts failed)
       if (!usdaItem && !recognition.primaryFood) {
@@ -1840,7 +1841,13 @@ export function AiFoodCameraSheet({
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err: any) {
       setOpeningCamera(false);
-      Alert.alert('Scan Failed', err?.message ?? 'Could not analyse the photo. Please try again.');
+      setCapturedUri(null);
+      const errMsg: string = err?.message ?? 'Could not analyse the photo. Please try again.';
+      Alert.alert(
+        'Unable to load food results',
+        errMsg,
+        [{ text: 'OK' }],
+      );
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setScanning(false);
@@ -1917,7 +1924,7 @@ export function AiFoodCameraSheet({
     }
   }, []);
 
-  // ── USDA search (with AsyncStorage cache for last 5 queries) ──────────────
+  // ── Food search: Gemini 2.5 primary + USDA fallback (fully client-side) ────
   const handleSubmitSearch = useCallback((query: string, _setLocalText: (t: string) => void) => {
     if (!query.trim()) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -1937,19 +1944,32 @@ export function AiFoodCameraSheet({
         return;
       }
 
-      // Cache miss: call server
+      // Cache miss: run client-side search (Gemini 2.5 → USDA fallback)
       setScanning(true);
       setSearchResults([]);
-      // Pass the user's active diet protocol so the LLM can prioritise aligned foods
       const activeDietProtocol = dietType && dietType !== 'balanced' ? dietType : undefined;
-      searchFoodMutation.mutateAsync({ query: trimmedQuery, dietProtocol: activeDietProtocol })
+
+      searchFood(trimmedQuery, activeDietProtocol)
         .then((res) => {
-          const results = res.results as SearchResult[];
+          // Map FoodSearchItem → SearchResult (same shape, FoodSearchItem is a superset)
+          const results: SearchResult[] = res.items.map((item) => ({
+            id: item.id,
+            name: item.name,
+            brand: item.brand,
+            serving_size: item.serving_size,
+            serving_g: item.serving_g,
+            calories: item.calories,
+            protein_g: item.protein_g,
+            carbs_g: item.carbs_g,
+            fat_g: item.fat_g,
+            fiber_g: item.fiber_g,
+            sodium_mg: item.sodium_mg,
+            glycemic_index: item.glycemic_index,
+            clinical_notes: item.clinical_notes,
+          }));
           setSearchResults(results);
           if (results.length > 0) {
-            // Persist to cache for instant repeat searches
             writeSearchCache(trimmedQuery, results);
-            // Refresh recent queries list so the new query appears as a chip immediately
             readSearchCache().then((updated) => setRecentQueries(updated.map(e => e.query)));
           }
         })
@@ -1958,14 +1978,18 @@ export function AiFoodCameraSheet({
           if (msg.toLowerCase().includes('no results') || msg.toLowerCase().includes('not found')) {
             setSearchResults([]);
           } else {
-            Alert.alert('Search failed', 'Could not connect to the nutrition database. Please check your network and try again.');
+            Alert.alert(
+              'Unable to load food results',
+              'Could not retrieve nutrition data. Please check your connection and try again, or enter the food manually.',
+              [{ text: 'OK' }],
+            );
           }
         })
         .finally(() => {
           setScanning(false);
         });
     });
-  }, [searchFoodMutation, dietType]);
+  }, [dietType]);
 
   // Single-item quick-preview (fast path when tray is empty)
   const handleSelectSearchResult = useCallback((item: SearchResult) => {
@@ -2217,11 +2241,9 @@ export function AiFoodCameraSheet({
     >
       <TouchableWithoutFeedback
         onPress={onClose}
-        disabled={!!(scanning || capturedUri || openingCamera)}
       >
         <View
           style={styles.backdrop}
-          pointerEvents={(scanning || capturedUri || openingCamera) ? 'none' : 'auto'}
         />
       </TouchableWithoutFeedback>
 
@@ -2236,8 +2258,6 @@ export function AiFoodCameraSheet({
             {
               backgroundColor: colors.surface,
               transform: [{ translateY }],
-              // Expand to full screen during scan flow (also when camera is opening)
-              ...(scanning || capturedUri || openingCamera ? { maxHeight: '100%', borderTopLeftRadius: 0, borderTopRightRadius: 0 } : {}),
             },
           ]}
         >
@@ -2245,16 +2265,7 @@ export function AiFoodCameraSheet({
           <View style={styles.handleBar}>
             <View style={[styles.handle, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
           </View>
-          {/* Floating close button — always on top during full-screen scan */}
-          {(scanning || capturedUri || openingCamera) && (
-            <Pressable
-              style={({ pressed }) => [styles.floatingCloseBtn, pressed && { opacity: 0.6 }]}
-              onPress={onClose}
-              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-            >
-              <Text style={styles.floatingCloseBtnText}>✕</Text>
-            </Pressable>
-          )}
+          {/* X button is always visible in the header — no floating close button needed */}
 
           {/* Header */}
           <View style={styles.sheetHeader}>
