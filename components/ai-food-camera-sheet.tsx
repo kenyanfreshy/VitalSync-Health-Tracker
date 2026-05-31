@@ -1176,6 +1176,10 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
 interface SearchScreenProps {
   initialQuery: string;
   scanning: boolean;
+  /** Recent search queries from AsyncStorage cache — shown as chips when search bar is empty+focused */
+  recentQueries: string[];
+  /** Active diet protocol (e.g. 'diabetic', 'renal') — used to highlight aligned result cards */
+  activeDietProtocol?: string;
   searchResults: SearchResult[];
   selectedResult: SearchResult | null;
   trayItems: TrayItemLocal[];
@@ -1216,6 +1220,8 @@ interface SearchScreenProps {
 function SearchScreen({
   initialQuery,
   scanning,
+  recentQueries,
+  activeDietProtocol,
   searchResults,
   selectedResult,
   trayItems,
@@ -1254,7 +1260,7 @@ function SearchScreen({
   fc,
 }: SearchScreenProps) {
   const [localText, setLocalText] = React.useState(initialQuery);
-
+  const [inputFocused, setInputFocused] = React.useState(false);
   const submitSearch = useCallback(() => {
     const q = localText.trim();
     if (!q) return;
@@ -1262,10 +1268,30 @@ function SearchScreen({
     Keyboard.dismiss();
   }, [localText, onSubmitSearch]);
 
+  // Show recent chips when bar is empty + focused and no results yet
+  const showRecentChips = inputFocused && localText.trim().length === 0 && recentQueries.length > 0 && searchResults.length === 0 && !scanning;
+
+  // Detect diet alignment from clinical_notes
+  const isDietAligned = (notes: string): boolean => {
+    if (!activeDietProtocol || !notes) return false;
+    const n = notes.toLowerCase();
+    // Positive alignment keywords
+    const positives = ['excellent', 'good for', 'suitable', 'recommended', 'aligned', 'beneficial', 'ideal', 'safe', 'low gi', 'low-gi', 'high protein', 'low sodium', 'low phosphorus', 'low potassium', 'heart-healthy', 'diabetic-friendly', 'renal-friendly'];
+    // Negative conflict keywords — if present, NOT aligned
+    const negatives = ['avoid', 'conflict', 'caution', 'high gi', 'high-gi', 'not recommended', 'limit', 'restrict', 'contraindicated', 'high sodium', 'high phosphorus', 'high potassium'];
+    const hasPositive = positives.some(p => n.includes(p));
+    const hasNegative = negatives.some(p => n.includes(p));
+    return hasPositive && !hasNegative;
+  };
+
+  const dietBadgeLabel = activeDietProtocol
+    ? `✓ ${activeDietProtocol.charAt(0).toUpperCase() + activeDietProtocol.slice(1)}-friendly`
+    : '';
+
   return (
     <View style={styles.searchPane}>
       {/* Search bar */}
-      <View style={[styles.searchBar, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#CBD5E1' }]}>
+      <View style={[styles.searchBar, { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: inputFocused ? VIOLET : (isDark ? '#334155' : '#CBD5E1') }]}>
         <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
           style={[styles.searchInput, { color: foregroundColor }]}
@@ -1274,6 +1300,8 @@ function SearchScreen({
           value={localText}
           onChangeText={setLocalText}
           onSubmitEditing={submitSearch}
+          onFocus={() => setInputFocused(true)}
+          onBlur={() => setInputFocused(false)}
           returnKeyType="search"
           autoFocus={false}
           autoCorrect={false}
@@ -1286,6 +1314,31 @@ function SearchScreen({
           </Pressable>
         )}
       </View>
+      {/* ── Recent search chips (shown when empty + focused) ── */}
+      {showRecentChips && (
+        <View style={styles.recentChipsContainer}>
+          <Text style={[styles.recentChipsLabel, { color: mutedColor }]}>Recent searches</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recentChipsScroll}>
+            {recentQueries.map((q) => (
+              <Pressable
+                key={q}
+                style={({ pressed }) => [
+                  styles.recentChip,
+                  { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', borderColor: isDark ? '#334155' : '#CBD5E1', opacity: pressed ? 0.7 : 1 },
+                ]}
+                onPress={() => {
+                  setLocalText(q);
+                  setInputFocused(false);
+                  onSubmitSearch(q, setLocalText);
+                  Keyboard.dismiss();
+                }}
+              >
+                <Text style={[styles.recentChipText, { color: foregroundColor }]}>🕐 {q}</Text>
+              </Pressable>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
 
       {/* Powered-by badge */}
@@ -1422,6 +1475,12 @@ function SearchScreen({
                   <Text style={[styles.resultItemSub, { color: mutedColor }]} numberOfLines={1}>
                     {item.brand !== 'Generic' ? `${item.brand} · ` : ''}{item.serving_size}
                   </Text>
+                  {/* Diet-aligned badge */}
+                  {isDietAligned(item.clinical_notes) && (
+                    <View style={[styles.dietBadge, { backgroundColor: EMERALD + '22', borderColor: EMERALD + '55' }]}>
+                      <Text style={[styles.dietBadgeText, { color: EMERALD }]}>{dietBadgeLabel}</Text>
+                    </View>
+                  )}
                 </View>
                 <View style={styles.resultItemRight}>
                   <Text style={[styles.resultItemKcal, { color: VIOLET }]}>{item.calories}</Text>
@@ -1543,6 +1602,15 @@ export function AiFoodCameraSheet({
   // Apple Health inline prompt state (replaces Alert.alert for first-time HK pref)
   const [showHkPrompt, setShowHkPrompt] = useState(false);
   const pendingHkCallback = useRef<(() => void) | null>(null);
+  // Recent search queries loaded from AsyncStorage cache
+  const [recentQueries, setRecentQueries] = useState<string[]>([]);
+  // Load recent queries whenever the sheet becomes visible
+  useEffect(() => {
+    if (!visible) return;
+    readSearchCache().then((cache) => {
+      setRecentQueries(cache.map(e => e.query));
+    });
+  }, [visible]);
 
   // Load persisted prevEstimate (30-min TTL)
   useEffect(() => {
@@ -1885,6 +1953,8 @@ export function AiFoodCameraSheet({
           if (results.length > 0) {
             // Persist to cache for instant repeat searches
             writeSearchCache(trimmedQuery, results);
+            // Refresh recent queries list so the new query appears as a chip immediately
+            readSearchCache().then((updated) => setRecentQueries(updated.map(e => e.query)));
           }
         })
         .catch((err: any) => {
@@ -2266,6 +2336,8 @@ export function AiFoodCameraSheet({
               <SearchScreen
                 initialQuery={searchQuery}
                 scanning={scanning}
+                recentQueries={recentQueries}
+                activeDietProtocol={dietType && dietType !== 'balanced' ? dietType : undefined}
                 searchResults={searchResults}
                 selectedResult={selectedResult}
                 trayItems={trayItems}
@@ -3267,6 +3339,47 @@ const styles = StyleSheet.create({
   resultItemSub: {
     fontSize: 11,
     lineHeight: 15,
+  },
+  // Diet-aligned badge on result cards
+  dietBadge: {
+    alignSelf: 'flex-start',
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginTop: 4,
+  },
+  dietBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  // Recent search chips
+  recentChipsContainer: {
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  recentChipsLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginBottom: 6,
+    marginLeft: 2,
+  },
+  recentChipsScroll: {
+    gap: 8,
+    paddingRight: 4,
+  },
+  recentChip: {
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+  recentChipText: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   resultItemRight: {
     alignItems: 'flex-end',
