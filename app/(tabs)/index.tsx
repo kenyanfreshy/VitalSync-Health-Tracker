@@ -105,6 +105,7 @@ import { NeoVitalMacroGraph, type MacroGraphData } from '@/components/neovital-m
 import { NeoVitalMiniCard } from '@/components/neovital-mini-card';
 
 import { GlassCard } from '@/components/glass-card';
+import { LabTrendMiniChart } from '@/components/dashboard/lab-trend-mini-chart';
 import { PersonalNarrativeCard } from '@/components/personal-narrative-card';
 import { loadMedications, logDose, createDoseLog, logRescheduleEvent, reinstateDose, updateMedication } from '@/lib/medications/storage';
 import type { Medication } from '@/lib/medications/types';
@@ -6159,6 +6160,12 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
 
         {/* ─── Personal Narrative Card ───────────────────────────────────── */}
         <PersonalNarrativeCard medications={medications} data={data ?? null} overrideExpanded={narrativeOverride} />
+
+        {/* ─── Specialty Lab Trends (TSH + Vitamin D) ────────────────────────── */}
+        {(data?.labResults ?? []).length > 0 && (
+          <LabTrendMiniChart labResults={data!.labResults ?? []} />
+        )}
+
         {/* ─── Section divider ───────────────────────────────────────── */}
         <View style={{ height: 6 }} />
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />

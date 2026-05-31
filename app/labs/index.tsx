@@ -49,15 +49,19 @@ import {
 import { exportLabsAsCsv, type ExportResult } from '@/lib/health/lab-export';
 import { PrivacyBanner } from '@/components/privacy-banner';
 
-const PANELS: LabPanelId[] = ['CMP', 'CBC', 'MG', 'PHOS', 'LIPID', 'A1C'];
+const PANELS: LabPanelId[] = ['CMP', 'CBC', 'MG', 'PHOS', 'LIPID', 'A1C', 'THYROID', 'IRON', 'VITAMINS', 'SPECIALTY'];
 
 const PANEL_COLORS: Record<LabPanelId, string> = {
-  CMP:   '#2563EB',
-  CBC:   '#7C3AED',
-  MG:    '#22C55E',
-  PHOS:  '#D97706',
-  LIPID: '#DC2626',
-  A1C:   '#DB2777',
+  CMP:      '#2563EB',
+  CBC:      '#7C3AED',
+  MG:       '#22C55E',
+  PHOS:     '#D97706',
+  LIPID:    '#DC2626',
+  A1C:      '#DB2777',
+  THYROID:  '#0891B2', // cyan-600 — thyroid/endocrine
+  IRON:     '#B45309', // amber-700 — iron/blood
+  VITAMINS: '#16A34A', // green-600 — vitamins/nutrients
+  SPECIALTY:'#7C3AED', // violet — specialty markers
 };
 
 // ─── Sparkline ────────────────────────────────────────────────────────────────
@@ -130,22 +134,35 @@ function AnalyteCell({
         ? colors.success
         : colors.muted;
 
+  // Format reference range text compactly
+  const refText = ref.low === 0
+    ? `< ${ref.high}`
+    : `${ref.low}–${ref.high}`;
+  const statusLabel = status === 'high' ? 'High' : status === 'low' ? 'Low' : status === 'critical' ? 'Critical' : null;
+
   return (
-    <View style={[styles.analyteCell, { borderColor: colors.border }]}>
+    <View style={[styles.analyteCell, { borderColor: status !== 'normal' && status !== 'unknown' ? `${statusColor}60` : colors.border, borderWidth: status !== 'normal' && status !== 'unknown' ? 1.5 : StyleSheet.hairlineWidth }]}>
       <View style={styles.analyteCellTop}>
         <Text style={[styles.analyteCellAbbr, { color: colors.muted }]}>{ref.abbr}</Text>
-        {status !== 'normal' && (
+        {statusLabel && (
           <View style={[styles.analyteCellBadge, { backgroundColor: `${statusColor}20` }]}>
             <Text style={[styles.analyteCellBadgeText, { color: statusColor }]}>
-              {status === 'high' ? 'H' : 'L'}
+              {statusLabel === 'High' ? 'H' : statusLabel === 'Low' ? 'L' : '!'}
             </Text>
           </View>
         )}
       </View>
       <Text style={[styles.analyteCellValue, { color: status !== 'normal' ? statusColor : colors.foreground }]}>
-        {value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}
+        {value % 1 === 0 ? value.toFixed(0) : value.toFixed(2)}
       </Text>
       <Text style={[styles.analyteCellUnit, { color: colors.muted }]}>{ref.unit}</Text>
+      {/* Reference range row */}
+      <Text style={[styles.analyteCellRefRange, { color: status !== 'normal' && status !== 'unknown' ? `${statusColor}CC` : colors.muted }]}>
+        Ref: {refText}
+      </Text>
+      {statusLabel && (
+        <Text style={[styles.analyteCellStatusLabel, { color: statusColor }]}>{statusLabel}</Text>
+      )}
       {historicalValues.length >= 2 && (
         <View style={styles.analyteCellSparkline}>
           <Sparkline
@@ -708,7 +725,7 @@ const styles = StyleSheet.create({
 
   // Analyte cell
   analyteCell: {
-    width: 80,
+    width: 88,
     padding: 8,
     borderRadius: 10,
     borderWidth: 1,
@@ -721,6 +738,8 @@ const styles = StyleSheet.create({
   analyteCellBadgeText: { fontSize: 9, fontWeight: '700' },
   analyteCellValue: { fontSize: 15, fontWeight: '700' },
   analyteCellUnit: { fontSize: 9 },
+  analyteCellRefRange: { fontSize: 8, textAlign: 'center', marginTop: 1 },
+  analyteCellStatusLabel: { fontSize: 9, fontWeight: '700', textAlign: 'center' },
   analyteCellSparkline: { marginTop: 4 },
 
   // Correlation
