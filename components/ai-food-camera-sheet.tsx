@@ -41,6 +41,8 @@ import {
   Alert,
   Platform,
   Animated,
+  Easing,
+  Image,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
@@ -1434,6 +1436,8 @@ export function AiFoodCameraSheet({
   const [prevEstimate, setPrevEstimate]   = useState<{ kcal: number; name: string } | null>(null);
   const [mode, setMode]                   = useState<ScanMode>(initialMode);
   const [scanning, setScanning]           = useState(false);
+  const [capturedUri, setCapturedUri]     = useState<string | null>(null);
+  const [showScanComplete, setShowScanComplete] = useState(false);
   const [openingCamera, setOpeningCamera]  = useState(false);
   const [sessionLogCount, setSessionLogCount] = useState(0);
   const [_keepEstimateTapped, setKeepEstimateTapped] = useState(false);
@@ -1477,11 +1481,16 @@ export function AiFoodCameraSheet({
   // Slide-up animation
   const slideAnim = useRef(new Animated.Value(0)).current;
   const micPulse = useRef(new Animated.Value(1)).current;
+  // Scanner ring spin animation
+  const scanSpinAnim = useRef(new Animated.Value(0)).current;
+  const scanCompleteAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (visible) {
       setMode(initialMode);
       setPreview(null);
+      setCapturedUri(null);
+      setShowScanComplete(false);
       setServingMult(1);
       setCustomGrams('');
       setReferenceWeightG(null);
@@ -1515,6 +1524,38 @@ export function AiFoodCameraSheet({
 
   // No recording animation needed — mic button just focuses the search TextInput
 
+  // Start/stop scanner ring spin based on scanning state
+  useEffect(() => {
+    if (scanning) {
+      scanSpinAnim.setValue(0);
+      Animated.loop(
+        Animated.timing(scanSpinAnim, {
+          toValue: 1,
+          duration: 1400,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }),
+      ).start();
+    } else {
+      scanSpinAnim.stopAnimation();
+    }
+  }, [scanning, scanSpinAnim]);
+
+  // Animate scan-complete popup in
+  useEffect(() => {
+    if (showScanComplete) {
+      scanCompleteAnim.setValue(0);
+      Animated.spring(scanCompleteAnim, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 70,
+        friction: 12,
+      }).start();
+    } else {
+      scanCompleteAnim.setValue(0);
+    }
+  }, [showScanComplete, scanCompleteAnim]);
+
   const translateY = slideAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [600, 0],
@@ -1547,13 +1588,16 @@ export function AiFoodCameraSheet({
         allowsEditing: false,
       });
       if (result.canceled || !result.assets?.[0]?.base64) return;
+      // Store the captured photo URI for the scanner overlay
+      const capturedPhotoUri = result.assets[0].uri;
+      setCapturedUri(capturedPhotoUri);
       setScanning(true);
 
-      // Step 1: Recognise food via Apple Vision / server LLM → Clarifai fallback
+      // Step 1: Recognise food via Gemini Vision (primary) → fallback chain
       const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
       const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
 
-      // No food detected at all (both Gemini and fallback failed)
+      // No food detected at all (all Gemini attempts failed)
       if (!usdaItem && !recognition.primaryFood) {
         setPreview({
           foodDescription: 'Meal photo',
@@ -1569,6 +1613,7 @@ export function AiFoodCameraSheet({
           reasoning: 'Could not identify food items. Try a clearer, well-lit photo or search by name.',
           source: 'ai-photo',
         });
+        setCapturedUri(null);
         setMode('plate');
         setLowConfToast(true);
         setTimeout(() => setLowConfToast(false), 4000);
@@ -1576,19 +1621,14 @@ export function AiFoodCameraSheet({
         return;
       }
 
+      let builtPreview: MacroPreview;
       if (usdaItem) {
-        // Step 2a: USDA match found — use lab-verified macros
-        // Store reference serving weight so gram input can show ×multiplier hint
+        // Step 2a: Gemini returned direct nutrition data (synthetic USDA item)
         setReferenceWeightG(usdaItem.servingWeightG ?? 100);
         const servingNote = usdaItem.servingDescription
-          ? `USDA reference serving: ${usdaItem.servingDescription}${usdaItem.servingWeightG ? ` (${usdaItem.servingWeightG}g)` : ''}`
-          : 'Values per 100 g (USDA FoodData Central)';
-        const sourceLabel = usdaItem.source === 'usda-foundation'
-          ? 'USDA Foundation'
-          : usdaItem.source === 'usda-sr-legacy'
-          ? 'USDA SR Legacy'
-          : 'USDA';
-        setPreview({
+          ? `Serving: ${usdaItem.servingDescription}`
+          : 'Estimated values for this meal';
+        builtPreview = {
           foodDescription: usdaItem.description,
           calories: usdaItem.calories,
           carbsG: usdaItem.carbsG,
@@ -1599,12 +1639,12 @@ export function AiFoodCameraSheet({
           glycemicLoad: usdaItem.glycemicLoad,
           sodiumMg: usdaItem.sodiumMg ?? 0,
           confidence: usdaItem.confidence,
-          reasoning: `${recognition.summary}\n${servingNote}\nSource: ${sourceLabel}${recognition.usedFallback ? ' + Clarifai' : ''}`,
+          reasoning: `${recognition.summary}\n${servingNote}`,
           source: 'ai-photo',
-        });
+        };
       } else {
-        // Step 2b: Vision detected food but USDA had no match
-        setPreview({
+        // Step 2b: Vision detected food but no nutrition data
+        builtPreview = {
           foodDescription: recognition.primaryFood || 'Detected meal',
           calories: null,
           carbsG: null,
@@ -1615,12 +1655,16 @@ export function AiFoodCameraSheet({
           glycemicLoad: null,
           sodiumMg: 0,
           confidence: 'low',
-          reasoning: `${recognition.summary}\nUSDA lookup returned no match. Try searching by name for accurate macros.`,
+          reasoning: `${recognition.summary}\nSearch by name for accurate macros.`,
           source: 'ai-photo',
-        });
+        };
       }
+      // Store preview and show the scan-complete popup
+      setPreview(builtPreview);
       setMode('plate');
-      // Show low-confidence toast when USDA had no match (else branch) or USDA confidence is low
+      // Show scan-complete popup so user knows analysis is done
+      setShowScanComplete(true);
+      // Show low-confidence toast when confidence is low
       const finalConf = usdaItem ? usdaItem.confidence : 'low';
       if (finalConf === 'low') {
         setLowConfToast(true);
@@ -2184,14 +2228,54 @@ export function AiFoodCameraSheet({
                         setTimeout(() => setHkToast(false), 2000);
                       }}
                     />
-                    {scanning && (
+                    {scanning && capturedUri ? (
+                      // Photo + spinning scanner overlay
+                      <View style={styles.scanPhotoContainer}>
+                        <Image
+                          source={{ uri: capturedUri }}
+                          style={styles.scanPhoto}
+                          resizeMode="cover"
+                        />
+                        {/* Dark overlay */}
+                        <View style={styles.scanPhotoOverlay} />
+                        {/* Corner brackets */}
+                        <View style={[styles.scanCorner, styles.scanCornerTL, { borderColor: EMERALD }]} />
+                        <View style={[styles.scanCorner, styles.scanCornerTR, { borderColor: EMERALD }]} />
+                        <View style={[styles.scanCorner, styles.scanCornerBL, { borderColor: EMERALD }]} />
+                        <View style={[styles.scanCorner, styles.scanCornerBR, { borderColor: EMERALD }]} />
+                        {/* Spinning ring */}
+                        <Animated.View
+                          style={[
+                            styles.scanRing,
+                            {
+                              borderColor: EMERALD,
+                              transform: [{
+                                rotate: scanSpinAnim.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: ['0deg', '360deg'],
+                                }),
+                              }],
+                            },
+                          ]}
+                        />
+                        {/* Inner static ring */}
+                        <View style={[styles.scanRingInner, { borderColor: EMERALD + '44' }]} />
+                        {/* Status badge */}
+                        <View style={styles.scanStatusBadge}>
+                          <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 6 }} />
+                          <Text style={styles.scanStatusText}>
+                            {fc.identifyingFood ?? 'Analysing meal…'}
+                          </Text>
+                        </View>
+                      </View>
+                    ) : scanning ? (
                       <View style={styles.scanningOverlay}>
                         <ActivityIndicator color={EMERALD} size="large" />
                         <Text style={[styles.scanningText, { color: colors.muted }]}>
                           {fc.identifyingFood ?? 'Identifying food…'}
                         </Text>
                       </View>
-                    )}
+                    ) : null}
                     {openingCamera && (
                       <View style={styles.scanningOverlay}>
                         <ActivityIndicator color={EMERALD} size="large" />
@@ -2311,6 +2395,98 @@ export function AiFoodCameraSheet({
       onBarcode={handleBarcodeDetected}
       onClose={() => setShowBarcodeScanner(false)}
     />
+
+    {/* Scan-complete popup — appears when Gemini finishes analysing */}
+    <Modal
+      visible={showScanComplete}
+      transparent
+      animationType="none"
+      onRequestClose={() => setShowScanComplete(false)}
+      statusBarTranslucent
+    >
+      <TouchableWithoutFeedback onPress={() => setShowScanComplete(false)}>
+        <View style={styles.scanCompleteBackdrop} />
+      </TouchableWithoutFeedback>
+      <Animated.View
+        style={[
+          styles.scanCompleteSheet,
+          {
+            backgroundColor: isDark ? '#1A2332' : '#FFFFFF',
+            transform: [
+              {
+                translateY: scanCompleteAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [400, 0],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {/* Handle */}
+        <View style={styles.handleBar}>
+          <View style={[styles.handle, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
+        </View>
+
+        {/* Success icon */}
+        <View style={styles.scanCompleteIconRow}>
+          <View style={[styles.scanCompleteIconCircle, { backgroundColor: EMERALD + '22', borderColor: EMERALD + '55' }]}>
+            <Text style={{ fontSize: 32 }}>✅</Text>
+          </View>
+        </View>
+
+        {/* Food name */}
+        <Text style={[styles.scanCompleteFoodName, { color: isDark ? '#ECEDEE' : '#11181C' }]} numberOfLines={2}>
+          {preview?.foodDescription ?? 'Meal Identified'}
+        </Text>
+
+        {/* Calorie chip */}
+        {preview?.calories != null && (
+          <View style={[styles.scanCompleteCalChip, { backgroundColor: EMERALD + '18', borderColor: EMERALD + '44' }]}>
+            <Text style={[styles.scanCompleteCalText, { color: EMERALD }]}>
+              {Math.round(preview.calories * servingMult)} kcal
+            </Text>
+            {preview.proteinG != null && (
+              <Text style={[styles.scanCompleteCalText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
+                {'  ·  '}{Math.round(preview.proteinG * servingMult)}g protein
+              </Text>
+            )}
+            {preview.carbsG != null && (
+              <Text style={[styles.scanCompleteCalText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
+                {'  ·  '}{Math.round(preview.carbsG * servingMult)}g carbs
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* Log This Meal button */}
+        <Pressable
+          style={({ pressed }) => [
+            styles.scanCompleteLogBtn,
+            { backgroundColor: EMERALD, opacity: pressed ? 0.85 : 1, transform: pressed ? [{ scale: 0.97 }] : [] },
+          ]}
+          onPress={() => {
+            setShowScanComplete(false);
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            handleLog();
+          }}
+        >
+          <Text style={styles.scanCompleteLogBtnText}>Log This Meal</Text>
+        </Pressable>
+
+        {/* View Details link */}
+        <Pressable
+          style={({ pressed }) => [styles.scanCompleteDetailsBtn, pressed && { opacity: 0.6 }]}
+          onPress={() => setShowScanComplete(false)}
+        >
+          <Text style={[styles.scanCompleteDetailsBtnText, { color: isDark ? '#9BA1A6' : '#687076' }]}>
+            View Details
+          </Text>
+        </Pressable>
+
+        <View style={{ height: 24 }} />
+      </Animated.View>
+    </Modal>
     </>
   );
 }
@@ -2439,6 +2615,169 @@ const styles = StyleSheet.create({
   scanningText: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  // Photo scanner overlay
+  scanPhotoContainer: {
+    width: '100%',
+    height: 240,
+    borderRadius: 16,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginVertical: 8,
+  },
+  scanPhoto: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  },
+  scanPhotoOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.38)',
+  },
+  // Corner brackets
+  scanCorner: {
+    position: 'absolute',
+    width: 24,
+    height: 24,
+    borderWidth: 3,
+  },
+  scanCornerTL: {
+    top: 16,
+    left: 16,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
+    borderTopLeftRadius: 4,
+  },
+  scanCornerTR: {
+    top: 16,
+    right: 16,
+    borderLeftWidth: 0,
+    borderBottomWidth: 0,
+    borderTopRightRadius: 4,
+  },
+  scanCornerBL: {
+    bottom: 16,
+    left: 16,
+    borderRightWidth: 0,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: 4,
+  },
+  scanCornerBR: {
+    bottom: 16,
+    right: 16,
+    borderLeftWidth: 0,
+    borderTopWidth: 0,
+    borderBottomRightRadius: 4,
+  },
+  // Spinning ring
+  scanRing: {
+    position: 'absolute',
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 3,
+    borderTopColor: 'transparent',
+    borderRightColor: 'transparent',
+  },
+  scanRingInner: {
+    position: 'absolute',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 1.5,
+  },
+  // Status badge
+  scanStatusBadge: {
+    position: 'absolute',
+    bottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.62)',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+  },
+  scanStatusText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  // Scan-complete popup
+  scanCompleteBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  scanCompleteSheet: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.22,
+    shadowRadius: 20,
+    elevation: 24,
+  },
+  scanCompleteIconRow: {
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  scanCompleteIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanCompleteFoodName: {
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 26,
+    marginBottom: 10,
+  },
+  scanCompleteCalChip: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 20,
+    gap: 2,
+  },
+  scanCompleteCalText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  scanCompleteLogBtn: {
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  scanCompleteLogBtnText: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  scanCompleteDetailsBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  scanCompleteDetailsBtnText: {
+    fontSize: 15,
+    fontWeight: '500',
   },
   // Macro preview panel
   previewPanel: {
