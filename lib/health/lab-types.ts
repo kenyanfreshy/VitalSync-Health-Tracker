@@ -6,19 +6,25 @@
 
 // ─── Panel IDs ───────────────────────────────────────────────────────────────
 
-export type LabPanelId = 'CMP' | 'CBC' | 'MG' | 'PHOS' | 'LIPID' | 'A1C';
+export type LabPanelId = 'CMP' | 'CBC' | 'MG' | 'PHOS' | 'LIPID' | 'A1C'
+  | 'THYROID' | 'IRON' | 'VITAMINS' | 'SPECIALTY';
 
 export const LAB_PANEL_LABELS: Record<LabPanelId, string> = {
-  CMP:   'Comprehensive Metabolic Panel',
-  CBC:   'Complete Blood Count',
-  MG:    'Magnesium',
-  PHOS:  'Phosphorus',
-  LIPID: 'Lipid Panel',
-  A1C:   'Hemoglobin A1C',
+  CMP:      'Comprehensive Metabolic Panel',
+  CBC:      'Complete Blood Count',
+  MG:       'Magnesium',
+  PHOS:     'Phosphorus',
+  LIPID:    'Lipid Panel',
+  A1C:      'Hemoglobin A1C',
+  THYROID:  'Thyroid Panel',
+  IRON:     'Iron Studies',
+  VITAMINS: 'Vitamins & Minerals',
+  SPECIALTY:'Specialty Markers',
 };
 
 export const LAB_PANEL_SHORT: Record<LabPanelId, string> = {
   CMP: 'CMP', CBC: 'CBC', MG: 'Mg', PHOS: 'Phos', LIPID: 'Lipid', A1C: 'A1C',
+  THYROID: 'Thyroid', IRON: 'Iron', VITAMINS: 'Vitamins', SPECIALTY: 'Specialty',
 };
 
 // ─── Analyte IDs ─────────────────────────────────────────────────────────────
@@ -38,7 +44,16 @@ export type LipidAnalyte =
 
 export type SingleAnalyte = 'magnesium' | 'phosphorus' | 'a1c';
 
-export type LabAnalyteId = CmpAnalyte | CbcAnalyte | LipidAnalyte | SingleAnalyte;
+export type ThyroidAnalyte = 'tsh' | 'freeT4' | 'freeT3' | 'totalT4' | 'totalT3';
+
+export type IronAnalyte = 'iron' | 'tibc' | 'transferrinSaturation' | 'ferritin';
+
+export type VitaminAnalyte = 'vitaminD' | 'vitaminB12' | 'folate';
+
+export type SpecialtyAnalyte = 'crp' | 'esr' | 'uricAcid' | 'psa' | 'hsCrp' | 'ldh' | 'ck' | 'inr' | 'pt' | 'ptt';
+
+export type LabAnalyteId = CmpAnalyte | CbcAnalyte | LipidAnalyte | SingleAnalyte
+  | ThyroidAnalyte | IronAnalyte | VitaminAnalyte | SpecialtyAnalyte;
 
 // ─── Dietary Correlate ───────────────────────────────────────────────────────
 
@@ -188,17 +203,51 @@ export const REFERENCE_RANGES: Record<LabAnalyteId, ReferenceRange> = {
         insightTemplate: 'Your 24h carbohydrate intake was {value}g (threshold {threshold}g). Sustained high carbohydrate intake is directly correlated with elevated A1C.' },
     ],
   },
+
+  // ── Thyroid Panel ─────────────────────────────────────────────────────────
+  tsh:    { label: 'TSH',       abbr: 'TSH',    unit: 'mIU/L',  low: 0.4,  high: 4.0,  panels: ['THYROID'] },
+  freeT4: { label: 'Free T4',   abbr: 'fT4',    unit: 'ng/dL',  low: 0.8,  high: 1.8,  panels: ['THYROID'] },
+  freeT3: { label: 'Free T3',   abbr: 'fT3',    unit: 'pg/mL',  low: 2.3,  high: 4.2,  panels: ['THYROID'] },
+  totalT4:{ label: 'Total T4',  abbr: 'T4',     unit: 'μg/dL',  low: 4.5,  high: 12.5, panels: ['THYROID'] },
+  totalT3:{ label: 'Total T3',  abbr: 'T3',     unit: 'ng/dL',  low: 80,   high: 200,  panels: ['THYROID'] },
+
+  // ── Iron Studies ──────────────────────────────────────────────────────────
+  iron:                { label: 'Serum Iron',           abbr: 'Fe',     unit: 'μg/dL', low: 60,  high: 170, panels: ['IRON'] },
+  tibc:                { label: 'TIBC',                 abbr: 'TIBC',   unit: 'μg/dL', low: 240, high: 450, panels: ['IRON'] },
+  transferrinSaturation:{ label: 'Transferrin Sat.',    abbr: 'Tsat',   unit: '%',     low: 20,  high: 50,  panels: ['IRON'] },
+  ferritin:            { label: 'Ferritin',             abbr: 'Ferr',   unit: 'ng/mL', low: 12,  high: 300, panels: ['IRON'] },
+
+  // ── Vitamins & Minerals ───────────────────────────────────────────────────
+  vitaminD:  { label: 'Vitamin D (25-OH)', abbr: 'Vit D', unit: 'ng/mL', low: 30,  high: 100, panels: ['VITAMINS'] },
+  vitaminB12:{ label: 'Vitamin B12',       abbr: 'B12',   unit: 'pg/mL', low: 200, high: 900, panels: ['VITAMINS'] },
+  folate:    { label: 'Folate',            abbr: 'Fol',   unit: 'ng/mL', low: 2.7, high: 17,  panels: ['VITAMINS'] },
+
+  // ── Specialty Markers ─────────────────────────────────────────────────────
+  crp:     { label: 'CRP',          abbr: 'CRP',   unit: 'mg/L',  low: 0,   high: 10,  panels: ['SPECIALTY'] },
+  hsCrp:   { label: 'hs-CRP',       abbr: 'hsCRP', unit: 'mg/L',  low: 0,   high: 3,   panels: ['SPECIALTY'] },
+  esr:     { label: 'ESR',          abbr: 'ESR',   unit: 'mm/hr', low: 0,   high: 20,  panels: ['SPECIALTY'] },
+  uricAcid:{ label: 'Uric Acid',    abbr: 'UA',    unit: 'mg/dL', low: 2.4, high: 7.0, panels: ['SPECIALTY'] },
+  psa:     { label: 'PSA',          abbr: 'PSA',   unit: 'ng/mL', low: 0,   high: 4.0, panels: ['SPECIALTY'] },
+  ldh:     { label: 'LDH',          abbr: 'LDH',   unit: 'U/L',   low: 140, high: 280, panels: ['SPECIALTY'] },
+  ck:      { label: 'CK (CPK)',      abbr: 'CK',    unit: 'U/L',   low: 22,  high: 198, panels: ['SPECIALTY'] },
+  inr:     { label: 'INR',          abbr: 'INR',   unit: '',      low: 0.8, high: 1.2, panels: ['SPECIALTY'] },
+  pt:      { label: 'PT',           abbr: 'PT',    unit: 'sec',   low: 11,  high: 13.5,panels: ['SPECIALTY'] },
+  ptt:     { label: 'PTT',          abbr: 'PTT',   unit: 'sec',   low: 25,  high: 35,  panels: ['SPECIALTY'] },
 };
 
 // ─── Panel → Analyte map ─────────────────────────────────────────────────────
 
 export const PANEL_ANALYTES: Record<LabPanelId, LabAnalyteId[]> = {
-  CMP:   ['glucose','bun','creatinine','egfr','sodium','potassium','chloride','co2','calcium','totalProtein','albumin','totalBilirubin','alt','ast'],
-  CBC:   ['wbc','rbc','hemoglobin','hematocrit','mcv','mch','mchc','rdw','platelets','neutrophils'],
-  MG:    ['magnesium'],
-  PHOS:  ['phosphorus'],
-  LIPID: ['totalCholesterol','ldl','hdl','triglycerides','nonHdl'],
-  A1C:   ['a1c'],
+  CMP:      ['glucose','bun','creatinine','egfr','sodium','potassium','chloride','co2','calcium','totalProtein','albumin','totalBilirubin','alt','ast'],
+  CBC:      ['wbc','rbc','hemoglobin','hematocrit','mcv','mch','mchc','rdw','platelets','neutrophils'],
+  MG:       ['magnesium'],
+  PHOS:     ['phosphorus'],
+  LIPID:    ['totalCholesterol','ldl','hdl','triglycerides','nonHdl'],
+  A1C:      ['a1c'],
+  THYROID:  ['tsh','freeT4','freeT3','totalT4','totalT3'],
+  IRON:     ['iron','tibc','transferrinSaturation','ferritin'],
+  VITAMINS: ['vitaminD','vitaminB12','folate'],
+  SPECIALTY:['crp','hsCrp','esr','uricAcid','psa','ldh','ck','inr','pt','ptt'],
 };
 
 // ─── Lab Result Record ───────────────────────────────────────────────────────

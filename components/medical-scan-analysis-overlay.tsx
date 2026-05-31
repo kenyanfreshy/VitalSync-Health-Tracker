@@ -49,6 +49,10 @@ export interface PartialScanData {
   extractedCount?: number;
   /** Total fields expected */
   totalCount?: number;
+  /** Lab facility name, if extracted */
+  labName?: string;
+  /** Collection date, if extracted */
+  collectionDate?: string;
 }
 
 export interface MedicalScanAnalysisOverlayProps {
@@ -58,11 +62,17 @@ export interface MedicalScanAnalysisOverlayProps {
   progress: number; // 0–100
   isAnalyzing: boolean;
   error: string | null;
+  /** Set to true when analysis completed successfully (shows success card + Scan Another Page button) */
+  isSuccess?: boolean;
   /** Partial data extracted before failure — used to show what was found and pre-populate manual entry */
   partialData?: PartialScanData;
+  /** Page count accumulated so far (shown in success card) */
+  pageCount?: number;
   onRetry: () => void;
   onUploadNew: () => void;
   onManualEntry: () => void;
+  /** Called when user wants to scan an additional page to merge with current results */
+  onScanAnotherPage?: () => void;
 }
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
@@ -186,10 +196,13 @@ export function MedicalScanAnalysisOverlay({
   progress,
   isAnalyzing,
   error,
+  isSuccess,
   partialData,
+  pageCount,
   onRetry,
   onUploadNew,
   onManualEntry,
+  onScanAnotherPage,
 }: MedicalScanAnalysisOverlayProps) {
   const accentColor = type === 'prescription' ? COLORS.prescription : COLORS.lab;
   const title = type === 'prescription' ? 'Analyzing Prescription' : 'Analyzing Lab Report';
@@ -226,6 +239,52 @@ export function MedicalScanAnalysisOverlay({
             <StepRow key={step.id} step={step} accentColor={accentColor} />
           ))}
         </View>
+
+        {/* Success card — shown when analysis completed, overlay stays open for multi-page option */}
+        {isSuccess && !isAnalyzing && !error && (
+          <View style={[styles.successCard, { borderColor: accentColor + '40' }]}>
+            <Text style={[styles.successTitle, { color: accentColor }]}>
+              {(pageCount ?? 1) > 1 ? `✓ ${pageCount} pages scanned` : '✓ Lab report scanned'}
+            </Text>
+            {partialData && (partialData.extractedCount ?? 0) > 0 && (
+              <View style={styles.partialResultBox}>
+                <Text style={styles.partialResultTitle}>
+                  {partialData.extractedCount} field{(partialData.extractedCount ?? 0) !== 1 ? 's' : ''} extracted
+                  {(pageCount ?? 1) > 1 ? ` across ${pageCount} pages` : ''}
+                </Text>
+                {(partialData.extractedItems ?? []).slice(0, 6).map((item, i) => (
+                  <View key={i} style={styles.partialResultRow}>
+                    <Text style={[styles.stepIcon, { color: COLORS.success }]}>✓</Text>
+                    <Text style={styles.partialResultItem}>{item}</Text>
+                  </View>
+                ))}
+                {(partialData.extractedItems?.length ?? 0) > 6 && (
+                  <Text style={styles.partialResultMore}>
+                    +{(partialData.extractedItems?.length ?? 0) - 6} more extracted
+                  </Text>
+                )}
+              </View>
+            )}
+            <View style={styles.recoveryButtons}>
+              {onScanAnotherPage && (
+                <TouchableOpacity
+                  style={[styles.recoveryBtn, { borderColor: accentColor }]}
+                  onPress={onScanAnotherPage}
+                >
+                  <Text style={[styles.recoveryBtnText, { color: accentColor }]}>
+                    📷 Scan Another Page
+                  </Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.recoveryBtn, { borderColor: accentColor, backgroundColor: accentColor + '18' }]}
+                onPress={onManualEntry}
+              >
+                <Text style={[styles.recoveryBtnText, { color: accentColor }]}>Review &amp; Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Error recovery */}
         {error && !isAnalyzing && (
@@ -434,5 +493,17 @@ const styles = StyleSheet.create({
   recoveryBtnText: {
     fontSize: 14,
     fontWeight: '600',
+  },
+  successCard: {
+    backgroundColor: 'rgba(5,150,105,0.08)',
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    gap: 10,
+    marginTop: 8,
+  },
+  successTitle: {
+    fontSize: 15,
+    fontWeight: '700',
   },
 });

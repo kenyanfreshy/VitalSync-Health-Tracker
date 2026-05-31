@@ -330,6 +330,47 @@ export default function LabEntryScreen() {
     'a1c': 'a1c', 'hba1c': 'a1c', 'hemoglobin a1c': 'a1c', 'haemoglobin a1c': 'a1c', 'glycated hemoglobin': 'a1c', 'glycohemoglobin': 'a1c',
     // Anion Gap (map to co2 as closest CMP field)
     'anion gap': 'co2',
+
+    // ── Thyroid ──────────────────────────────────────────────────────────────
+    'tsh': 'tsh', 'thyroid stimulating hormone': 'tsh', 'thyroid-stimulating hormone': 'tsh',
+    'thyrotropin': 'tsh', 'tsh (3rd generation)': 'tsh', 'tsh ultrasensitive': 'tsh',
+    'free t4': 'freeT4', 'free thyroxine': 'freeT4', 'ft4': 'freeT4', 'free t-4': 'freeT4',
+    'thyroxine free': 'freeT4', 't4 free': 'freeT4',
+    'free t3': 'freeT3', 'free triiodothyronine': 'freeT3', 'ft3': 'freeT3', 'free t-3': 'freeT3',
+    'triiodothyronine free': 'freeT3', 't3 free': 'freeT3',
+    'total t4': 'totalT4', 'thyroxine': 'totalT4', 't4': 'totalT4', 't4 total': 'totalT4',
+    'total t3': 'totalT3', 'triiodothyronine': 'totalT3', 't3': 'totalT3', 't3 total': 'totalT3',
+
+    // ── Iron Studies ─────────────────────────────────────────────────────────
+    'iron': 'iron', 'serum iron': 'iron', 'fe': 'iron', 'iron serum': 'iron',
+    'tibc': 'tibc', 'total iron binding capacity': 'tibc', 'iron binding capacity': 'tibc',
+    'transferrin saturation': 'transferrinSaturation', 'tsat': 'transferrinSaturation',
+    'iron saturation': 'transferrinSaturation', '% saturation': 'transferrinSaturation',
+    'percent saturation': 'transferrinSaturation', 'sat%': 'transferrinSaturation',
+    'ferritin': 'ferritin', 'serum ferritin': 'ferritin',
+
+    // ── Vitamins & Minerals ──────────────────────────────────────────────────
+    'vitamin d': 'vitaminD', 'vitamin d3': 'vitaminD', '25-oh vitamin d': 'vitaminD',
+    '25-hydroxyvitamin d': 'vitaminD', '25(oh)d': 'vitaminD', 'vit d': 'vitaminD',
+    '25 oh vitamin d': 'vitaminD', 'calcidiol': 'vitaminD', 'cholecalciferol': 'vitaminD',
+    'vitamin b12': 'vitaminB12', 'b12': 'vitaminB12', 'cobalamin': 'vitaminB12',
+    'cyanocobalamin': 'vitaminB12', 'vit b12': 'vitaminB12', 'b-12': 'vitaminB12',
+    'folate': 'folate', 'folic acid': 'folate', 'vitamin b9': 'folate', 'b9': 'folate',
+    'serum folate': 'folate', 'rbc folate': 'folate',
+
+    // ── Specialty Markers ────────────────────────────────────────────────────
+    'crp': 'crp', 'c-reactive protein': 'crp', 'c reactive protein': 'crp',
+    'hs-crp': 'hsCrp', 'high sensitivity crp': 'hsCrp', 'high-sensitivity c-reactive protein': 'hsCrp',
+    'hscrp': 'hsCrp', 'cardiac crp': 'hsCrp',
+    'esr': 'esr', 'erythrocyte sedimentation rate': 'esr', 'sed rate': 'esr', 'westergren': 'esr',
+    'uric acid': 'uricAcid', 'urate': 'uricAcid', 'serum uric acid': 'uricAcid',
+    'psa': 'psa', 'prostate specific antigen': 'psa', 'total psa': 'psa',
+    'ldh': 'ldh', 'lactate dehydrogenase': 'ldh', 'lactic dehydrogenase': 'ldh',
+    'ck': 'ck', 'creatine kinase': 'ck', 'cpk': 'ck', 'creatine phosphokinase': 'ck',
+    'inr': 'inr', 'international normalized ratio': 'inr',
+    'pt': 'pt', 'prothrombin time': 'pt', 'pro time': 'pt',
+    'ptt': 'ptt', 'partial thromboplastin time': 'ptt', 'aptt': 'ptt',
+    'activated partial thromboplastin time': 'ptt',
   };
 
   // ── Apply Gemini labs directly to form (bypasses slug-matching) ───────────
@@ -388,7 +429,11 @@ export default function LabEntryScreen() {
   const [labScanImageUri, setLabScanImageUri] = useState<string>('');
   const [labScanProgress, setLabScanProgress] = useState(0);
   const [labScanError, setLabScanError] = useState<string | null>(null);
+  const [labScanSuccess, setLabScanSuccess] = useState(false);
+  const [labScanPageCount, setLabScanPageCount] = useState(0);
   const [labScanPartialData, setLabScanPartialData] = useState<import('@/components/medical-scan-analysis-overlay').PartialScanData | undefined>(undefined);
+  // Accumulated Gemini labs across multiple pages (for multi-page scan flow)
+  const accumulatedGeminiLabsRef = useRef<import('@/lib/labs/gemini-lab-parser').LabResultItem[]>([]);
   const [labScanSteps, setLabScanSteps] = useState<ScanStep[]>([
     { id: 'capture',  label: 'Image captured',           status: 'pending' },
     { id: 'upload',   label: 'Analyzing lab report',     status: 'pending' },
@@ -429,6 +474,7 @@ export default function LabEntryScreen() {
       setLabScanSteps(INITIAL_LAB_STEPS);
       setLabScanProgress(0);
       setLabScanError(null);
+      setLabScanSuccess(false);
       setLabScanPartialData(undefined);
       setLabScanOverlayVisible(true);
       setOcrLoading(true);
@@ -510,14 +556,32 @@ export default function LabEntryScreen() {
         ocrUsedLlmRef.current = usedLlm;
 
         if (usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0) {
-          // Gemini path: use alias-map based population directly
+          // Gemini path: accumulate labs across pages
+          // Merge new labs into accumulated array (newer page values override older for same test name)
+          const existingTests = new Map(accumulatedGeminiLabsRef.current.map(l => [l.test.toLowerCase().trim(), l]));
+          for (const lab of geminiLabsRef.current) {
+            existingTests.set(lab.test.toLowerCase().trim(), lab);
+          }
+          accumulatedGeminiLabsRef.current = Array.from(existingTests.values());
+          const newPageCount = labScanPageCount + 1;
+          setLabScanPageCount(newPageCount);
+
+          // Update partial data to reflect merged totals
+          const mergedItems = accumulatedGeminiLabsRef.current
+            .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
+            .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
+          setLabScanPartialData(prev => ({
+            ...prev,
+            extractedItems: mergedItems,
+            extractedCount: mergedItems.length,
+            totalCount: accumulatedGeminiLabsRef.current.length,
+            labName: extracted.__labName || prev?.labName,
+            collectionDate: extracted.__collectionDate || prev?.collectionDate,
+          }));
+
           if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          applyLabsFromGemini(
-            geminiLabsRef.current,
-            extracted.__labName ?? '',
-            extracted.__collectionDate ?? '',
-          );
-          setTimeout(() => setLabScanOverlayVisible(false), 600);
+          // Show success card — keep overlay open so user can scan another page or review
+          setLabScanSuccess(true);
         } else {
           // Apple Vision OCR fallback path: use slug-based merge
           const merged = { ...ocrAccumulated, ...extracted };
@@ -558,6 +622,133 @@ export default function LabEntryScreen() {
       setOcrError(err?.message ?? ls.ocrScanFailed);
     }
   }, [selectedPanel, ocrAccumulated, updateLabStep]);
+
+  // ── Scan Another Page: launch camera without resetting accumulated labs ────────
+  const handleOcrScanNextPage = useCallback(async () => {
+    // Same as handleOcrScan but does NOT reset accumulatedGeminiLabsRef or labScanPageCount
+    try {
+      const perm = await SafeImagePicker.requestCameraPermissionsAsync();
+      if (!perm.granted) {
+        Alert.alert(ls.cameraPermissionTitle, ls.cameraPermissionMsg);
+        return;
+      }
+      const result = await SafeImagePicker.launchCameraAsync({
+        mediaTypes: 'images',
+        quality: 0.9,
+        base64: true,
+        allowsEditing: false,
+      });
+      if (result.canceled || !result.assets?.[0]) return;
+
+      const asset = result.assets[0];
+      setLabScanImageUri(asset.uri);
+      setLabScanSteps(INITIAL_LAB_STEPS);
+      setLabScanProgress(0);
+      setLabScanError(null);
+      setLabScanSuccess(false);
+      setLabScanOverlayVisible(true);
+      setOcrLoading(true);
+      setOcrError(null);
+
+      let extracted: Record<string, string> = {};
+      let usedLlm = false;
+
+      try {
+        updateLabStep('capture', 'done');
+        setLabScanProgress(20);
+        updateLabStep('upload', 'active');
+
+        if (asset.base64) {
+          try {
+            updateLabStep('upload', 'done');
+            setLabScanProgress(40);
+            updateLabStep('reading', 'active');
+            const { parseLabReportWithGemini } = await import('@/lib/labs/gemini-lab-parser');
+            const llmResult = await parseLabReportWithGemini(asset.base64);
+            updateLabStep('reading', 'done');
+            setLabScanProgress(70);
+            updateLabStep('extract', 'active');
+
+            if (!llmResult.error && llmResult.labs && llmResult.labs.length > 0) {
+              geminiLabsRef.current = llmResult.labs;
+              if (llmResult.laboratoryName) extracted.__labName = llmResult.laboratoryName;
+              if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
+              const extractedItems = llmResult.labs
+                .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
+                .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
+              setLabScanPartialData(prev => ({ ...prev, extractedItems, extractedCount: extractedItems.length }));
+              usedLlm = true;
+            } else if (llmResult.error) {
+              throw new Error(llmResult.error);
+            }
+          } catch (llmErr) {
+            console.warn('[Lab Scan Next Page] Gemini failed:', llmErr);
+            updateLabStep('reading', 'error');
+          }
+        }
+
+        if (!usedLlm) {
+          updateLabStep('upload', 'done');
+          setLabScanProgress(40);
+          updateLabStep('reading', 'active');
+          const lines = await extractTextFromImage(asset.uri);
+          extracted = parseLabOcr(lines);
+          updateLabStep('reading', 'done');
+          setLabScanProgress(70);
+          updateLabStep('extract', 'active');
+        }
+
+        updateLabStep('extract', 'done');
+        setLabScanProgress(90);
+        updateLabStep('validate', 'active');
+
+        const hasGeminiLabs = usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0;
+        const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
+        if (!hasGeminiLabs && analyteKeys.length === 0) {
+          throw new Error(ls.ocrNoValuesFound);
+        }
+
+        updateLabStep('validate', 'done');
+        setLabScanProgress(100);
+
+        if (usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0) {
+          // Merge into accumulated (newer page values override older for same test name)
+          const existingTests = new Map(accumulatedGeminiLabsRef.current.map(l => [l.test.toLowerCase().trim(), l]));
+          for (const lab of geminiLabsRef.current) {
+            existingTests.set(lab.test.toLowerCase().trim(), lab);
+          }
+          accumulatedGeminiLabsRef.current = Array.from(existingTests.values());
+          setLabScanPageCount(prev => prev + 1);
+
+          const mergedItems = accumulatedGeminiLabsRef.current
+            .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
+            .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
+          setLabScanPartialData(prev => ({
+            ...prev,
+            extractedItems: mergedItems,
+            extractedCount: mergedItems.length,
+            totalCount: accumulatedGeminiLabsRef.current.length,
+            labName: extracted.__labName || prev?.labName,
+            collectionDate: extracted.__collectionDate || prev?.collectionDate,
+          }));
+
+          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          setLabScanSuccess(true);
+        }
+      } catch (innerErr: any) {
+        const msg = innerErr?.message ?? ls.ocrScanFailed;
+        setLabScanError(msg);
+        setOcrError(msg);
+        setLabScanSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
+        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      } finally {
+        setOcrLoading(false);
+      }
+    } catch (err: any) {
+      setOcrError(err?.message ?? ls.ocrScanFailed);
+    }
+  }, [selectedPanel, updateLabStep, ls]);
+
 
   // ── Save ──────────────────────────────────────────────────────────────────────────────
 
@@ -806,15 +997,29 @@ placeholder={ls.facilityPlaceholder}
               progress={labScanProgress}
               isAnalyzing={ocrLoading}
               error={labScanError}
+              isSuccess={labScanSuccess}
+              pageCount={labScanPageCount}
               partialData={labScanPartialData}
               onRetry={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
               onUploadNew={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
+              onScanAnotherPage={() => {
+                // Reset step/progress state but keep accumulated labs; launch camera again
+                setLabScanSteps(INITIAL_LAB_STEPS);
+                setLabScanProgress(0);
+                setLabScanError(null);
+                setLabScanSuccess(false);
+                // Trigger camera for next page (brief delay to let state settle)
+                setTimeout(handleOcrScanNextPage, 300);
+              }}
               onManualEntry={() => {
                 setLabScanOverlayVisible(false);
-                // Pre-populate form: prefer Gemini alias-map path; fall back to Apple Vision OCR slug path
-                if (geminiLabsRef.current && geminiLabsRef.current.length > 0) {
+                // Pre-populate form: prefer accumulated Gemini labs; fall back to Apple Vision OCR slug path
+                const labsToApply = accumulatedGeminiLabsRef.current.length > 0
+                  ? accumulatedGeminiLabsRef.current
+                  : geminiLabsRef.current;
+                if (labsToApply && labsToApply.length > 0) {
                   applyLabsFromGemini(
-                    geminiLabsRef.current,
+                    labsToApply,
                     labScanPartialData?.labName ?? ocrPendingRef.current?.__labName ?? '',
                     labScanPartialData?.collectionDate ?? ocrPendingRef.current?.__collectionDate ?? '',
                   );
