@@ -64,6 +64,7 @@ import { sumTrayMacro, toggleTrayItem, updateTrayServing, TrayItem, ServingStep 
 import { lookupBarcodeOFF } from '@/lib/nutrition/open-food-facts';
 import { BarcodeScannerModal } from '@/components/barcode-scanner-modal';
 import { MicrophoneIcon } from '@/components/ui/microphone-icon';
+import { MealAnalysisOverlay, type AnalysisStep, type AnalysisStepState, type DetectedFoodLabel } from '@/components/meal-analysis-overlay';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1538,6 +1539,15 @@ function SearchScreen({
   );
 }
 
+// ─── Module-level constants ──────────────────────────────────────────────────
+const INITIAL_STEP_STATES_DEFAULT: Record<AnalysisStep, AnalysisStepState> = {
+  image_received:        'pending',
+  ai_started:            'pending',
+  detecting_foods:       'pending',
+  estimating_portions:   'pending',
+  calculating_nutrition: 'pending',
+};
+
 // ─── Component ────────────────────────────────────────────────────────────────
 export function AiFoodCameraSheet({
   visible,
@@ -1588,6 +1598,15 @@ export function AiFoodCameraSheet({
   // Multi-select tray state
   const [trayItems, setTrayItems]   = useState<TrayItemLocal[]>([]);
   const [showTray, setShowTray]     = useState(false);
+
+  // ── Premium analysis overlay state ────────────────────────────────────────
+  const [analysisStepStates, setAnalysisStepStates] = useState<Record<AnalysisStep, AnalysisStepState>>(INITIAL_STEP_STATES_DEFAULT);
+  const [analysisProgress, setAnalysisProgress]     = useState(0);
+  const [analysisElapsed, setAnalysisElapsed]        = useState(0);
+  const [analysisUsingFallback, setAnalysisUsingFallback] = useState(false);
+  const [analysisDetectedFoods, setAnalysisDetectedFoods] = useState<DetectedFoodLabel[]>([]);
+  const analysisElapsedRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const analysisRetryCount = useRef(0);
 
   // Apple Health inline prompt state (replaces Alert.alert for first-time HK pref)
   const [showHkPrompt, setShowHkPrompt] = useState(false);
@@ -1648,6 +1667,14 @@ export function AiFoodCameraSheet({
       setSelectedResult(null);
       setTrayItems([]);
       setShowTray(false);
+      // Reset analysis overlay
+      setAnalysisStepStates(INITIAL_STEP_STATES_DEFAULT);
+      setAnalysisProgress(0);
+      setAnalysisElapsed(0);
+      setAnalysisUsingFallback(false);
+      setAnalysisDetectedFoods([]);
+      analysisRetryCount.current = 0;
+      if (analysisElapsedRef.current) { clearInterval(analysisElapsedRef.current); analysisElapsedRef.current = null; }
       Animated.spring(slideAnim, {
         toValue: 1,
         useNativeDriver: true,
@@ -1721,6 +1748,21 @@ export function AiFoodCameraSheet({
     outputRange: [600, 0],
   });
 
+  // ── Helper: reset analysis overlay state ──────────────────────────────────────
+  const resetAnalysisState = useCallback(() => {
+    setAnalysisStepStates(INITIAL_STEP_STATES_DEFAULT);
+    setAnalysisProgress(0);
+    setAnalysisElapsed(0);
+    setAnalysisUsingFallback(false);
+    setAnalysisDetectedFoods([]);
+    if (analysisElapsedRef.current) { clearInterval(analysisElapsedRef.current); analysisElapsedRef.current = null; }
+  }, []);
+
+  // ── Helper: advance a single analysis step ───────────────────────────────────
+  const advanceStep = useCallback((step: AnalysisStep, state: AnalysisStepState) => {
+    setAnalysisStepStates(prev => ({ ...prev, [step]: state }));
+  }, []);
+
   // ── Plate scan — Apple Vision → USDA FoodData Central (privacy-first) ────────
   // Pipeline:
   //   1. Apple Vision / server multimodal LLM → food labels (on-device / our server)
@@ -1730,7 +1772,6 @@ export function AiFoodCameraSheet({
   //   5. HealthKit write-back fires automatically via addSodium → saveMealToHealthKit
   const handlePlateScan = useCallback(async () => {
     if (onScanMealPress) {
-      // Parent has provided a premium gate — fire it instead of opening the camera
       onScanMealPress();
       return;
     }
@@ -1751,13 +1792,33 @@ export function AiFoodCameraSheet({
       });
       setOpeningCamera(false);
       if (result.canceled || !result.assets?.[0]?.base64) return;
-      // Store the captured photo URI for the scanner overlay
+
+      // ── Image received: show overlay immediately ─────────────────────────────
       const capturedPhotoUri = result.assets[0].uri;
+      resetAnalysisState();
       setCapturedUri(capturedPhotoUri);
       setScanning(true);
+      setMode('plate');
+
+      // Start elapsed timer
+      analysisElapsedRef.current = setInterval(() => {
+        setAnalysisElapsed(s => s + 1);
+      }, 1000);
+
+      // Step: image received
+      advanceStep('image_received', 'done');
+      setAnalysisProgress(10);
+
+      // Step: AI started
+      advanceStep('ai_started', 'active');
+      setAnalysisProgress(25);
+
+      // Step: detecting foods
+      advanceStep('ai_started', 'done');
+      advanceStep('detecting_foods', 'active');
+      setAnalysisProgress(40);
 
       // Step 1: Recognise food via Gemini Vision (primary) → fallback chain
-      // Wrapped in a 30-second timeout so the spinner never freezes
       const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
       const SCAN_TIMEOUT_MS = 30_000;
       const scanWithTimeout = <T,>(p: Promise<T>): Promise<T> =>
@@ -1765,9 +1826,47 @@ export function AiFoodCameraSheet({
           const t = setTimeout(() => reject(new Error('Analysis timed out. Please try again.')), SCAN_TIMEOUT_MS);
           p.then((v) => { clearTimeout(t); resolve(v); }, (e) => { clearTimeout(t); reject(e); });
         });
-      const { recognition, usdaItem } = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
 
-      // No food detected at all (all Gemini attempts failed)
+      // Auto-retry once at 20 seconds if still running
+      let recognition: Awaited<ReturnType<typeof recogniseAndLookup>>['recognition'];
+      let usdaItem: Awaited<ReturnType<typeof recogniseAndLookup>>['usdaItem'];
+      try {
+        const res = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
+        recognition = res.recognition;
+        usdaItem = res.usdaItem;
+      } catch (firstErr: any) {
+        // Auto-retry once
+        if (analysisRetryCount.current < 1) {
+          analysisRetryCount.current += 1;
+          setAnalysisUsingFallback(true);
+          const res = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
+          recognition = res.recognition;
+          usdaItem = res.usdaItem;
+        } else {
+          throw firstErr;
+        }
+      }
+
+      // Animate detected foods as floating labels
+      if (recognition.primaryFood) {
+        const labels: DetectedFoodLabel[] = [
+          { name: recognition.primaryFood, category: 'Primary Food' },
+          ...(recognition.labels ?? []).slice(1, 4).map((l: { name: string }) => ({ name: l.name, category: 'Detected' })),
+        ];
+        setAnalysisDetectedFoods(labels);
+      }
+
+      // Step: estimating portions
+      advanceStep('detecting_foods', 'done');
+      advanceStep('estimating_portions', 'active');
+      setAnalysisProgress(60);
+
+      // Step: calculating nutrition
+      advanceStep('estimating_portions', 'done');
+      advanceStep('calculating_nutrition', 'active');
+      setAnalysisProgress(80);
+
+      // No food detected at all
       if (!usdaItem && !recognition.primaryFood) {
         setPreview({
           foodDescription: 'Meal photo',
@@ -1783,8 +1882,8 @@ export function AiFoodCameraSheet({
           reasoning: 'Could not identify food items. Try a clearer, well-lit photo or search by name.',
           source: 'ai-photo',
         });
-        setCapturedUri(null);
-        setMode('plate');
+        advanceStep('calculating_nutrition', 'done');
+        setAnalysisProgress(100);
         setLowConfToast(true);
         setTimeout(() => setLowConfToast(false), 4000);
         if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -1793,7 +1892,6 @@ export function AiFoodCameraSheet({
 
       let builtPreview: MacroPreview;
       if (usdaItem) {
-        // Step 2a: Gemini returned direct nutrition data (synthetic USDA item)
         setReferenceWeightG(usdaItem.servingWeightG ?? 100);
         const servingNote = usdaItem.servingDescription
           ? `Serving: ${usdaItem.servingDescription}`
@@ -1813,7 +1911,6 @@ export function AiFoodCameraSheet({
           source: 'ai-photo',
         };
       } else {
-        // Step 2b: Vision detected food but no nutrition data
         builtPreview = {
           foodDescription: recognition.primaryFood || 'Detected meal',
           calories: null,
@@ -1829,10 +1926,15 @@ export function AiFoodCameraSheet({
           source: 'ai-photo',
         };
       }
-      // Store preview — MacroPreviewPanel renders inline below the photo
+
+      // Complete all steps
+      advanceStep('calculating_nutrition', 'done');
+      setAnalysisProgress(100);
+
+      // Brief pause so user sees 100% before results appear
+      await new Promise(r => setTimeout(r, 500));
+
       setPreview(builtPreview);
-      setMode('plate');
-      // Show low-confidence toast when confidence is low
       const finalConf = usdaItem ? usdaItem.confidence : 'low';
       if (finalConf === 'low') {
         setLowConfToast(true);
@@ -1851,8 +1953,9 @@ export function AiFoodCameraSheet({
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setScanning(false);
+      if (analysisElapsedRef.current) { clearInterval(analysisElapsedRef.current); analysisElapsedRef.current = null; }
     }
-  }, [onScanMealPress]);
+  }, [onScanMealPress, resetAnalysisState, advanceStep]);
 
   // ── Barcode scan — native on-device scanner → Open Food Facts API ──────────
   const handleBarcodeScan = useCallback(() => {
@@ -2454,75 +2557,39 @@ export function AiFoodCameraSheet({
                         setTimeout(() => setHkToast(false), 2000);
                       }}
                     />
-                    {/* Photo + scanner overlay — shown while scanning or after analysis */}
-                    {capturedUri ? (
-                      <View style={styles.scanPhotoContainer}>
-                        <Image
-                          source={{ uri: capturedUri }}
-                          style={styles.scanPhoto}
-                          resizeMode="cover"
-                        />
-                        {/* Dark overlay */}
-                        <View style={styles.scanPhotoOverlay} />
-                        {/* Corner brackets */}
-                        <View style={[styles.scanCorner, styles.scanCornerTL, { borderColor: EMERALD }]} />
-                        <View style={[styles.scanCorner, styles.scanCornerTR, { borderColor: EMERALD }]} />
-                        <View style={[styles.scanCorner, styles.scanCornerBL, { borderColor: EMERALD }]} />
-                        <View style={[styles.scanCorner, styles.scanCornerBR, { borderColor: EMERALD }]} />
-                        {/* Spinning ring — only while scanning */}
-                        {scanning && (
-                          <Animated.View
-                            style={[
-                              styles.scanRing,
-                              {
-                                borderColor: EMERALD,
-                                transform: [{
-                                  rotate: scanSpinAnim.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: ['0deg', '360deg'],
-                                  }),
-                                }],
-                              },
-                            ]}
-                          />
-                        )}
-                        {/* Inner static ring */}
-                        <View style={[styles.scanRingInner, { borderColor: scanning ? EMERALD + '44' : EMERALD + '22' }]} />
-                        {/* Status badge — only while scanning */}
-                        {scanning && (
-                          <View style={styles.scanStatusBadge}>
-                            <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 6 }} />
-                            <Text style={styles.scanStatusText}>
-                              {fc.identifyingFood ?? 'Analysing meal…'}
-                            </Text>
-                          </View>
-                        )}
-                        {/* Done badge — when analysis complete */}
-                        {!scanning && preview && (
-                          <View style={[styles.scanStatusBadge, { backgroundColor: EMERALD + 'DD' }]}>
-                            <Text style={[styles.scanStatusText, { color: '#FFFFFF' }]}>✓ {fc.analysisComplete ?? 'Analysis complete'}</Text>
-                          </View>
-                        )}
-                      </View>
-                    ) : scanning ? (
-                      <View style={styles.scanningOverlay}>
-                        <ActivityIndicator color={EMERALD} size="large" />
-                        <Text style={[styles.scanningText, { color: colors.muted }]}>
-                          {fc.identifyingFood ?? 'Identifying food…'}
-                        </Text>
-                      </View>
-                    ) : null}
-
-                    {/* Log Meal + button — shown while scanning (disabled) */}
-                    {scanning && (
-                      <View style={[styles.logMealPendingBtn, { backgroundColor: EMERALD + '22', borderColor: EMERALD + '44' }]}>
-                        <ActivityIndicator color={EMERALD} size="small" style={{ marginRight: 8 }} />
-                        <Text style={[styles.logMealPendingText, { color: EMERALD }]}>
-                          {fc.logMealPlus ?? 'Log Meal +'}
-                        </Text>
-                      </View>
+                    {/* Premium analysis overlay — shown as soon as image is captured */}
+                    {capturedUri && scanning && (
+                      <MealAnalysisOverlay
+                        imageUri={capturedUri}
+                        stepStates={analysisStepStates}
+                        detectedFoods={analysisDetectedFoods}
+                        progress={analysisProgress}
+                        isAnalysing={scanning}
+                        usingFallback={analysisUsingFallback}
+                        elapsedSeconds={analysisElapsed}
+                        isDark={isDark}
+                        onRetry={() => {
+                          setCapturedUri(null);
+                          setScanning(false);
+                          resetAnalysisState();
+                          handlePlateScan();
+                        }}
+                        onFoodSearch={() => {
+                          setCapturedUri(null);
+                          setScanning(false);
+                          resetAnalysisState();
+                          setMode('search');
+                        }}
+                        onManualEntry={() => {
+                          setCapturedUri(null);
+                          setScanning(false);
+                          resetAnalysisState();
+                          setMode('home');
+                        }}
+                      />
                     )}
 
+                    {/* Opening camera spinner */}
                     {openingCamera && (
                       <View style={styles.scanningOverlay}>
                         <ActivityIndicator color={EMERALD} size="large" />
