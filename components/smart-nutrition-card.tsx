@@ -641,11 +641,10 @@ export function SmartNutritionCard({
       if (result.canceled || !result.assets?.[0]?.base64) return;
       setScanning(true);
 
-      // Primary path: Clarifai food model (works in production, no server needed)
-      const { analysePlatePhoto } = await import('@/lib/nutrition/clarifai-food');
-      const plateResult = await analysePlatePhoto(result.assets[0].base64);
+      // Primary path: Gemini Vision (single-step image → nutrition JSON, no USDA needed)
+      const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
+      const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
 
-      // Resolve nutrition — Clarifai result or server fallback
       let scan: {
         sodiumMg: number; potassiumMg?: number | null; foodDescription: string;
         calories?: number | null; carbsG?: number | null; sugarG?: number | null;
@@ -653,43 +652,22 @@ export function SmartNutritionCard({
         glycemicLoad?: number | null;
       };
 
-      if (plateResult.missingCredentials) {
-        // Clarifai PAT not configured — fall back to Gemini Vision
-        const { recogniseFoodInImage } = await import('@/lib/nutrition/apple-vision-food');
-        const { lookupBestUsdaMatch } = await import('@/lib/nutrition/usda-fdc');
-        const recognition = await recogniseFoodInImage(result.assets[0].base64);
-        if (recognition.primaryFood) {
-          const usdaItem = await lookupBestUsdaMatch(recognition.primaryFood);
-          scan = {
-            sodiumMg: usdaItem?.sodiumMg ?? 0,
-            foodDescription: usdaItem?.description ?? recognition.primaryFood,
-            calories: usdaItem?.calories ?? null,
-            carbsG: usdaItem?.carbsG ?? null,
-            sugarG: usdaItem?.sugarG ?? null,
-            fatG: usdaItem?.fatG ?? null,
-            proteinG: usdaItem?.proteinG ?? null,
-            fiberG: usdaItem?.fiberG ?? null,
-            glycemicLoad: usdaItem?.glycemicLoad ?? null,
-          };
-        } else {
-          scan = { sodiumMg: 0, foodDescription: 'Meal photo' };
-        }
-      } else if (plateResult.nutrition) {
-        const n = plateResult.nutrition;
+      if (usdaItem) {
         scan = {
-          sodiumMg: n.sodiumMg,
-          potassiumMg: n.potassiumMg,
-          foodDescription: plateResult.summary,
-          calories: n.calories,
-          carbsG: n.carbsG,
-          sugarG: n.sugarG,
-          fatG: n.fatG,
-          proteinG: n.proteinG,
-          fiberG: n.fiberG,
-          glycemicLoad: n.glycemicLoad,
+          sodiumMg: usdaItem.sodiumMg ?? 0,
+          foodDescription: usdaItem.description,
+          calories: usdaItem.calories,
+          carbsG: usdaItem.carbsG,
+          sugarG: usdaItem.sugarG,
+          fatG: usdaItem.fatG,
+          proteinG: usdaItem.proteinG,
+          fiberG: usdaItem.fiberG,
+          glycemicLoad: usdaItem.glycemicLoad,
         };
+      } else if (recognition.primaryFood) {
+        scan = { sodiumMg: 0, foodDescription: recognition.primaryFood };
       } else {
-        scan = { sodiumMg: 0, foodDescription: plateResult.summary || 'Meal photo' };
+        scan = { sodiumMg: 0, foodDescription: 'Meal photo' };
       }
 
       // Save as a SodiumRecord so it appears in all nutrition views
