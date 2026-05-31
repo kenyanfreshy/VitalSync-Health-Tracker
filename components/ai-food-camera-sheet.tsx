@@ -1044,6 +1044,7 @@ function RecentMealsList({ recentMeals, swipedId, setSwipedId, deleteSodium, isD
 // ─── HomeScreen (module-level) ────────────────────────────────────────────────
 interface HomeScreenProps {
   scanning: boolean;
+  openingCamera?: boolean;
   mode: ScanMode;
   onPlateScan: () => void;
   onBarcodeScan: () => void;
@@ -1059,7 +1060,7 @@ interface HomeScreenProps {
   prevEstimate?: { kcal: number; name: string } | null;
   scanBtnSpinAnim?: Animated.Value;
 }
-function HomeScreen({ scanning, mode, onPlateScan, onBarcodeScan, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
+function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
   return (
     <>
       <View style={styles.homeGrid}>
@@ -1073,7 +1074,7 @@ function HomeScreen({ scanning, mode, onPlateScan, onBarcodeScan, recentMeals, s
           onPress={onPlateScan}
           disabled={scanning}
         >
-          {scanning && mode === 'home' && scanBtnSpinAnim ? (
+          {(scanning || openingCamera) && scanBtnSpinAnim ? (
             <>
               <Animated.Text
                 style={[
@@ -1299,6 +1300,17 @@ function SearchScreen({
         />
       )}
 
+      {/* ── No results empty state ── */}
+      {searchResults.length === 0 && !scanning && initialQuery.trim().length > 0 && !preview && !showTray && (
+        <View style={{ alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16 }}>
+          <Text style={{ fontSize: 32, marginBottom: 8 }}>🔍</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: foregroundColor, marginBottom: 4 }}>No results found</Text>
+          <Text style={{ fontSize: 13, color: mutedColor, textAlign: 'center' }}>
+            No USDA matches for "{initialQuery}". Try a simpler term (e.g. "chicken" instead of "grilled chicken breast").
+          </Text>
+        </View>
+      )}
+
       {/* ── Results list (with multi-select checkboxes) ── */}
       {searchResults.length > 0 && !preview && !showTray && (
         <View style={styles.resultsList}>
@@ -1510,6 +1522,7 @@ export function AiFoodCameraSheet({
       setMode(initialMode);
       setPreview(null);
       setCapturedUri(null);
+      setOpeningCamera(false);
       setShowScanComplete(false);
       setServingMult(1);
       setCustomGrams('');
@@ -1561,9 +1574,9 @@ export function AiFoodCameraSheet({
     }
   }, [scanning, scanSpinAnim]);
 
-  // Spin the scan button icon while scanning
+  // Spin the scan button icon while scanning or opening camera
   useEffect(() => {
-    if (scanning) {
+    if (scanning || openingCamera) {
       scanBtnSpinAnim.setValue(0);
       Animated.loop(
         Animated.timing(scanBtnSpinAnim, {
@@ -1577,7 +1590,7 @@ export function AiFoodCameraSheet({
       scanBtnSpinAnim.stopAnimation();
       scanBtnSpinAnim.setValue(0);
     }
-  }, [scanning, scanBtnSpinAnim]);
+  }, [scanning, openingCamera, scanBtnSpinAnim]);
 
   // Animate scan-complete popup in
   useEffect(() => {
@@ -1613,9 +1626,11 @@ export function AiFoodCameraSheet({
       return;
     }
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setOpeningCamera(true);
     try {
       const perm = await SafeImagePicker.requestCameraPermissionsAsync();
       if (!perm.granted) {
+        setOpeningCamera(false);
         Alert.alert('Camera Access', 'Please allow camera access in Settings to scan meals.');
         return;
       }
@@ -1625,6 +1640,7 @@ export function AiFoodCameraSheet({
         base64: true,
         allowsEditing: false,
       });
+      setOpeningCamera(false);
       if (result.canceled || !result.assets?.[0]?.base64) return;
       // Store the captured photo URI for the scanner overlay
       const capturedPhotoUri = result.assets[0].uri;
@@ -1708,6 +1724,7 @@ export function AiFoodCameraSheet({
       }
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err: any) {
+      setOpeningCamera(false);
       Alert.alert('Scan Failed', err?.message ?? 'Could not analyse the photo. Please try again.');
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
@@ -1796,14 +1813,25 @@ export function AiFoodCameraSheet({
     setPreview(null);
     setTrayItems([]);
     setShowTray(false);
-    // Direct Gemini food search — no server needed
+    // Direct USDA food search — no server or AI quota needed
     (async () => {
       try {
         const { searchFoodWithGemini } = await import('@/lib/nutrition/gemini-food-search');
         const res = await searchFoodWithGemini(query.trim());
-        setSearchResults(res.results as SearchResult[]);
-      } catch (_err) {
-        Alert.alert('Search failed', 'Could not retrieve nutrition data. Please check your connection and try again.');
+        if (res.results.length === 0) {
+          // Show empty state inline — not an error alert
+          setSearchResults([]);
+        } else {
+          setSearchResults(res.results as SearchResult[]);
+        }
+      } catch (err: any) {
+        // "No results" is not a network error — show empty state
+        const msg: string = err?.message ?? '';
+        if (msg.toLowerCase().includes('no results')) {
+          setSearchResults([]);
+        } else {
+          Alert.alert('Search failed', 'Could not connect to the nutrition database. Please check your network and try again.');
+        }
       } finally {
         setScanning(false);
       }
@@ -2073,8 +2101,8 @@ export function AiFoodCameraSheet({
             {
               backgroundColor: colors.surface,
               transform: [{ translateY }],
-              // Expand to full screen during scan flow
-              ...(scanning || capturedUri ? { maxHeight: '100%', borderTopLeftRadius: 0, borderTopRightRadius: 0 } : {}),
+              // Expand to full screen during scan flow (also when camera is opening)
+              ...(scanning || capturedUri || openingCamera ? { maxHeight: '100%', borderTopLeftRadius: 0, borderTopRightRadius: 0 } : {}),
             },
           ]}
         >
@@ -2231,6 +2259,7 @@ export function AiFoodCameraSheet({
                   <>
                     <HomeScreen
                       scanning={scanning}
+                      openingCamera={openingCamera}
                       mode={mode}
                       onPlateScan={handlePlateScan}
                       onBarcodeScan={handleBarcodeScan}
