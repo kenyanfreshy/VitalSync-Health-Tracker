@@ -1341,10 +1341,6 @@ function SearchScreen({
       )}
 
 
-      {/* Powered-by badge */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 4, marginBottom: 2 }}>
-        <Text style={{ fontSize: 10, color: mutedColor }}>🤖 AI-powered · USDA Reference Values</Text>
-      </View>
       <Pressable
         style={({ pressed }) => [
           styles.searchSubmitBtn,
@@ -2219,8 +2215,14 @@ export function AiFoodCameraSheet({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.backdrop} />
+      <TouchableWithoutFeedback
+        onPress={onClose}
+        disabled={!!(scanning || capturedUri || openingCamera)}
+      >
+        <View
+          style={styles.backdrop}
+          pointerEvents={(scanning || capturedUri || openingCamera) ? 'none' : 'auto'}
+        />
       </TouchableWithoutFeedback>
 
       <KeyboardAvoidingView
@@ -2243,6 +2245,16 @@ export function AiFoodCameraSheet({
           <View style={styles.handleBar}>
             <View style={[styles.handle, { backgroundColor: isDark ? '#334155' : '#CBD5E1' }]} />
           </View>
+          {/* Floating close button — always on top during full-screen scan */}
+          {(scanning || capturedUri || openingCamera) && (
+            <Pressable
+              style={({ pressed }) => [styles.floatingCloseBtn, pressed && { opacity: 0.6 }]}
+              onPress={onClose}
+              hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
+            >
+              <Text style={styles.floatingCloseBtnText}>✕</Text>
+            </Pressable>
+          )}
 
           {/* Header */}
           <View style={styles.sheetHeader}>
@@ -2689,6 +2701,26 @@ const styles = StyleSheet.create({
   closeBtnText: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  // Floating close button — shown during full-screen scan to ensure dismissibility
+  floatingCloseBtn: {
+    position: 'absolute',
+    top: 12,
+    right: 16,
+    zIndex: 999,
+    elevation: 999,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  floatingCloseBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    lineHeight: 18,
   },
   // Mode toggle
   modeToggle: {

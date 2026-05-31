@@ -4,6 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import { invokeLLM, type Message } from "./_core/llm";
+import { GoogleGenerativeAI, FunctionCallingMode } from "@google/generative-ai";
 import { generateImage } from "./_core/imageGeneration";
 import { storagePut } from "./storage";
 import { transcribeAudio } from "./_core/voiceTranscription";
@@ -568,44 +569,111 @@ export const appRouter = router({
           clinical_notes: String(r.clinical_notes ?? "").slice(0, 200),
         });
 
-        // Step 1: LLM search (primary — fast, natural language, diet-aware)
+        // Step 1: Gemini 2.5 Flash with USDA FDC as a function tool (primary)
+        const fdcKey = process.env.USDA_FDC_API_KEY ?? 'DEMO_KEY';
         let llmResults: FoodResult[] = [];
         try {
-          const systemPrompt = [
-            "You are a registered dietitian with access to the USDA FoodData Central (2024) and NCCDB databases.",
-            "The user has described a food item or meal in natural language. Identify the most likely food items and return their nutritional profiles.",
-            "For each item, use USDA reference values for a standard serving size. Be precise with macros.",
-            "Return a JSON object with a 'results' array of up to 8 items. Each item must have:",
-            "- id: a short unique slug",
-            "- name: the food name as it would appear in a nutrition database (e.g. 'Grilled Salmon, 3 oz (85g)')",
-            "- brand: brand or source if known, otherwise 'Generic'",
-            "- serving_size: string description (e.g. '3 oz (85g)')",
-            "- serving_g: serving weight in grams (number)",
-            "- calories: kcal per serving (number)",
-            "- protein_g: protein grams (number)",
-            "- carbs_g: total carbohydrate grams (number)",
-            "- fat_g: total fat grams (number)",
-            "- fiber_g: dietary fiber grams (number)",
-            "- sodium_mg: sodium milligrams (number)",
-            "- potassium_mg: potassium milligrams (number)",
-            "- phosphorus_mg: phosphorus milligrams (number)",
-            "- glycemic_index: estimated GI (number 0-100) or null",
-            "- usda_category: USDA food category string",
-            "- clinical_notes: one sentence about this food's relevance to the user's diet protocol",
-            input.dietProtocol
-              ? `The user follows a ${input.dietProtocol} diet protocol. Prioritise aligned foods and flag conflicts in clinical_notes.`
-              : "",
-          ].filter(Boolean).join("\n");
-          const messages: Message[] = [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: `Search query: "${input.query}"` },
-          ];
-          const response = await invokeLLM({ messages, response_format: { type: "json_object" } });
-          const raw = String(response.choices[0].message.content);
-          const parsed = JSON.parse(raw) as { results?: Partial<FoodResult>[] };
-          llmResults = (parsed.results ?? []).slice(0, 8).map(normalise);
+          const geminiKey = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
+          if (!geminiKey) throw new Error('No Gemini key configured');
+          const genAI = new GoogleGenerativeAI(geminiKey);
+          // USDA FDC search function that Gemini 2.5 can call as a tool
+          const callUsdaTool = async (foodQuery: string): Promise<object> => {
+            const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${fdcKey}`;
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+              body: JSON.stringify({ query: foodQuery, pageSize: 5 }),
+            });
+            if (!res.ok) return { error: `USDA API error: ${res.status}` };
+            const data = await res.json() as {
+              foods?: Array<{
+                fdcId: number; description: string; brandOwner?: string; foodCategory?: string;
+                servingSize?: number; servingSizeUnit?: string;
+                foodNutrients?: Array<{ nutrientName: string; value: number; unitName: string }>;
+              }>;
+            };
+            if (!data.foods?.length) return { error: `No foods found for '${foodQuery}'` };
+            return {
+              foods: data.foods.slice(0, 5).map(f => {
+                const macros: Record<string, string> = {};
+                for (const n of (f.foodNutrients ?? [])) {
+                  const nm = n.nutrientName.toLowerCase();
+                  if (nm.includes('energy') || nm.includes('calorie')) macros['calories'] = `${n.value} kcal`;
+                  else if (nm.includes('protein')) macros['protein'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('total lipid') || nm === 'fat') macros['fat'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('carbohydrate')) macros['carbs'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('fiber')) macros['fiber'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('sodium')) macros['sodium'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('potassium')) macros['potassium'] = `${n.value}${n.unitName}`;
+                  else if (nm.includes('phosphorus')) macros['phosphorus'] = `${n.value}${n.unitName}`;
+                }
+                return {
+                  fdcId: f.fdcId,
+                  description: f.description,
+                  brand: f.brandOwner ?? 'USDA',
+                  category: f.foodCategory ?? 'Other',
+                  serving: f.servingSize ? `${f.servingSize}${f.servingSizeUnit ?? 'g'}` : '100g',
+                  macros,
+                };
+              }),
+            };
+          };
+          const model = genAI.getGenerativeModel(
+            {
+              model: 'gemini-2.5-flash-preview-05-20',
+              tools: [{
+                functionDeclarations: [{
+                  name: 'search_usda_food_macros',
+                  description: 'Queries the USDA FoodData Central API to find macronutrient data for a food item.',
+                  parameters: {
+                    type: 'object' as const,
+                    properties: {
+                      food_query: {
+                        type: 'string' as const,
+                        description: 'The specific food item name to search (e.g. "raw broccoli", "McGriddle")',
+                      },
+                    },
+                    required: ['food_query'],
+                  },
+                }],
+              }],
+              generationConfig: { temperature: 0.1 },
+              systemInstruction: [
+                'You are a meticulous nutrition assistant with access to the USDA FoodData Central database.',
+                'When the user searches for a food, call search_usda_food_macros to get real USDA data first.',
+                'After getting USDA results, return a JSON object with a "results" array of up to 8 items.',
+                'Each item must have: id (slug), name, brand, serving_size (string), serving_g (number),',
+                'calories (kcal number), protein_g, carbs_g, fat_g, fiber_g, sodium_mg, potassium_mg,',
+                'phosphorus_mg, glycemic_index (number or null), usda_category, clinical_notes (one sentence).',
+                input.dietProtocol
+                  ? `The user follows a ${input.dietProtocol} diet. Prioritise aligned foods and flag conflicts in clinical_notes.`
+                  : '',
+              ].filter(Boolean).join(' '),
+            },
+            { apiVersion: 'v1beta' },
+          );
+          const chat = model.startChat({
+            toolConfig: { functionCallingConfig: { mode: FunctionCallingMode.AUTO } },
+          });
+          let chatResponse = await chat.sendMessage(`Search query: "${input.query}"`);
+          // Agentic loop: handle up to 3 tool calls
+          for (let i = 0; i < 3; i++) {
+            const parts = chatResponse.response.candidates?.[0]?.content?.parts ?? [];
+            const fnCall = parts.find(p => p.functionCall)?.functionCall;
+            if (!fnCall) break;
+            const toolResult = await callUsdaTool((fnCall.args as { food_query: string }).food_query);
+            chatResponse = await chat.sendMessage([{
+              functionResponse: { name: fnCall.name, response: toolResult },
+            }]);
+          }
+          const finalText = chatResponse.response.text();
+          const jsonMatch = finalText.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]) as { results?: Partial<FoodResult>[] };
+            llmResults = (parsed.results ?? []).slice(0, 8).map(normalise);
+          }
         } catch {
-          // LLM failed — fall through to USDA FDC fallback
+          // Gemini 2.5 failed — fall through to USDA FDC direct fallback
         }
 
         if (llmResults.length > 0) {
