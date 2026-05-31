@@ -532,8 +532,9 @@ export const appRouter = router({
   // Smart Nutrition Intelligence — food search and recipe generation
   nutritionAI: router({
     /**
-     * USDA-backed food search: accepts a natural-language query and returns
-     * up to 8 matching food items with full macro profiles.
+     * LLM-first food search with USDA FDC fallback.
+     * 1. Try Gemini LLM (fast, natural language, diet-aware)
+     * 2. If LLM fails or returns 0 results -> fall back to USDA FDC REST API
      */
     searchFood: publicProcedure
       .input(z.object({
@@ -541,62 +542,122 @@ export const appRouter = router({
         dietProtocol: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        const systemPrompt = [
-          "You are a registered dietitian with access to the USDA FoodData Central (2024) and NCCDB databases.",
-          "The user has described a food item or meal in natural language. Identify the most likely food items and return their nutritional profiles.",
-          "For each item, use USDA reference values for a standard serving size. Be precise with macros.",
-          "Return a JSON object with a 'results' array of up to 8 items. Each item must have:",
-          "- id: a short unique slug",
-          "- name: the food name as it would appear in a nutrition database (e.g. 'Vegan Protein Powder, 1 scoop (30g)')",
-          "- brand: brand or source if known, otherwise 'Generic'",
-          "- serving_size: string description (e.g. '1 scoop (30g)')",
-          "- serving_g: serving weight in grams (number)",
-          "- calories: kcal per serving (number)",
-          "- protein_g: protein grams (number)",
-          "- carbs_g: total carbohydrate grams (number)",
-          "- fat_g: total fat grams (number)",
-          "- fiber_g: dietary fiber grams (number)",
-          "- sodium_mg: sodium milligrams (number)",
-          "- potassium_mg: potassium milligrams (number)",
-          "- phosphorus_mg: phosphorus milligrams (number)",
-          "- glycemic_index: estimated GI (number 0-100) or null",
-          "- usda_category: USDA food category string",
-          "- clinical_notes: one sentence about this food's relevance to the user's diet protocol",
-          input.dietProtocol ? `The user follows a ${input.dietProtocol} diet protocol. Prioritise aligned foods and flag conflicts.` : "",
-        ].filter(Boolean).join("\n");
-        const messages: Message[] = [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Search query: "${input.query}"` },
-        ];
-        const response = await invokeLLM({ messages, response_format: { type: "json_object" } });
-        const raw = String(response.choices[0].message.content);
-        let parsed: { results: Array<{
+        // Shared result shape
+        type FoodResult = {
           id: string; name: string; brand: string; serving_size: string; serving_g: number;
           calories: number; protein_g: number; carbs_g: number; fat_g: number; fiber_g: number;
           sodium_mg: number; potassium_mg: number; phosphorus_mg: number;
           glycemic_index: number | null; usda_category: string; clinical_notes: string;
-        }> };
-        try { parsed = JSON.parse(raw); } catch { throw new Error("LLM returned invalid JSON"); }
-        return {
-          results: (parsed.results ?? []).slice(0, 8).map(r => ({
-            id: String(r.id ?? Math.random().toString(36).slice(2)),
-            name: String(r.name ?? "").slice(0, 120),
-            brand: String(r.brand ?? "Generic").slice(0, 60),
-            serving_size: String(r.serving_size ?? "1 serving").slice(0, 60),
-            serving_g: Number(r.serving_g ?? 100),
-            calories: Number(r.calories ?? 0),
-            protein_g: Number(r.protein_g ?? 0),
-            carbs_g: Number(r.carbs_g ?? 0),
-            fat_g: Number(r.fat_g ?? 0),
-            fiber_g: Number(r.fiber_g ?? 0),
-            sodium_mg: Number(r.sodium_mg ?? 0),
-            potassium_mg: Number(r.potassium_mg ?? 0),
-            phosphorus_mg: Number(r.phosphorus_mg ?? 0),
-            glycemic_index: r.glycemic_index != null ? Number(r.glycemic_index) : null,
-            usda_category: String(r.usda_category ?? "Other").slice(0, 60),
-            clinical_notes: String(r.clinical_notes ?? "").slice(0, 200),
-          })),
         };
+        const normalise = (r: Partial<FoodResult>): FoodResult => ({
+          id: String(r.id ?? Math.random().toString(36).slice(2)),
+          name: String(r.name ?? "").slice(0, 120),
+          brand: String(r.brand ?? "Generic").slice(0, 60),
+          serving_size: String(r.serving_size ?? "1 serving").slice(0, 60),
+          serving_g: Number(r.serving_g ?? 100),
+          calories: Number(r.calories ?? 0),
+          protein_g: Number(r.protein_g ?? 0),
+          carbs_g: Number(r.carbs_g ?? 0),
+          fat_g: Number(r.fat_g ?? 0),
+          fiber_g: Number(r.fiber_g ?? 0),
+          sodium_mg: Number(r.sodium_mg ?? 0),
+          potassium_mg: Number(r.potassium_mg ?? 0),
+          phosphorus_mg: Number(r.phosphorus_mg ?? 0),
+          glycemic_index: r.glycemic_index != null ? Number(r.glycemic_index) : null,
+          usda_category: String(r.usda_category ?? "Other").slice(0, 60),
+          clinical_notes: String(r.clinical_notes ?? "").slice(0, 200),
+        });
+
+        // Step 1: LLM search (primary — fast, natural language, diet-aware)
+        let llmResults: FoodResult[] = [];
+        try {
+          const systemPrompt = [
+            "You are a registered dietitian with access to the USDA FoodData Central (2024) and NCCDB databases.",
+            "The user has described a food item or meal in natural language. Identify the most likely food items and return their nutritional profiles.",
+            "For each item, use USDA reference values for a standard serving size. Be precise with macros.",
+            "Return a JSON object with a 'results' array of up to 8 items. Each item must have:",
+            "- id: a short unique slug",
+            "- name: the food name as it would appear in a nutrition database (e.g. 'Grilled Salmon, 3 oz (85g)')",
+            "- brand: brand or source if known, otherwise 'Generic'",
+            "- serving_size: string description (e.g. '3 oz (85g)')",
+            "- serving_g: serving weight in grams (number)",
+            "- calories: kcal per serving (number)",
+            "- protein_g: protein grams (number)",
+            "- carbs_g: total carbohydrate grams (number)",
+            "- fat_g: total fat grams (number)",
+            "- fiber_g: dietary fiber grams (number)",
+            "- sodium_mg: sodium milligrams (number)",
+            "- potassium_mg: potassium milligrams (number)",
+            "- phosphorus_mg: phosphorus milligrams (number)",
+            "- glycemic_index: estimated GI (number 0-100) or null",
+            "- usda_category: USDA food category string",
+            "- clinical_notes: one sentence about this food's relevance to the user's diet protocol",
+            input.dietProtocol
+              ? `The user follows a ${input.dietProtocol} diet protocol. Prioritise aligned foods and flag conflicts in clinical_notes.`
+              : "",
+          ].filter(Boolean).join("\n");
+          const messages: Message[] = [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Search query: "${input.query}"` },
+          ];
+          const response = await invokeLLM({ messages, response_format: { type: "json_object" } });
+          const raw = String(response.choices[0].message.content);
+          const parsed = JSON.parse(raw) as { results?: Partial<FoodResult>[] };
+          llmResults = (parsed.results ?? []).slice(0, 8).map(normalise);
+        } catch {
+          // LLM failed — fall through to USDA FDC fallback
+        }
+
+        if (llmResults.length > 0) {
+          return { results: llmResults, source: 'llm' as const };
+        }
+
+        // Step 2: USDA FDC fallback (when LLM fails or returns 0 results)
+        const fdcKey = process.env.USDA_FDC_API_KEY ?? 'DEMO_KEY';
+        const fdcUrl = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${encodeURIComponent(input.query)}&api_key=${fdcKey}&pageSize=8&dataType=Foundation,SR+Legacy,Survey+(FNDDS)`;
+        let usdaResults: FoodResult[] = [];
+        try {
+          const fdcRes = await fetch(fdcUrl, { headers: { Accept: 'application/json' } });
+          if (fdcRes.ok) {
+            const fdcData = await fdcRes.json() as {
+              foods?: Array<{
+                fdcId: number; description: string; brandOwner?: string; foodCategory?: string;
+                foodNutrients?: Array<{ nutrientId: number; value: number }>;
+              }>;
+            };
+            const getNutrient = (nuts: Array<{ nutrientId: number; value: number }>, ...ids: number[]) => {
+              for (const id of ids) { const n = nuts.find(x => x.nutrientId === id); if (n) return n.value; }
+              return 0;
+            };
+            usdaResults = (fdcData.foods ?? []).slice(0, 8).map(f => {
+              const nuts = f.foodNutrients ?? [];
+              return normalise({
+                id: `fdc-${f.fdcId}`,
+                name: f.description,
+                brand: f.brandOwner ?? 'USDA',
+                serving_size: '100g',
+                serving_g: 100,
+                calories: getNutrient(nuts, 1008, 2047),
+                protein_g: getNutrient(nuts, 1003),
+                carbs_g: getNutrient(nuts, 1005),
+                fat_g: getNutrient(nuts, 1004),
+                fiber_g: getNutrient(nuts, 1079),
+                sodium_mg: getNutrient(nuts, 1093),
+                potassium_mg: getNutrient(nuts, 1092),
+                phosphorus_mg: getNutrient(nuts, 1091),
+                glycemic_index: null,
+                usda_category: f.foodCategory ?? 'Other',
+                clinical_notes: input.dietProtocol
+                  ? `USDA verified data. Check suitability for ${input.dietProtocol} protocol.`
+                  : 'USDA FoodData Central verified data.',
+              });
+            });
+          }
+        } catch {
+          // USDA also failed — return empty results
+        }
+
+        return { results: usdaResults, source: 'usda' as const };
       }),
 
     /**

@@ -49,6 +49,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useColorScheme, useColors, useFoodCameraStrings } from '@/hooks';
+import { useDietType } from '@/lib/health/diet-type';
 import { useHealth } from '@/lib/health/health-context';
 import { saveMealToHealthKit } from '@/lib/health/healthkit-write';
 import { trpc } from '@/lib/trpc';
@@ -107,6 +108,31 @@ const SERVING_STEPS = [0.5, 1, 1.5, 2] as const;
 
 // ─── AsyncStorage keys ───────────────────────────────────────────────────────
 const PREV_ESTIMATE_KEY = '@vitalsync/food_scan_prev_estimate';
+const SEARCH_CACHE_KEY = '@vitalsync/food_search_cache_v1';
+const SEARCH_CACHE_MAX = 5;
+
+type SearchCacheEntry = { query: string; results: SearchResult[]; ts: number };
+
+async function readSearchCache(): Promise<SearchCacheEntry[]> {
+  try {
+    const raw = await AsyncStorage.getItem(SEARCH_CACHE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as SearchCacheEntry[];
+  } catch { return []; }
+}
+
+async function writeSearchCache(query: string, results: SearchResult[]): Promise<void> {
+  try {
+    const existing = await readSearchCache();
+    // Remove any prior entry for the same query (case-insensitive)
+    const filtered = existing.filter(e => e.query.toLowerCase() !== query.toLowerCase());
+    const updated: SearchCacheEntry[] = [
+      { query, results, ts: Date.now() },
+      ...filtered,
+    ].slice(0, SEARCH_CACHE_MAX);
+    await AsyncStorage.setItem(SEARCH_CACHE_KEY, JSON.stringify(updated));
+  } catch { /* silent */ }
+}
 type ServingStep = typeof SERVING_STEPS[number];
 
 // ─── Meal context labels ──────────────────────────────────────────────
@@ -1304,6 +1330,26 @@ function SearchScreen({
         />
       )}
 
+      {/* ── Shimmer loading skeleton (shown while LLM/USDA search is in progress) ── */}
+      {scanning && !preview && !showTray && (
+        <View style={{ paddingTop: 8 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <View
+              key={i}
+              style={[
+                styles.shimmerCard,
+                { backgroundColor: isDark ? '#1E293B' : '#F1F5F9', opacity: 1 - i * 0.15 },
+              ]}
+            >
+              <View style={{ flex: 1 }}>
+                <View style={[styles.shimmerLine, { width: '70%', backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
+                <View style={[styles.shimmerLine, { width: '45%', marginTop: 6, backgroundColor: isDark ? '#2D3748' : '#EDF2F7' }]} />
+              </View>
+              <View style={[styles.shimmerPill, { backgroundColor: isDark ? '#334155' : '#E2E8F0' }]} />
+            </View>
+          ))}
+        </View>
+      )}
       {/* ── No results empty state ── */}
       {searchResults.length === 0 && !scanning && initialQuery.trim().length > 0 && !preview && !showTray && (
         <View style={{ alignItems: 'center', paddingVertical: 24, paddingHorizontal: 16 }}>
@@ -1452,6 +1498,7 @@ export function AiFoodCameraSheet({
   const fc = useFoodCameraStrings();
   const { addSodium, deleteSodium, state: healthState } = useHealth();
   const recentMeals = (healthState.data?.sodiumIntake ?? []).slice(0, 5);
+  const { dietType } = useDietType();
 
   // tRPC mutations
   // analysePhotoMutation kept for server-side fallback (dev/sandbox only)
@@ -1806,38 +1853,53 @@ export function AiFoodCameraSheet({
     }
   }, []);
 
-  // ── USDA search ────────────────────────────────────────────────────────────
+  // ── USDA search (with AsyncStorage cache for last 5 queries) ──────────────
   const handleSubmitSearch = useCallback((query: string, _setLocalText: (t: string) => void) => {
     if (!query.trim()) return;
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSearchQuery(query);
-    setScanning(true);
-    setSearchResults([]);
+    const trimmedQuery = query.trim();
+    setSearchQuery(trimmedQuery);
     setSelectedResult(null);
     setPreview(null);
     setTrayItems([]);
     setShowTray(false);
-    // Server-side food search via tRPC (uses built-in LLM + USDA reference values)
-    searchFoodMutation.mutateAsync({ query: query.trim() })
-      .then((res) => {
-        if (res.results.length === 0) {
-          setSearchResults([]);
-        } else {
-          setSearchResults(res.results as SearchResult[]);
-        }
-      })
-      .catch((err: any) => {
-        const msg: string = err?.message ?? '';
-        if (msg.toLowerCase().includes('no results') || msg.toLowerCase().includes('not found')) {
-          setSearchResults([]);
-        } else {
-          Alert.alert('Search failed', 'Could not connect to the nutrition database. Please check your network and try again.');
-        }
-      })
-      .finally(() => {
-        setScanning(false);
-      });
-  }, [searchFoodMutation]);
+
+    // Check AsyncStorage cache first — instant results for repeat searches
+    readSearchCache().then((cache) => {
+      const hit = cache.find(e => e.query.toLowerCase() === trimmedQuery.toLowerCase());
+      if (hit && hit.results.length > 0) {
+        // Cache hit: show results immediately, no spinner
+        setSearchResults(hit.results);
+        return;
+      }
+
+      // Cache miss: call server
+      setScanning(true);
+      setSearchResults([]);
+      // Pass the user's active diet protocol so the LLM can prioritise aligned foods
+      const activeDietProtocol = dietType && dietType !== 'balanced' ? dietType : undefined;
+      searchFoodMutation.mutateAsync({ query: trimmedQuery, dietProtocol: activeDietProtocol })
+        .then((res) => {
+          const results = res.results as SearchResult[];
+          setSearchResults(results);
+          if (results.length > 0) {
+            // Persist to cache for instant repeat searches
+            writeSearchCache(trimmedQuery, results);
+          }
+        })
+        .catch((err: any) => {
+          const msg: string = err?.message ?? '';
+          if (msg.toLowerCase().includes('no results') || msg.toLowerCase().includes('not found')) {
+            setSearchResults([]);
+          } else {
+            Alert.alert('Search failed', 'Could not connect to the nutrition database. Please check your network and try again.');
+          }
+        })
+        .finally(() => {
+          setScanning(false);
+        });
+    });
+  }, [searchFoodMutation, dietType]);
 
   // Single-item quick-preview (fast path when tray is empty)
   const handleSelectSearchResult = useCallback((item: SearchResult) => {
@@ -3145,6 +3207,24 @@ const styles = StyleSheet.create({
   },
   resultsList: {
     gap: 8,
+  },
+  // Shimmer skeleton styles
+  shimmerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 8,
+    gap: 12,
+  },
+  shimmerLine: {
+    height: 12,
+    borderRadius: 6,
+  },
+  shimmerPill: {
+    width: 48,
+    height: 24,
+    borderRadius: 12,
   },
   resultsHeader: {
     fontSize: 10,
