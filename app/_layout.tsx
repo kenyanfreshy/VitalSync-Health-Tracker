@@ -50,6 +50,7 @@ import { SubscriptionProvider, useSubscription } from '@/lib/subscription/subscr
 import { paywallGuard } from '@/lib/subscription/paywall-guard';
 import {
   whatsNewUiStrings,
+  whatsNewV1051Strings,
   whatsNewV1050Strings,
   whatsNewV1049Strings,
   whatsNewV1048Strings,
@@ -457,6 +458,7 @@ function RootLayout() {
             about: aboutStrings.en,
             onboarding: onboardingStrings.en,
             whatsNewUi: whatsNewUiStrings,
+            whatsNewV1051: whatsNewV1051Strings,
             whatsNewV1050: whatsNewV1050Strings,
             whatsNewV1049: whatsNewV1049Strings,
             whatsNewV1048: whatsNewV1048Strings,
