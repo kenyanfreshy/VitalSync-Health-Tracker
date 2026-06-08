@@ -32,6 +32,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -60,7 +61,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { safeSetItem } from '@/lib/safe-async-storage';
 
 const { width: SCREEN_WIDTH, height: _SCREEN_HEIGHT } = Dimensions.get('window');
-const SLIDE_COUNT = 8;
+const SLIDE_COUNT = 9;
 
 // ─── Brand colours ────────────────────────────────────────────────────────────
 const BG_TOP    = '#0D1117';
@@ -83,6 +84,7 @@ const SLIDE_META = [
   { id: 'support',     icon: 'questionmark.circle.fill' as const, iconColor: '#38BDF8' },
   { id: 'theme',       icon: 'sun.max.fill' as const,           iconColor: '#F59E0B' },
   { id: 'profile',     icon: 'person.fill' as const,            iconColor: '#805AD5' },
+  { id: 'paywall',     icon: 'star.fill' as const,              iconColor: '#F59E0B' },
   { id: 'consent',     icon: 'checkmark.shield.fill' as const,  iconColor: '#38BDF8' },
 ];
 
@@ -537,7 +539,7 @@ export default function OnboardingScreen() {
   }
 
   function handleCTAPress(slideIndex: number) {
-    if (slideIndex === 7) {
+    if (slideIndex === 8) {
       handleFinish();
     } else {
       goToSlide(slideIndex + 1);
@@ -583,11 +585,12 @@ export default function OnboardingScreen() {
     { top: o.slideHeadline3top, bottom: o.slideHeadline3bottom },
     { top: o.slideHeadline5top, bottom: o.slideHeadline5bottom },
     { top: o.slideHeadline6top, bottom: o.slideHeadline6bottom },
+    { top: 'Unlock Premium', bottom: 'Start your 14-day free trial' },
     { top: o.slideHeadline4top, bottom: o.slideHeadline4bottom },
   ];
 
   const isLastSlide = currentSlide === SLIDE_COUNT - 1;
-  const _ctaLabel = [o.langSlideContinue ?? 'Continue', o.welcomeCta, o.permissionsCta, o.thresholdsCta, o.everythingInSettings, o.pickTheme, o.profileCta, o.consentCta][currentSlide] ?? o.permissionsCta;
+  const _ctaLabel = [o.langSlideContinue ?? 'Continue', o.welcomeCta, o.permissionsCta, o.thresholdsCta, o.everythingInSettings, o.pickTheme, o.profileCta, 'Continue', o.consentCta][currentSlide] ?? o.permissionsCta;
 
   // ─── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -1345,7 +1348,7 @@ export default function OnboardingScreen() {
                 goToSlide(7);
               }}
               accessibilityRole="button"
-              accessibilityLabel="Skip profile setup for now"
+              accessibilityLabel="Skip profile setup, go to paywall"
             >
               <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', textAlign: 'center', textDecorationLine: 'underline' }}>
                 {o.skipForNow}
@@ -1353,11 +1356,125 @@ export default function OnboardingScreen() {
             </Pressable>
           </ScrollView>
         </View>
-        {/* ── Slide 7: Consent ────────────────────────────────────────── */}
+        {/* ── Slide 7: Paywall (before consent) ─────────────────────── */}
+        <View style={[styles.slide, { width: SCREEN_WIDTH, paddingHorizontal: 0, paddingTop: 0 }]}>
+          <ScrollView
+            style={{ flex: 1, width: SCREEN_WIDTH }}
+            contentContainerStyle={{ paddingBottom: 24 }}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Header */}
+            <View style={{ alignItems: 'center', paddingTop: 24, paddingHorizontal: 20, marginBottom: 12 }}>
+              <Image
+                source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
+                style={{ width: 80, height: 80, marginBottom: 10 }}
+                contentFit="contain"
+              />
+              <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: '#F59E0B', marginBottom: 4 }}>VITALSYNC PREMIUM</Text>
+              <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', marginBottom: 6, lineHeight: 30 }}>Unlock Premium</Text>
+              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 19, paddingHorizontal: 8 }}>Full access to all premium features. Cancel anytime.</Text>
+            </View>
+
+            {/* Plan cards */}
+            <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 10 }}>
+              {/* Annual */}
+              <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 16, padding: 14, borderWidth: 2, borderColor: '#3B82F6' }}>
+                <View style={{ backgroundColor: '#3B82F6', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 6 }}>
+                  <Text style={{ fontSize: 9, fontWeight: '800', color: '#fff', letterSpacing: 0.8 }}>BEST VALUE</Text>
+                </View>
+                <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.55)', letterSpacing: 0.8, marginBottom: 4 }}>ANNUAL PLAN</Text>
+                <Text style={{ fontSize: 26, fontWeight: '800', color: '#FFFFFF' }}>$69.99<Text style={{ fontSize: 13, fontWeight: '400', color: 'rgba(255,255,255,0.55)' }}>/year</Text></Text>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>Includes a 14-day free trial</Text>
+                <Text style={{ fontSize: 11, color: '#4ADE80', fontWeight: '600', marginTop: 2 }}>Save ~16% vs monthly</Text>
+              </View>
+              {/* Monthly */}
+              <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)' }}>
+                <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.55)', letterSpacing: 0.8, marginBottom: 4 }}>MONTHLY PLAN</Text>
+                <Text style={{ fontSize: 26, fontWeight: '800', color: '#FFFFFF' }}>$6.99<Text style={{ fontSize: 13, fontWeight: '400', color: 'rgba(255,255,255,0.55)' }}>/month</Text></Text>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>Includes a 14-day free trial</Text>
+              </View>
+            </View>
+
+            {/* Feature list */}
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginHorizontal: 20, marginBottom: 14, gap: 8 }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.7)', marginBottom: 4, letterSpacing: 0.3 }}>What's included</Text>
+              {[
+                { text: 'EKG waveform viewer & rhythm trends', highlight: true },
+                { text: Platform.OS === 'ios' ? 'Apple Intelligence powered nutrition analysis' : 'Gemini powered nutrition analysis', highlight: true },
+                { text: 'Unlimited vital signs & lab tracking' },
+                { text: 'Blood pressure & glucose trends' },
+                { text: 'Medication & appointment management' },
+                { text: 'Advanced health reports & PDF export' },
+                { text: 'Personal health narrative generation' },
+                { text: 'Correlation engine & pattern detection' },
+                { text: 'Lab results tracking & trend analysis' },
+                { text: 'BLE device connectivity (BP monitors, scales)' },
+              ].map(({ text, highlight }) => (
+                <View key={text} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                  <MaterialIcons name="check-circle" size={16} color={highlight ? '#3B82F6' : '#4ADE80'} style={{ marginTop: 2 }} />
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', flex: 1, lineHeight: 19 }}>{text}</Text>
+                  {highlight && (
+                    <View style={{ backgroundColor: 'rgba(255,196,0,0.15)', borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1, borderWidth: 1, borderColor: 'rgba(255,196,0,0.35)' }}>
+                      <Text style={{ fontSize: 10 }}>👑</Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+
+            {/* Disclosure (Apple 3.1.2(c) — above CTA) */}
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, marginHorizontal: 20, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
+              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 16, textAlign: 'center' }}>
+                After the 14-day free trial, your subscription automatically renews at $69.99/year (or $6.99/month) unless canceled at least 24 hours before renewal.
+              </Text>
+            </View>
+
+            {/* CTA */}
+            <Pressable
+              style={({ pressed }) => [{
+                backgroundColor: '#3B82F6',
+                borderRadius: 14,
+                paddingVertical: 15,
+                alignItems: 'center',
+                marginHorizontal: 20,
+                marginBottom: 10,
+                opacity: pressed ? 0.88 : 1,
+                transform: [{ scale: pressed ? 0.97 : 1 }],
+              }]}
+              onPress={() => {
+                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push('/paywall' as any);
+              }}
+            >
+              <Text style={{ fontSize: 17, fontWeight: '700', color: '#fff' }}>Continue with Annual Plan</Text>
+            </Pressable>
+
+            {/* Skip to consent */}
+            <Pressable
+              style={({ pressed }) => [{ alignSelf: 'center', paddingVertical: 8, opacity: pressed ? 0.5 : 1 }]}
+              onPress={() => goToSlide(8)}
+            >
+              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', textDecorationLine: 'underline' }}>Maybe later</Text>
+            </Pressable>
+
+            {/* Privacy / Terms */}
+            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 }}>
+              <Pressable onPress={() => Linking.openURL('https://vitalsyncpersonalwellnesshub.com/article/privacy-policy')}>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textDecorationLine: 'underline' }}>Privacy Policy</Text>
+              </Pressable>
+              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>·</Text>
+              <Pressable onPress={() => Linking.openURL('https://vitalsyncpersonalwellnesshub.com/article/subscription-plans')}>
+                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textDecorationLine: 'underline' }}>Terms of Use</Text>
+              </Pressable>
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* ── Slide 8: Consent ────────────────────────────────────────── */}
         <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
           <View style={styles.slideIconWrap}>
-            <View style={[styles.iconCircle, { backgroundColor: SLIDE_META[7].iconColor + '22' }]}>
-              <IconSymbol name={SLIDE_META[7].icon} size={52} color={SLIDE_META[7].iconColor} />
+            <View style={[styles.iconCircle, { backgroundColor: SLIDE_META[8].iconColor + '22' }]}>
+              <IconSymbol name={SLIDE_META[8].icon} size={52} color={SLIDE_META[8].iconColor} />
             </View>
           </View>
           <RAnimated.View style={[styles.headlineWrap, headlineAnimStyle]}>

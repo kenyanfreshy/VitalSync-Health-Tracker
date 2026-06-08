@@ -617,7 +617,7 @@ export default function BloodSugarLogScreen() {
         </TouchableOpacity>
       )}
 
-      {/* ─── CGM / Dexcom Info Banner (non-interactive) ──────────────── */}
+      {/* ─── CGM Info Banner (non-interactive) ──────────────── */}
       <View style={[s.cgmImportRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View style={s.cgmImportLeft}>
           <Text style={s.cgmImportIcon}>📲</Text>

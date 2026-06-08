@@ -63,6 +63,8 @@ import { CorrelationTrendChart } from '@/components/correlation-trend-chart';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
 import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
+import { Linking } from 'react-native';
+import { CORRELATION_REFS, getRefsForCategories, type PeerRef } from '@/lib/health/peer-review-refs';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_SIZE = SCREEN_WIDTH - 64;
@@ -794,9 +796,14 @@ export default function AnalyticsScreen() {
               const lagInsight = insights.find(i => i.category === 'lag-analysis');
               const otherInsights = insights.filter(i => i.category !== 'circadian-rhythm' && i.category !== 'lag-analysis');
 
+              // Build a global ordered ref list for the visible insights
+              const allCategories = insights.map(i => i.category);
+              const globalRefs = getRefsForCategories(allCategories);
+
               const renderInsightCard = (insight: EngineInsight) => {
                 const isExpanded = expandedInsight === insight.id;
                 const isSharing = sharingId === insight.id;
+                const insightRefs = CORRELATION_REFS[insight.category] ?? [];
                 return (
                   <GlassCard
                     key={insight.id}
@@ -853,6 +860,23 @@ export default function AnalyticsScreen() {
                           <Text style={[styles.dataPointsLabel, { color: colors.muted }]}>
                             {(ds.dataPointsDisclaimer ?? 'Based on {n} data points · For informational purposes only').replace('{n}', String(insight.dataPoints))}
                           </Text>
+                          {insightRefs.length > 0 && (
+                            <View style={styles.citationRow}>
+                              <Text style={[styles.citationLabel, { color: colors.muted }]}>References: </Text>
+                              {insightRefs.map((ref, idx) => {
+                                const num = globalRefs.findIndex(r => r.id === ref.id) + 1;
+                                return (
+                                  <Pressable
+                                    key={ref.id}
+                                    onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                                    style={[styles.citationBadge, { borderColor: insight.color + '60', backgroundColor: insight.color + '15' }]}
+                                  >
+                                    <Text style={[styles.citationBadgeText, { color: insight.color }]}>[{num}] {ref.shortRef}</Text>
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          )}
                           <Text style={[styles.insightDisclaimer, { color: colors.muted }]}>
                             {((disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en).disclaimer}
                           </Text>
@@ -982,19 +1006,39 @@ export default function AnalyticsScreen() {
                                 <Text style={[styles.insightSectionLabel, { color: activeInsight.color }]}>HYPOTHESIS</Text>
                                 <Text style={[styles.insightBody, { color: colors.foreground }]}>{activeInsight.hypothesis}</Text>
                               </Pressable>
-                              {isExpanded && (
-                                <View style={[styles.insightSection, styles.clinicalSection, {
-                                  backgroundColor: activeInsight.color + '12',
-                                  borderLeftColor: activeInsight.color,
-                                }]}>
-                                  <Text style={[styles.insightSectionLabel, { color: activeInsight.color }]}>PERSONAL SUGGESTION</Text>
-                                  <Text style={[styles.insightBody, { color: colors.foreground }]}>{activeInsight.clinicalSuggestion}</Text>
-                                  <Text style={[styles.dataPointsLabel, { color: colors.muted }]}>
-                                    {(ds.dataPointsDisclaimer ?? 'Based on {n} data points · For informational purposes only').replace('{n}', String(activeInsight.dataPoints))}
-                                  </Text>
-                                  <Text style={[styles.insightDisclaimer, { color: colors.muted }]}>{((disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en).disclaimer}</Text>
-                                </View>
-                              )}
+                              {isExpanded && (() => {
+                                const activeRefs = CORRELATION_REFS[activeInsight.category] ?? [];
+                                return (
+                                  <View style={[styles.insightSection, styles.clinicalSection, {
+                                    backgroundColor: activeInsight.color + '12',
+                                    borderLeftColor: activeInsight.color,
+                                  }]}>
+                                    <Text style={[styles.insightSectionLabel, { color: activeInsight.color }]}>PERSONAL SUGGESTION</Text>
+                                    <Text style={[styles.insightBody, { color: colors.foreground }]}>{activeInsight.clinicalSuggestion}</Text>
+                                    <Text style={[styles.dataPointsLabel, { color: colors.muted }]}>
+                                      {(ds.dataPointsDisclaimer ?? 'Based on {n} data points · For informational purposes only').replace('{n}', String(activeInsight.dataPoints))}
+                                    </Text>
+                                    {activeRefs.length > 0 && (
+                                      <View style={styles.citationRow}>
+                                        <Text style={[styles.citationLabel, { color: colors.muted }]}>References: </Text>
+                                        {activeRefs.map((ref) => {
+                                          const num = globalRefs.findIndex(r => r.id === ref.id) + 1;
+                                          return (
+                                            <Pressable
+                                              key={ref.id}
+                                              onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                                              style={[styles.citationBadge, { borderColor: activeInsight.color + '60', backgroundColor: activeInsight.color + '15' }]}
+                                            >
+                                              <Text style={[styles.citationBadgeText, { color: activeInsight.color }]}>[{num}] {ref.shortRef}</Text>
+                                            </Pressable>
+                                          );
+                                        })}
+                                      </View>
+                                    )}
+                                    <Text style={[styles.insightDisclaimer, { color: colors.muted }]}>{((disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en).disclaimer}</Text>
+                                  </View>
+                                );
+                              })()}
                               <View style={styles.insightFooter}>
                                 <Pressable style={styles.expandHintBtn} onPress={() => setExpandedInsight(isExpanded ? null : activeInsight.id)}>
                                   <Text style={[styles.expandHint, { color: colors.muted }]}>
@@ -1227,6 +1271,24 @@ export default function AnalyticsScreen() {
             {((disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en).disclaimer}
           </Text>
         </GlassCard>
+
+        {/* ─── Peer-Review References Footer ──────────────────────────────── */}
+        {insights.length > 0 && (() => {
+          const footerRefs = getRefsForCategories(insights.map(i => i.category));
+          if (!footerRefs.length) return null;
+          return (
+            <GlassCard accentColor="#818CF8" style={{ marginHorizontal: 16, marginBottom: 24 }}>
+              <Text style={[styles.insightSectionLabel, { color: '#818CF8', marginBottom: 10 }]}>PEER-REVIEWED REFERENCES</Text>
+              {footerRefs.map((ref, idx) => (
+                <Pressable key={ref.id} onPress={() => ref.url ? Linking.openURL(ref.url) : undefined} style={{ marginBottom: 8 }}>
+                  <Text style={[styles.refNumber, { color: '#818CF8' }]}>[{idx + 1}]</Text>
+                  <Text style={[styles.refText, { color: colors.foreground }]}>{ref.fullRef}</Text>
+                  <Text style={[styles.refSummary, { color: colors.muted }]}>{ref.summary}</Text>
+                </Pressable>
+              ))}
+            </GlassCard>
+          );
+        })()}
       </ScrollView>
       <ScrollToTopButton opacity={analyticsScrollTopOpacity} visible={showAnalyticsScrollTop} onPress={analyticsScrollToTop} />
 
@@ -1505,5 +1567,48 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+
+  // Citation badges (inline within expanded insight cards)
+  citationRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  citationLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  citationBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  citationBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+
+  // References footer list
+  refNumber: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    marginBottom: 1,
+  },
+  refText: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontWeight: '400',
+  },
+  refSummary: {
+    fontSize: 10,
+    lineHeight: 14,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
 });

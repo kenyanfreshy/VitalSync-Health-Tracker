@@ -47,6 +47,7 @@ import { getTodayNutrients } from '@/lib/health/daily-nutrients';
 import { PrivacyBanner } from '@/components/privacy-banner';
 import { SectionLabel } from '@/components/dashboard/section-label';
 import { GlassCard } from '@/components/glass-card';
+import { LabTrendMiniChart } from '@/components/dashboard/lab-trend-mini-chart';
 import { HeaderSyncButton } from '@/components/header-sync-button';
 import { BleScannerSheet } from '@/components/ble-device-scanner';
 import { setConnectionStateListener, type BleConnectionState, type ConnectedDevice } from '@/services/bluetooth-manager';
@@ -959,6 +960,9 @@ export default function RecordScreen() {
             ? `${(data?.labResults ?? []).length} ${rs.latestResults}` : undefined}
           latestLabel={(data?.labResults ?? []).length ? rs.latestOnFile : undefined}
           onPress={() => navigateCard(rs.cardLabTracker, '/labs')} colors={colors} />
+        {(data?.labResults ?? []).length > 0 && (
+          <LabTrendMiniChart labResults={data!.labResults ?? []} />
+        )}
         <LogCard
           title={rs.cardDoctorAppts}
           subtitle={rs.cardDoctorApptsSub}

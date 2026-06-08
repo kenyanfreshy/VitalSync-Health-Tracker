@@ -428,7 +428,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   // ── Load products ───────────────────────────────────────────────────────────
 
-  const reloadProducts = useCallback(async () => {
+  const reloadProducts = useCallback(async (retryCount = 0) => {
     setProductsLoading(true);
     try {
       const subs = (await fetchProducts({
@@ -437,8 +437,17 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       })) as ProductSubscription[];
       setProducts(subs);
       log("[Subscription] Loaded", subs.length, "products");
+      // Auto-retry up to 2 times if StoreKit returns empty (e.g. sandbox delay)
+      if (subs.length === 0 && retryCount < 2) {
+        log(`[Subscription] Products empty, retrying (${retryCount + 1}/2)…`);
+        setTimeout(() => reloadProducts(retryCount + 1), 3000);
+      }
     } catch (e) {
       logError("[Subscription] Failed to load products:", e);
+      // Retry on error too
+      if (retryCount < 2) {
+        setTimeout(() => reloadProducts(retryCount + 1), 3000);
+      }
     } finally {
       setProductsLoading(false);
     }
