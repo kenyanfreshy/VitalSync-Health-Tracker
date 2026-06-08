@@ -72,6 +72,27 @@ export const whatsNewV2365Strings = {
   i2Desc: "Added react-native-nitro-modules as an explicit package dependency so EAS builds always include the correct native pod for HealthKit's JSI bridge.",
 } as const;
 
+/** Release note content — v1.0.49 */
+export const whatsNewV1049Strings = {
+  version: "1.0.49",
+  date: "Jun 2026",
+  headline: "Paywall Carousel Redesign",
+
+  // New
+  n1Title: "Capital Headings on Paywall Carousel",
+  n1Desc: "Each carousel slide now shows its title in all-caps with a concise 5-word tagline beneath it — cleaner and faster to read.",
+
+  // Improved
+  i1Title: "Logo & Badge Above Carousel",
+  i1Desc: "The VitalSync logo and 'VITALSYNC PREMIUM' badge are now clearly separated above the carousel images for a more polished hierarchy.",
+  i2Title: "Consistent Paywall Across App",
+  i2Desc: "The same paywall layout now appears in onboarding, the standalone paywall screen, and all premium feature gates.",
+
+  // Fixed
+  f1Title: "Missing i18n Key (showFeatures)",
+  f1Desc: "Added the missing 'showFeatures' key to the English paywall strings, resolving a TypeScript error.",
+} as const;
+
 /** Release note content — v1.0.48 */
 export const whatsNewV1048Strings = {
   version: "1.0.48",
@@ -424,11 +445,12 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1049 = useT(whatsNewV1049Strings);
   const v1048 = useT(whatsNewV1048Strings);
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1048;
+  const latestVersion = v1049;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -558,7 +580,22 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.48 (latest) ── */}
+          {/* ── v1.0.49 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🅰️" title={v1049.n1Title} desc={v1049.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🎨" title={v1049.i1Title} desc={v1049.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔄" title={v1049.i2Title} desc={v1049.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="🔧" title={v1049.f1Title} desc={v1049.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.48 ── */}
+          <OlderVersionHeader version={v1048.version} date={v1048.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="📋" title={v1048.n1Title} desc={v1048.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

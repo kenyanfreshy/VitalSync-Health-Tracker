@@ -81,7 +81,8 @@ interface PaywallScreenProps {
 interface CarouselSlide {
   icon: string;
   title: string;
-  subtitle: string;
+  subtitle: string; // kept for type compat — not rendered
+  description: string; // 5-word tagline shown below title
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -416,7 +417,7 @@ export function PaywallScreen({
             <View style={s.carouselSlide}>
               <Text style={s.carouselIcon}>{item.icon}</Text>
               <Text style={s.carouselTitle}>{item.title}</Text>
-              <Text style={s.carouselSub}>{item.subtitle}</Text>
+              <Text style={s.carouselDesc}>{item.description}</Text>
             </View>
           )}
         />
@@ -665,27 +666,32 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
     {
       icon: '🔬',
       title: pw.slide1Title ?? 'Your Vitals, Personally Tracked',
-      subtitle: pw.slide1Sub ?? 'Peer-reviewed correlations across BP, sleep, glucose, and nutrition — the same analysis used in clinical research, now on your phone.',
+      subtitle: pw.slide1Sub ?? '',
+      description: pw.slide1Desc ?? 'Real insights from your health.',
     },
     {
       icon: '🥗',
       title: pw.slide2Title ?? 'Know Exactly What You Eat',
-      subtitle: pw.slide2Sub ?? 'Point your camera at any meal. Get USDA-verified macros, calories, and glycemic load in seconds — no guessing.',
+      subtitle: pw.slide2Sub ?? '',
+      description: pw.slide2Desc ?? 'USDA-verified macros, instantly.',
     },
     {
       icon: '📋',
       title: pw.slide3Title ?? 'Reports Your Doctor Will Actually Read',
-      subtitle: pw.slide3Sub ?? 'Generate a structured PDF health summary — vitals, labs, medications, and trends — ready to share at your next appointment.',
+      subtitle: pw.slide3Sub ?? '',
+      description: pw.slide3Desc ?? 'Share a clear health summary.',
     },
     {
       icon: '💊',
       title: pw.slide4Title ?? 'Never Miss a Dose Again',
-      subtitle: pw.slide4Sub ?? 'Smart medication reminders, refill tracking, and a built-in drug interaction checker — all in one place.',
+      subtitle: pw.slide4Sub ?? '',
+      description: pw.slide4Desc ?? 'Smart reminders, interaction checks.',
     },
     {
       icon: '🔒',
       title: pw.slide5Title ?? 'Your Data Stays Yours',
-      subtitle: pw.slide5Sub ?? 'Everything is stored on your device. No accounts. No cloud. No data sold or shared — ever.',
+      subtitle: pw.slide5Sub ?? '',
+      description: pw.slide5Desc ?? 'On-device only, never shared.',
     },
   ];
 }
@@ -739,6 +745,7 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
     logoArea: {
       alignItems: 'center',
       paddingHorizontal: 24,
+      paddingBottom: 16,
       zIndex: 10,
     },
     headerLogo: {
@@ -797,11 +804,22 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       marginBottom: 4,
     },
     carouselTitle: {
-      fontSize: 18,
+      fontSize: 17,
       fontWeight: '800',
       color: TEXT_WHITE,
       textAlign: 'center',
-      lineHeight: 24,
+      lineHeight: 23,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    carouselDesc: {
+      fontSize: 13,
+      color: BRAND_GREEN,
+      textAlign: 'center',
+      lineHeight: 18,
+      fontWeight: '600',
+      letterSpacing: 0.2,
+      marginTop: 4,
     },
     carouselSub: {
       fontSize: 14,
