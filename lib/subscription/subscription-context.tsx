@@ -55,15 +55,15 @@ export const PRODUCT_IDS = {
 export const SUBSCRIPTION_DATA = {
   monthly: {
     id: "vitalsync.healthtracker.premium_monthly",
-    price: "$6.99",
+    price: "$4.99",
     period: "Month",
     trialDays: 14,
   },
   annual: {
     id: "vitalsync.healthtracker.premium_annual",
-    price: "$69.99",
+    price: "$49.99",
     period: "Year",
-    savings: "16%",
+    savings: "~17%",
     trialDays: 14,
   },
 } as const;

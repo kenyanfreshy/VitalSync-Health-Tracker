@@ -747,6 +747,13 @@ export default function OnboardingScreen() {
             </Text>
           </RAnimated.View>
 
+          {/* ── About mission message ──────────────────────────────────────────── */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
+            <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 17, textAlign: 'center', fontStyle: 'italic' }}>
+              {ab.missionBody1}
+            </Text>
+          </View>
+
           {/* ── Feature highlight reel ─────────────────────────────────────────── */}
           <View style={{ paddingHorizontal: 16, paddingBottom: 4 }}>
             <ScrollView

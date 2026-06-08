@@ -54,10 +54,10 @@ const IOS_MANAGE_SUB_FALLBACK = "https://apps.apple.com/account/subscriptions";
 const ANDROID_MANAGE_SUB_URL = "https://play.google.com/store/account/subscriptions";
 
 // ─── Fallback prices (shown while StoreKit loads or if products unavailable) ──
-const FALLBACK_MONTHLY = "$6.99";
-const FALLBACK_YEARLY = "$69.99";
-const FALLBACK_MONTHLY_LABEL = "$6.99/month";
-const FALLBACK_YEARLY_LABEL = "$69.99/year";
+const FALLBACK_MONTHLY = "$4.99";
+const FALLBACK_YEARLY = "$49.99";
+const FALLBACK_MONTHLY_LABEL = "$4.99/month";
+const FALLBACK_YEARLY_LABEL = "$49.99/year";
 
 function getDisplayPrice(product: Subscription | undefined, fallback: string): string {
   if (!product) return fallback;
@@ -269,7 +269,7 @@ export function PaywallScreen({
     return (
       <View style={[s.root, s.centeredRoot]}>
         <Image
-          source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
+          source={require('@/assets/images/icon.png')}
           style={s.loadingLogo}
           resizeMode="contain"
         />
@@ -287,7 +287,7 @@ export function PaywallScreen({
     return (
       <View style={[s.root, s.centeredRoot]}>
         <Image
-          source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
+          source={require('@/assets/images/icon.png')}
           style={s.headerLogo}
           resizeMode="contain"
         />
@@ -314,7 +314,7 @@ export function PaywallScreen({
     return (
       <View style={[s.root, s.centeredRoot]}>
         <Image
-          source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
+          source={require('@/assets/images/icon.png')}
           style={s.headerLogo}
           resizeMode="contain"
         />
@@ -356,7 +356,7 @@ export function PaywallScreen({
         {/* ── Header: 3D Logo + Badge + Headline ── */}
         <View style={s.header}>
           <Image
-            source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
+            source={require('@/assets/images/icon.png')}
             style={s.headerLogo}
             resizeMode="contain"
           />
@@ -399,7 +399,7 @@ export function PaywallScreen({
             )}
             {/* Free trial is SUBORDINATE — smaller, muted */}
             <Text style={s.trialSubText}>Includes a 14-day free trial</Text>
-            <Text style={[s.planSaving, { textAlign }]}>Save ~16% vs monthly</Text>
+            <Text style={[s.planSaving, { textAlign }]}>Save ~17% vs monthly</Text>
             {/* Selection indicator */}
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}
