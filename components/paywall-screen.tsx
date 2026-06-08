@@ -1,8 +1,8 @@
 /**
- * VitalSync Paywall Screen — v4.0 (Full-Bleed Immersive Layout)
+ * VitalSync Paywall Screen — v4.1 (Clean Dark Layout)
  *
- * Design: Full-screen background image, feature carousel with pagination dots
- *         in the upper portion, frosted-glass CTA panel pinned to the bottom.
+ * Design: Dark background, compact feature carousel with pagination dots
+ *         in the upper portion, frosted-glass CTA panel filling the lower half.
  *
  * Compliance (Apple Guideline 3.1.2(c)):
  *  - Billed amount is the LARGEST, most prominent element on each plan card
@@ -30,7 +30,6 @@ import {
   ViewToken,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
@@ -367,20 +366,6 @@ export function PaywallScreen({
   // ── Main purchase UI ──────────────────────────────────────────────────────
   return (
     <View style={s.root}>
-      {/* Full-bleed background image */}
-      <Image
-        source={require('@/assets/images/paywall-bg.jpg')}
-        style={StyleSheet.absoluteFillObject}
-        resizeMode="cover"
-      />
-
-      {/* Dark overlay gradient — heavier at bottom for CTA legibility */}
-      <LinearGradient
-        colors={['rgba(13,17,23,0.15)', 'rgba(13,17,23,0.52)', 'rgba(13,17,23,0.90)']}
-        locations={[0, 0.5, 1]}
-        style={StyleSheet.absoluteFillObject}
-      />
-
       {/* Dismiss button (top-right) */}
       {onDismiss && (
         <Pressable
@@ -745,13 +730,13 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
     logoArea: {
       alignItems: 'center',
       paddingHorizontal: 24,
-      paddingBottom: 16,
+      paddingBottom: 8,
       zIndex: 10,
     },
     headerLogo: {
-      width: 72,
-      height: 72,
-      marginBottom: 8,
+      width: 56,
+      height: 56,
+      marginBottom: 6,
       borderRadius: 16,
       ...Platform.select({
         ios: {
@@ -788,20 +773,21 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
     },
     // ── Carousel ────────────────────────────────────────────────────────────
     carouselArea: {
-      flex: 1,
+      flexShrink: 1,
       justifyContent: 'center',
       zIndex: 10,
+      paddingVertical: 4,
     },
     carouselSlide: {
       width: SCREEN_WIDTH,
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: 40,
-      gap: 10,
+      gap: 6,
     },
     carouselIcon: {
-      fontSize: 48,
-      marginBottom: 4,
+      fontSize: 36,
+      marginBottom: 2,
     },
     carouselTitle: {
       fontSize: 17,
@@ -832,8 +818,8 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       justifyContent: 'center',
       alignItems: 'center',
       gap: 6,
-      marginTop: 14,
-      marginBottom: 6,
+      marginTop: 8,
+      marginBottom: 4,
     },
     dot: {
       width: 6,
@@ -854,13 +840,13 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       borderLeftWidth: 1,
       borderRightWidth: 1,
       borderColor: GLASS_BORDER,
-      maxHeight: '65%',
+      flex: 1,
       zIndex: 20,
     },
     ctaPanelContent: {
       paddingHorizontal: 20,
-      paddingTop: 20,
-      gap: 10,
+      paddingTop: 14,
+      gap: 8,
     },
     // ── Plan cards ──────────────────────────────────────────────────────────
     planRow: {
@@ -872,10 +858,10 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       flex: 1,
       backgroundColor: 'rgba(255,255,255,0.08)',
       borderRadius: 16,
-      padding: 14,
+      padding: 10,
       borderWidth: 1.5,
       borderColor: GLASS_BORDER,
-      minHeight: 130,
+      minHeight: 110,
       position: 'relative',
     },
     planCardSelected: {
