@@ -551,6 +551,9 @@ export default function AboutScreen() {
 
         {/* ─── Footer ──────────────────────────────────────────────── */}
         <Text style={[styles.footer, { color: colors.muted }]}>{footerText}</Text>
+        <Text style={{ fontSize: 11, color: colors.muted, opacity: 0.55, textAlign: 'center', marginTop: 2, marginBottom: 8, letterSpacing: 0.3 }}>
+          akorir, MSN, RN, CCRN-CMC
+        </Text>
       </ScrollView>
     </ScreenContainer>
   );

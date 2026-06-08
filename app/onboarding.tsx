@@ -747,6 +747,60 @@ export default function OnboardingScreen() {
             </Text>
           </RAnimated.View>
 
+          {/* ── Feature highlight reel ─────────────────────────────────────────── */}
+          <View style={{ paddingHorizontal: 16, paddingBottom: 4 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 10, paddingRight: 4 }}
+            >
+              {[
+                {
+                  icon: '🔒',
+                  title: 'On-Device Privacy',
+                  body: 'All data stays on your device. No cloud, no accounts required.',
+                  accent: '#22C55E',
+                },
+                {
+                  icon: '🔬',
+                  title: 'AI Lab Scan',
+                  body: 'Scan lab reports with AI — results auto-populate in seconds.',
+                  accent: '#60A5FA',
+                },
+                {
+                  icon: '📊',
+                  title: 'Correlation Engine',
+                  body: 'Evidence-based patterns across vitals, labs, sleep & more.',
+                  accent: '#F472B6',
+                },
+              ].map(({ icon, title, body, accent }) => (
+                <View
+                  key={title}
+                  style={{
+                    width: 200,
+                    backgroundColor: accent + '14',
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: accent + '35',
+                    padding: 14,
+                    gap: 6,
+                  }}
+                >
+                  <Text style={{ fontSize: 22 }}>{icon}</Text>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#FFFFFF', lineHeight: 18 }}>{title}</Text>
+                  <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 16 }}>{body}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* ── Attribution line ──────────────────────────────────────────────── */}
+          <View style={{ paddingHorizontal: 20, paddingBottom: 4, alignItems: 'center' }}>
+            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', letterSpacing: 0.3 }}>
+              akorir, MSN, RN, CCRN-CMC
+            </Text>
+          </View>
+
 
 
           {/* ── Language picker button ──────────────────────────────────────────── */}
