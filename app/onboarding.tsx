@@ -757,6 +757,15 @@ export default function OnboardingScreen() {
             })}
           </ScrollView>
 
+          {/* ── Tap hint (shown only when first tab is active) ─────────────────── */}
+          {welcomeTab === 0 && (
+            <View style={{ alignItems: 'center', marginTop: -4, marginBottom: 6 }}>
+              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', letterSpacing: 0.5 }}>
+                Tap a tab to explore ↑
+              </Text>
+            </View>
+          )}
+
           {/* ── Tab content panels ──────────────────────────────────────────────── */}
           <View style={{ flex: 1, paddingHorizontal: 16 }}>
 
@@ -1409,16 +1418,17 @@ export default function OnboardingScreen() {
 
         {/* ── Slide 8: Consent ────────────────────────────────────────── */}
         <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
-          <View style={styles.slideIconWrap}>
-            <View style={[styles.iconCircle, { backgroundColor: SLIDE_META[8].iconColor + '22' }]}>
-              <IconSymbol name={SLIDE_META[8].icon} size={52} color={SLIDE_META[8].iconColor} />
+          {/* Compact header: icon + headline inline to maximise scroll area */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingTop: 8, paddingBottom: 4 }}>
+            <View style={[styles.iconCircle, { backgroundColor: SLIDE_META[8].iconColor + '22', width: 52, height: 52, borderRadius: 26 }]}>
+              <IconSymbol name={SLIDE_META[8].icon} size={28} color={SLIDE_META[8].iconColor} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.headlineTop, { fontSize: 11, lineHeight: 14, marginBottom: 2 }]}>{SLIDE_HEADLINES[6].top}</Text>
+              <Text style={[styles.headlineBottom, { fontSize: 20, lineHeight: 24, marginBottom: 2 }]}>{SLIDE_HEADLINES[6].bottom}</Text>
+              <Text style={[styles.headlineSub, { fontSize: 11, lineHeight: 15 }]}>{o.consentSub}</Text>
             </View>
           </View>
-          <RAnimated.View style={[styles.headlineWrap, headlineAnimStyle]}>
-            <Text style={styles.headlineTop}>{SLIDE_HEADLINES[6].top}</Text>
-            <Text style={styles.headlineBottom}>{SLIDE_HEADLINES[6].bottom}</Text>
-            <Text style={styles.headlineSub}>{o.consentSub}</Text>
-          </RAnimated.View>
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={[styles.privacyChecklistCard, { paddingBottom: 24 }]}

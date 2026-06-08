@@ -529,18 +529,43 @@ export function PaywallScreen({
           </Pressable>
         )}
 
-        {/* Feature list (expandable) */}
+        {/* Feature list — collapsed by default so Restore Purchases is always visible */}
         <View style={s.featureList}>
-          <Text style={[s.featureSectionTitle, { textAlign }]}>What's included</Text>
-          {primaryFeatures.map(({ text, highlight }) => (
-            <View key={text} style={s.featureRow}>
+          {/* Tappable accordion header */}
+          <Pressable
+            style={({ pressed }) => [s.seeAllRow, { justifyContent: 'center', marginBottom: 0 }, pressed && { opacity: 0.6 }]}
+            onPress={toggleFeatures}
+          >
+            <MaterialIcons
+              name={featuresExpanded ? 'expand-less' : 'expand-more'}
+              size={16}
+              color="rgba(255,255,255,0.55)"
+              style={{ marginRight: 4 }}
+            />
+            <Text style={s.seeAllText}>
+              {featuresExpanded ? (pw.hideFeatures ?? "Hide what's included ▲") : (pw.showFeatures ?? "What's included ▼")}
+            </Text>
+          </Pressable>
+
+          {/* Feature rows — only shown when expanded */}
+          {featuresExpanded && [...primaryFeatures, ...extendedFeatures].map(({ text, highlight }) => (
+            <View key={text} style={[s.featureRow, { alignItems: 'flex-start', gap: 10 }]}>
               <MaterialIcons
                 name="check-circle"
                 size={16}
                 color={highlight ? BRAND_BLUE_INLINE : '#34D399'}
-                style={{ marginTop: 2 }}
+                style={{ marginTop: 3 }}
               />
-              <Text style={s.featureText}>{text}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={[s.featureText, { fontSize: 11, fontWeight: '800', letterSpacing: 0.6, textTransform: 'uppercase', color: highlight ? BRAND_BLUE_INLINE : 'rgba(255,255,255,0.90)', marginBottom: 1 }]}>
+                  {text.split(' — ')[0].split(' (')[0]}
+                </Text>
+                {(text.includes(' — ') || text.includes(' (') || text.includes(' & ') || text.length > 30) && (
+                  <Text style={[s.featureText, { fontSize: 12, color: 'rgba(255,255,255,0.55)', fontWeight: '400' }]}>
+                    {text.includes(' — ') ? text.split(' — ').slice(1).join(' — ') : text.includes(' (') ? text.split(' (').slice(1).join(' (').replace(/\)$/, '') : text}
+                  </Text>
+                )}
+              </View>
               {highlight && (
                 <View style={s.crownBadge}>
                   <Text style={s.crownIcon}>👑</Text>
@@ -548,22 +573,6 @@ export function PaywallScreen({
               )}
             </View>
           ))}
-          {featuresExpanded && extendedFeatures.map(({ text }) => (
-            <View key={text} style={s.featureRow}>
-              <MaterialIcons name="check-circle" size={16} color="#34D399" style={{ marginTop: 2 }} />
-              <Text style={s.featureText}>{text}</Text>
-            </View>
-          ))}
-          <Pressable
-            style={({ pressed }) => [s.seeAllRow, pressed && { opacity: 0.6 }]}
-            onPress={toggleFeatures}
-          >
-            <Text style={s.seeAllText}>
-              {featuresExpanded
-                ? (pw.hideFeatures ?? 'Hide features ▲')
-                : `See all ${extendedFeatures.length} more features ▼`}
-            </Text>
-          </Pressable>
         </View>
 
         {/* Error */}
@@ -655,7 +664,7 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
   return [
     {
       icon: '🔬',
-      title: pw.slide1Title ?? 'Your Vitals, Clinically Interpreted',
+      title: pw.slide1Title ?? 'Your Vitals, Personally Tracked',
       subtitle: pw.slide1Sub ?? 'Peer-reviewed correlations across BP, sleep, glucose, and nutrition — the same analysis used in clinical research, now on your phone.',
     },
     {
@@ -788,11 +797,11 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       marginBottom: 4,
     },
     carouselTitle: {
-      fontSize: 22,
+      fontSize: 18,
       fontWeight: '800',
       color: TEXT_WHITE,
       textAlign: 'center',
-      lineHeight: 28,
+      lineHeight: 24,
     },
     carouselSub: {
       fontSize: 14,

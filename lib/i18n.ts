@@ -27862,7 +27862,7 @@ export const paywallExtStrings = {
     rowCommunitySupport: 'Community Support',
     rowPrioritySupport: 'Priority Support',
     // Immersive paywall carousel slides
-    slide1Title: 'Your Vitals, Clinically Interpreted',
+    slide1Title: 'Your Vitals, Personally Tracked',
     slide1Sub: 'Peer-reviewed correlations across BP, sleep, glucose, and nutrition — the same analysis used in clinical research, now on your phone.',
     slide2Title: 'Know Exactly What You Eat',
     slide2Sub: 'Point your camera at any meal. Get USDA-verified macros, calories, and glycemic load in seconds — no guessing.',

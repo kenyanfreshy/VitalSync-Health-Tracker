@@ -72,6 +72,29 @@ export const whatsNewV2365Strings = {
   i2Desc: "Added react-native-nitro-modules as an explicit package dependency so EAS builds always include the correct native pod for HealthKit's JSI bridge.",
 } as const;
 
+/** Release note content — v1.0.48 */
+export const whatsNewV1048Strings = {
+  version: "1.0.48",
+  date: "Jun 2026",
+  headline: "Paywall & Onboarding Polish",
+
+  // New
+  n1Title: "Collapsible Feature List on Paywall",
+  n1Desc: "The 'What's included' feature list is now collapsed by default, keeping the CTA and Restore Purchases button immediately visible without scrolling.",
+  n2Title: "Tap-to-Explore Hint on Welcome Slide",
+  n2Desc: "A 'Tap to explore' hint now appears below the tab strip on the Welcome onboarding slide so users know the tabs are interactive.",
+
+  // Improved
+  i1Title: "Paywall Carousel Title",
+  i1Desc: "Slide 1 title updated to 'Your Vitals, Personally Tracked' — shorter and fits all screen sizes without truncation.",
+  i2Title: "Settings Section Order",
+  i2Desc: "Subscription and Health Data sections now appear immediately after Appearance for faster access.",
+
+  // Fixed
+  f1Title: "Consent Slide Overflow on Small Screens",
+  f1Desc: "The 'By tapping...' paragraph and Terms of Use on the consent slide are no longer obscured on iPhone SE and 13 mini.",
+} as const;
+
 /** Release note content — v2.9.35 */
 export const whatsNewV2935Strings = {
   version: "2.9.35",
@@ -401,10 +424,11 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1048 = useT(whatsNewV1048Strings);
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v2935;
+  const latestVersion = v1048;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -534,7 +558,23 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v2.9.35 (latest) ── */}
+          {/* ── v1.0.48 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="📋" title={v1048.n1Title} desc={v1048.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="👆" title={v1048.n2Title} desc={v1048.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="📱" title={v1048.i1Title} desc={v1048.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="⚙️" title={v1048.i2Title} desc={v1048.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="🔧" title={v1048.f1Title} desc={v1048.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v2.9.35 ── */}
+          <OlderVersionHeader version={v2935.version} date={v2935.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="🏷️" title={v2935.n1Title} desc={v2935.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
