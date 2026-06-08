@@ -593,9 +593,18 @@ export function PaywallScreen({
           {purchasing && selectedPlan !== FREE_PLAN_ID ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={selectedPlan === FREE_PLAN_ID ? [s.ctaText, { color: BRAND_BLUE_INLINE }] : s.ctaText}>
-              {ctaLabel}
-            </Text>
+            <>
+              <Text style={selectedPlan === FREE_PLAN_ID ? [s.ctaText, { color: BRAND_BLUE_INLINE }] : s.ctaText}>
+                {ctaLabel}
+              </Text>
+              {selectedPlan !== FREE_PLAN_ID && (
+                <Text style={s.ctaPriceLabel}>
+                  {selectedPlan === PRODUCT_IDS.yearly
+                    ? `${yearlyPrice}/yr · 14-day free trial`
+                    : `${monthlyPrice}/mo · cancel anytime`}
+                </Text>
+              )}
+            </>
           )}
         </Pressable>
 
@@ -1054,6 +1063,13 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       fontWeight: '700',
       color: '#0D1117',
       letterSpacing: 0.2,
+    },
+    ctaPriceLabel: {
+      fontSize: 12,
+      fontWeight: '500',
+      color: 'rgba(5,10,20,0.65)',
+      marginTop: 3,
+      letterSpacing: 0.1,
     },
     // Restore
     restoreButton: {

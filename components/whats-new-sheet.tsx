@@ -190,6 +190,15 @@ export const whatsNewV1035Strings = {
   f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
+/** Release note content — v1.0.45 */
+export const whatsNewV1045Strings = {
+  version: "1.0.45",
+  date: "June 2026",
+  headline: "Paywall Price Labels",
+  i1Title: "Price Shown on CTA Button",
+  i1Desc: "The subscription CTA now shows the actual plan price inline (e.g. \"$49.99/yr · 14-day free trial\" or \"$4.99/mo · cancel anytime\") so users can compare plans without leaving the paywall.",
+} as const;
+
 /** Release note content — v1.0.44 */
 export const whatsNewV1044Strings = {
   version: "1.0.44",
@@ -358,6 +367,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1045 = useT(whatsNewV1045Strings);
   const v1044 = useT(whatsNewV1044Strings);
   const v1043 = useT(whatsNewV1043Strings);
   const v1037 = useT(whatsNewV1037Strings);
@@ -572,6 +582,13 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.45 ── */}
+          <OlderVersionHeader version={v1045.version} date={v1045.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="💰" title={v1045.i1Title} desc={v1045.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.44 ── */}
