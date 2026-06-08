@@ -2097,6 +2097,7 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
+        </View>
 
         <CollapsibleSection title={se.myProfileSection ?? 'My Profile'} sectionKey="my_profile" accentColor="#0EA5E9" keywords={['profile', 'age', 'sex', 'gender', 'goals', 'macros', 'calories', 'diet', 'protocol', 'nutrition']}>
         <GlassCard
