@@ -66,6 +66,11 @@ import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
 import { Linking } from 'react-native';
 import { CORRELATION_REFS, getRefsForCategories, type PeerRef } from '@/lib/health/peer-review-refs';
 
+// Nutrition section peer-review refs (pre-computed at module level)
+const NUTRITION_CORRELATE_REFS = CORRELATION_REFS['correlate'] ?? [];
+const NUTRITION_DIABETIC_REFS  = CORRELATION_REFS['nutrition'] ?? [];
+const NUTRITION_CALORIC_REFS   = CORRELATION_REFS['caloric'] ?? [];
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_SIZE = SCREEN_WIDTH - 64;
 const PAD = 40;
@@ -599,11 +604,29 @@ export default function AnalyticsScreen() {
               {/* ── Tab content (Reanimated fade on switch) ── */}
               <Reanimated.View style={nutritionTabAnimStyle}>
               {nutritionTab === 'correlate' && (
-                <NutritionCorrelateCard
-                  sodiumRecords={state.data?.sodiumIntake ?? []}
-                  collapsed={!dashExpanded}
-                  onToggle={() => toggleSection(setDashExpanded, 'dash')}
-                />
+                <View>
+                  <NutritionCorrelateCard
+                    sodiumRecords={state.data?.sodiumIntake ?? []}
+                    collapsed={!dashExpanded}
+                    onToggle={() => toggleSection(setDashExpanded, 'dash')}
+                  />
+                  {NUTRITION_CORRELATE_REFS.length > 0 && (
+                    <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 4 }}>
+                      <Text style={[styles.citationLabel, { color: colors.muted }]}>References:</Text>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                        {NUTRITION_CORRELATE_REFS.map((ref, idx) => (
+                          <Pressable
+                            key={ref.id}
+                            onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                            style={[styles.citationBadge, { borderColor: '#10B98160', backgroundColor: '#10B98115' }]}
+                          >
+                            <Text style={[styles.citationBadgeText, { color: '#10B981' }]}>[{idx + 1}] {ref.shortRef}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
               )}
 
               {nutritionTab === 'diabetic' && (() => {
@@ -730,6 +753,22 @@ export default function AnalyticsScreen() {
                         <Text style={[styles.diabeticDisclaimer, { color: colors.muted }]}>
                           {ds.smartScanDisclaimer ?? 'Based on Smart-scanned entries only. Values are estimates — for informational purposes only.'}
                         </Text>
+                        {NUTRITION_DIABETIC_REFS.length > 0 && (
+                          <View style={{ marginTop: 8, gap: 4 }}>
+                            <Text style={[styles.citationLabel, { color: colors.muted }]}>References:</Text>
+                            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                              {NUTRITION_DIABETIC_REFS.map((ref, idx) => (
+                                <Pressable
+                                  key={ref.id}
+                                  onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                                  style={[styles.citationBadge, { borderColor: '#0EA5E960', backgroundColor: '#0EA5E915' }]}
+                                >
+                                  <Text style={[styles.citationBadgeText, { color: '#0EA5E9' }]}>[{idx + 1}] {ref.shortRef}</Text>
+                                </Pressable>
+                              ))}
+                            </View>
+                          </View>
+                        )}
                       </>
                     )}
                   </View>
@@ -737,11 +776,29 @@ export default function AnalyticsScreen() {
               })()}
 
               {nutritionTab === 'caloric' && (
-                <CaloricTrendInsightCard
-                  sodiumIntake={state.data?.sodiumIntake ?? []}
-                  bloodPressure={state.data?.bloodPressure ?? []}
-                  bloodSugar={state.data?.bloodSugar ?? []}
-                />
+                <View>
+                  <CaloricTrendInsightCard
+                    sodiumIntake={state.data?.sodiumIntake ?? []}
+                    bloodPressure={state.data?.bloodPressure ?? []}
+                    bloodSugar={state.data?.bloodSugar ?? []}
+                  />
+                  {NUTRITION_CALORIC_REFS.length > 0 && (
+                    <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 4 }}>
+                      <Text style={[styles.citationLabel, { color: colors.muted }]}>References:</Text>
+                      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                        {NUTRITION_CALORIC_REFS.map((ref, idx) => (
+                          <Pressable
+                            key={ref.id}
+                            onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                            style={[styles.citationBadge, { borderColor: '#F59E0B60', backgroundColor: '#F59E0B15' }]}
+                          >
+                            <Text style={[styles.citationBadgeText, { color: '#F59E0B' }]}>[{idx + 1}] {ref.shortRef}</Text>
+                          </Pressable>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
               )}
               </Reanimated.View>
             </View>
@@ -794,7 +851,7 @@ export default function AnalyticsScreen() {
               // Separate circadian + lag from the rest
               const circadianInsight = insights.find(i => i.category === 'circadian-rhythm');
               const lagInsight = insights.find(i => i.category === 'lag-analysis');
-              const otherInsights = insights.filter(i => i.category !== 'circadian-rhythm' && i.category !== 'lag-analysis');
+              const otherInsights = insights.filter(i => i.category !== 'circadian-rhythm' && i.category !== 'lag-analysis' && i.category !== 'sleep-cv');
 
               // Build a global ordered ref list for the visible insights
               const allCategories = insights.map(i => i.category);

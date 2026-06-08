@@ -1,22 +1,23 @@
 /**
- * VitalSync Paywall Screen — v3.0 (Apple Guideline 3.1.2(c) Compliant)
+ * VitalSync Paywall Screen — v4.0 (Full-Bleed Immersive Layout)
  *
- * Compliance changes:
+ * Design: Full-screen background image, feature carousel with pagination dots
+ *         in the upper portion, frosted-glass CTA panel pinned to the bottom.
+ *
+ * Compliance (Apple Guideline 3.1.2(c)):
  *  - Billed amount is the LARGEST, most prominent element on each plan card
  *  - Free trial text is subordinate (smaller font, muted color, below price)
  *  - CTA reads "Continue with Annual Plan" / "Continue with Monthly Plan"
  *  - Disclosure paragraph appears DIRECTLY ABOVE the CTA button
  *  - No badge, banner, or graphic emphasises "FREE" more than the billed amount
- *  - 3D VitalSync logo in header
- *  - Scrollable premium feature list (expandable)
- *  - Loading fallback: never shows blank screen while StoreKit loads
- *  - Products-unavailable fallback: shows paywall with fallback prices, never dismisses
  */
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Dimensions,
+  FlatList,
   Image,
   LayoutAnimation,
   Platform,
@@ -26,9 +27,10 @@ import {
   Text,
   UIManager,
   View,
+  ViewToken,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
@@ -53,11 +55,13 @@ const IOS_MANAGE_SUB_URL = "itms-apps://apps.apple.com/account/subscriptions";
 const IOS_MANAGE_SUB_FALLBACK = "https://apps.apple.com/account/subscriptions";
 const ANDROID_MANAGE_SUB_URL = "https://play.google.com/store/account/subscriptions";
 
-// ─── Fallback prices (shown while StoreKit loads or if products unavailable) ──
+// ─── Fallback prices ──────────────────────────────────────────────────────────
 const FALLBACK_MONTHLY = "$4.99";
 const FALLBACK_YEARLY = "$49.99";
 const FALLBACK_MONTHLY_LABEL = "$4.99/month";
 const FALLBACK_YEARLY_LABEL = "$49.99/year";
+
+const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 function getDisplayPrice(product: Subscription | undefined, fallback: string): string {
   if (!product) return fallback;
@@ -73,16 +77,11 @@ interface PaywallScreenProps {
   featureSubtitle?: string;
 }
 
-// ─── Feature check icon ───────────────────────────────────────────────────────
-function FeatureIcon({ highlight, color, successColor }: { highlight?: boolean; color: string; successColor: string }) {
-  return (
-    <MaterialIcons
-      name="check-circle"
-      size={18}
-      color={highlight ? color : successColor}
-      style={{ marginTop: 1 }}
-    />
-  );
+// ─── Carousel slide data ──────────────────────────────────────────────────────
+interface CarouselSlide {
+  icon: string;
+  title: string;
+  subtitle: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -98,29 +97,7 @@ export function PaywallScreen({
   const lang = useLang();
   const pw = paywallExtStrings[lang as keyof typeof paywallExtStrings] ?? paywallExtStrings.en;
   const isRTL = useRTL();
-
-  const rowDir = isRTL ? 'row-reverse' : 'row';
   const textAlign = isRTL ? 'right' : 'left';
-
-  // Feature lists
-  const primaryFeatures: { text: string; highlight?: boolean }[] = [
-    { text: pw.feat13, highlight: true },
-    { text: Platform.OS === 'ios' ? pw.feat14ios : pw.feat14android, highlight: true },
-    { text: Platform.OS === 'ios' ? pw.feat2ios : pw.feat2android, highlight: true },
-    { text: pw.feat1 },
-  ];
-  const extendedFeatures: { text: string; highlight?: boolean }[] = [
-    { text: pw.feat3 },
-    { text: pw.feat4 },
-    { text: pw.feat5 },
-    { text: pw.feat6 },
-    { text: pw.feat7 },
-    { text: pw.feat8 },
-    { text: pw.feat9 },
-    { text: pw.feat10 },
-    { text: pw.feat11 },
-    { text: pw.feat12 },
-  ];
 
   const {
     products,
@@ -140,18 +117,9 @@ export function PaywallScreen({
   const [restoring, setRestoring] = useState(false);
   const [restoreSuccess, setRestoreSuccess] = useState(false);
   const [featuresExpanded, setFeaturesExpanded] = useState(false);
+  const [activeSlide, setActiveSlide] = useState(0);
 
-  const toggleFeatures = useCallback(() => {
-    LayoutAnimation.configureNext({
-      duration: 220,
-      create: { type: "easeInEaseOut", property: "opacity" },
-      update: { type: "easeInEaseOut" },
-      delete: { type: "easeInEaseOut", property: "opacity" },
-    });
-    setFeaturesExpanded((v) => !v);
-    if (Platform.OS !== "web") Haptics.selectionAsync();
-  }, []);
-
+  const flatListRef = useRef<FlatList>(null);
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -164,11 +132,23 @@ export function PaywallScreen({
   const monthlyProduct = products.find((p) => p.id === PRODUCT_IDS.monthly);
   const yearlyProduct = products.find((p) => p.id === PRODUCT_IDS.yearly);
 
-  // Reload products on mount — only once
   useEffect(() => {
     reloadProducts().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const slides = getCarouselSlides(pw);
+    const timer = setInterval(() => {
+      setActiveSlide(prev => {
+        const next = (prev + 1) % slides.length;
+        flatListRef.current?.scrollToIndex({ index: next, animated: true });
+        return next;
+      });
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [pw]);
 
   // ── Derived price strings ─────────────────────────────────────────────────
   const yearlyPrice = getDisplayPrice(yearlyProduct as any, FALLBACK_YEARLY);
@@ -176,18 +156,18 @@ export function PaywallScreen({
   const yearlyLabel = productsLoading ? FALLBACK_YEARLY_LABEL : `${yearlyPrice}/year`;
   const monthlyLabel = productsLoading ? FALLBACK_MONTHLY_LABEL : `${monthlyPrice}/month`;
 
-  // ── Disclosure text (Apple 3.1.2(c) — must appear above CTA) ─────────────
+  // ── Disclosure text (Apple 3.1.2(c)) ─────────────────────────────────────
   const selectedLabel = selectedPlan === PRODUCT_IDS.yearly ? yearlyLabel : monthlyLabel;
   const disclosureText = selectedPlan === FREE_PLAN_ID
     ? 'Free plan includes basic logging with limited history.'
     : `After the 14-day free trial, your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`;
 
-  // ── CTA label (Apple 3.1.2(c) — must say "Continue with [Plan]") ─────────
+  // ── CTA label ─────────────────────────────────────────────────────────────
   const ctaLabel = selectedPlan === FREE_PLAN_ID
-    ? (pw.continueFreePlan ?? 'Continue with Free Plan')
+    ? ((pw as any).continueWithFree ?? 'Continue with Free Plan')
     : selectedPlan === PRODUCT_IDS.yearly
-      ? 'Continue with Annual Plan'
-      : 'Continue with Monthly Plan';
+      ? ((pw as any).continueWithAnnual ?? 'Continue with Annual Plan')
+      : ((pw as any).continueWithMonthly ?? 'Continue with Monthly Plan');
 
   // ── Handle primary CTA ────────────────────────────────────────────────────
   const handleStartTrial = useCallback(async () => {
@@ -261,10 +241,29 @@ export function PaywallScreen({
     }
   }, [openLink]);
 
+  const toggleFeatures = useCallback(() => {
+    LayoutAnimation.configureNext({
+      duration: 220,
+      create: { type: "easeInEaseOut", property: "opacity" },
+      update: { type: "easeInEaseOut" },
+      delete: { type: "easeInEaseOut", property: "opacity" },
+    });
+    setFeaturesExpanded((v) => !v);
+    if (Platform.OS !== "web") Haptics.selectionAsync();
+  }, []);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
+    if (viewableItems.length > 0 && viewableItems[0].index !== null) {
+      setActiveSlide(viewableItems[0].index);
+    }
+  }).current;
+
+  const viewabilityConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+  const BRAND_BLUE_INLINE = '#38BDF8'; // secondary brand color for inline JSX use
   const s = makeStyles(colors, insets);
 
-  // ── Loading guard — NEVER show blank screen while StoreKit loads ──────────
-  // Per Apple audit: show paywall with fallback prices, never dismiss
+  // ── Loading guard ─────────────────────────────────────────────────────────
   if (accessState === "loading") {
     return (
       <View style={[s.root, s.centeredRoot]}>
@@ -275,9 +274,6 @@ export function PaywallScreen({
         />
         <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 12 }} />
         <Text style={s.loadingText}>{pw.loadingSubscription}</Text>
-        <Text style={[s.loadingText, { marginTop: 6, fontSize: 12 }]}>
-          Loading subscription options…
-        </Text>
       </View>
     );
   }
@@ -345,62 +341,131 @@ export function PaywallScreen({
     );
   }
 
-  // ── Main purchase UI (unknown / new user) ─────────────────────────────────
+  // ── Feature lists ─────────────────────────────────────────────────────────
+  const primaryFeatures: { text: string; highlight?: boolean }[] = [
+    { text: pw.feat13, highlight: true },
+    { text: Platform.OS === 'ios' ? pw.feat14ios : pw.feat14android, highlight: true },
+    { text: Platform.OS === 'ios' ? pw.feat2ios : pw.feat2android, highlight: true },
+    { text: pw.feat1 },
+  ];
+  const extendedFeatures: { text: string; highlight?: boolean }[] = [
+    { text: pw.feat3 },
+    { text: pw.feat4 },
+    { text: pw.feat5 },
+    { text: pw.feat6 },
+    { text: pw.feat7 },
+    { text: pw.feat8 },
+    { text: pw.feat9 },
+    { text: pw.feat10 },
+    { text: pw.feat11 },
+    { text: pw.feat12 },
+  ];
+
+  const carouselSlides = getCarouselSlides(pw);
+
+  // ── Main purchase UI ──────────────────────────────────────────────────────
   return (
     <View style={s.root}>
+      {/* Full-bleed background image */}
+      <Image
+        source={require('@/assets/images/paywall-bg.jpg')}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+      />
+
+      {/* Dark overlay gradient — heavier at bottom for CTA legibility */}
+      <LinearGradient
+        colors={['rgba(13,17,23,0.15)', 'rgba(13,17,23,0.52)', 'rgba(13,17,23,0.90)']}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      {/* Dismiss button (top-right) */}
+      {onDismiss && (
+        <Pressable
+          style={[s.dismissBtn, { top: insets.top + 12 }]}
+          onPress={onDismiss}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <MaterialIcons name="close" size={22} color="rgba(255,255,255,0.75)" />
+        </Pressable>
+      )}
+
+      {/* App logo + badge — top area */}
+      <View style={[s.logoArea, { paddingTop: insets.top + 20 }]}>
+        <Image
+          source={require('@/assets/images/icon.png')}
+          style={s.headerLogo}
+          resizeMode="contain"
+        />
+        <Text style={s.badge}>VITALSYNC PREMIUM</Text>
+      </View>
+
+      {/* Feature carousel */}
+      <View style={s.carouselArea}>
+        <FlatList
+          ref={flatListRef}
+          data={carouselSlides}
+          keyExtractor={(_, i) => String(i)}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={viewabilityConfig}
+          renderItem={({ item }) => (
+            <View style={s.carouselSlide}>
+              <Text style={s.carouselIcon}>{item.icon}</Text>
+              <Text style={s.carouselTitle}>{item.title}</Text>
+              <Text style={s.carouselSub}>{item.subtitle}</Text>
+            </View>
+          )}
+        />
+        {/* Pagination dots */}
+        <View style={s.dotsRow}>
+          {carouselSlides.map((_, i) => (
+            <View
+              key={i}
+              style={[s.dot, i === activeSlide && s.dotActive]}
+            />
+          ))}
+        </View>
+      </View>
+
+      {/* Bottom CTA panel — frosted glass style */}
       <ScrollView
-        contentContainerStyle={s.scroll}
+        style={s.ctaPanel}
+        contentContainerStyle={[s.ctaPanelContent, { paddingBottom: insets.bottom + 16 }]}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        {/* ── Header: 3D Logo + Badge + Headline ── */}
-        <View style={s.header}>
-          <Image
-            source={require('@/assets/images/icon.png')}
-            style={s.headerLogo}
-            resizeMode="contain"
-          />
-          <Text style={[s.badge, { textAlign: 'center' }]}>VITALSYNC PREMIUM</Text>
-          <Text style={s.headline}>{featureTitle ?? '14-Day Free Trial'}</Text>
-          <Text style={s.subheadline}>{featureSubtitle ?? 'Full access to all premium features. Cancel anytime.'}</Text>
-        </View>
-
-        {/* ── Plan selector (price-first, per Apple 3.1.2(c)) ── */}
-        <View style={s.planContainer}>
+        {/* Plan selector */}
+        <View style={s.planRow}>
           {/* Annual plan */}
           <Pressable
             style={({ pressed }) => [
               s.planCard,
               selectedPlan === PRODUCT_IDS.yearly && s.planCardSelected,
-              pressed && s.planCardPressed,
+              pressed && { opacity: 0.88 },
             ]}
             onPress={() => {
               setSelectedPlan(PRODUCT_IDS.yearly);
               if (Platform.OS !== "web") Haptics.selectionAsync();
             }}
           >
-            {/* BEST VALUE badge */}
-            <View style={s.planBadgeRow}>
-              <View style={s.bestValueBadge}>
-                <Text style={s.bestValueText}>BEST VALUE</Text>
-              </View>
+            <View style={s.bestValueBadge}>
+              <Text style={s.bestValueText}>BEST VALUE</Text>
             </View>
-            <Text style={[s.planLabel, { textAlign }]}>ANNUAL PLAN</Text>
-            {/* Price is the LARGEST element — Apple 3.1.2(c) */}
+            <Text style={s.planLabel}>ANNUAL</Text>
             {productsLoading ? (
-              <View style={s.priceSkeleton}>
-                <View style={[s.skeletonLine, { width: '70%', height: 28, marginBottom: 6 }]} />
-              </View>
+              <View style={[s.skeletonLine, { width: '80%', height: 26, marginVertical: 4 }]} />
             ) : (
               <Text style={s.planPrice}>
                 {yearlyPrice}
-                <Text style={s.planPeriodUnit}>/year</Text>
+                <Text style={s.planPeriodUnit}>/yr</Text>
               </Text>
             )}
-            {/* Free trial is SUBORDINATE — smaller, muted */}
-            <Text style={s.trialSubText}>Includes a 14-day free trial</Text>
-            <Text style={[s.planSaving, { textAlign }]}>Save ~17% vs monthly</Text>
-            {/* Selection indicator */}
+            <Text style={s.trialSubText}>14-day free trial</Text>
+            <Text style={s.savingText}>Save ~17%</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}
             </View>
@@ -411,38 +476,36 @@ export function PaywallScreen({
             style={({ pressed }) => [
               s.planCard,
               selectedPlan === PRODUCT_IDS.monthly && s.planCardSelected,
-              pressed && s.planCardPressed,
+              pressed && { opacity: 0.88 },
             ]}
             onPress={() => {
               setSelectedPlan(PRODUCT_IDS.monthly);
               if (Platform.OS !== "web") Haptics.selectionAsync();
             }}
           >
-            <Text style={[s.planLabel, { textAlign }]}>MONTHLY PLAN</Text>
+            <Text style={s.planLabel}>MONTHLY</Text>
             {productsLoading ? (
-              <View style={s.priceSkeleton}>
-                <View style={[s.skeletonLine, { width: '70%', height: 28, marginBottom: 6 }]} />
-              </View>
+              <View style={[s.skeletonLine, { width: '80%', height: 26, marginVertical: 4 }]} />
             ) : (
               <Text style={s.planPrice}>
                 {monthlyPrice}
-                <Text style={s.planPeriodUnit}>/month</Text>
+                <Text style={s.planPeriodUnit}>/mo</Text>
               </Text>
             )}
-            <Text style={s.trialSubText}>Includes a 14-day free trial</Text>
+            <Text style={s.trialSubText}>14-day free trial</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.monthly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.monthly && <View style={s.radioInner} />}
             </View>
           </Pressable>
         </View>
 
-        {/* ── Free plan card (full-width, below paid plans) ── */}
+        {/* Free plan option */}
         {showFreeTier && onDismiss && (
           <Pressable
             style={({ pressed }) => [
               s.freePlanCard,
               selectedPlan === FREE_PLAN_ID && s.freePlanCardSelected,
-              pressed && s.planCardPressed,
+              pressed && { opacity: 0.88 },
             ]}
             onPress={() => {
               setSelectedPlan(FREE_PLAN_ID);
@@ -451,11 +514,11 @@ export function PaywallScreen({
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <View style={{ flex: 1 }}>
-                <Text style={[s.planLabel, { textAlign }]}>FREE PLAN</Text>
-                <Text style={[s.planPrice, { fontSize: 22 }]}>
-                  $0<Text style={s.planPeriodUnit}>/month</Text>
+                <Text style={s.planLabel}>FREE PLAN</Text>
+                <Text style={[s.planPrice, { fontSize: 20 }]}>
+                  $0<Text style={s.planPeriodUnit}>/mo</Text>
                 </Text>
-                <Text style={[s.trialSubText, { textAlign }]}>
+                <Text style={s.trialSubText}>
                   {Platform.OS === 'ios' ? pw.freePlanLimitsIOS : pw.freePlanLimitsAndroid}
                 </Text>
               </View>
@@ -466,13 +529,18 @@ export function PaywallScreen({
           </Pressable>
         )}
 
-        {/* ── Feature list (scrollable / expandable) ── */}
+        {/* Feature list (expandable) */}
         <View style={s.featureList}>
           <Text style={[s.featureSectionTitle, { textAlign }]}>What's included</Text>
           {primaryFeatures.map(({ text, highlight }) => (
-            <View key={text} style={[s.featureRow, { flexDirection: rowDir }]}>
-              <FeatureIcon highlight={highlight} color={colors.primary} successColor={colors.success} />
-              <Text style={[s.featureText, { textAlign }]}>{text}</Text>
+            <View key={text} style={s.featureRow}>
+              <MaterialIcons
+                name="check-circle"
+                size={16}
+                color={highlight ? BRAND_BLUE_INLINE : '#34D399'}
+                style={{ marginTop: 2 }}
+              />
+              <Text style={s.featureText}>{text}</Text>
               {highlight && (
                 <View style={s.crownBadge}>
                   <Text style={s.crownIcon}>👑</Text>
@@ -480,10 +548,10 @@ export function PaywallScreen({
               )}
             </View>
           ))}
-          {featuresExpanded && extendedFeatures.map(({ text, highlight }) => (
-            <View key={text} style={[s.featureRow, { flexDirection: rowDir }]}>
-              <FeatureIcon highlight={highlight} color={colors.primary} successColor={colors.success} />
-              <Text style={[s.featureText, { textAlign }]}>{text}</Text>
+          {featuresExpanded && extendedFeatures.map(({ text }) => (
+            <View key={text} style={s.featureRow}>
+              <MaterialIcons name="check-circle" size={16} color="#34D399" style={{ marginTop: 2 }} />
+              <Text style={s.featureText}>{text}</Text>
             </View>
           ))}
           <Pressable
@@ -492,31 +560,27 @@ export function PaywallScreen({
           >
             <Text style={s.seeAllText}>
               {featuresExpanded
-                ? 'Hide features ▲'
+                ? (pw.hideFeatures ?? 'Hide features ▲')
                 : `See all ${extendedFeatures.length} more features ▼`}
             </Text>
           </Pressable>
         </View>
 
-        {/* ── Error ── */}
+        {/* Error */}
         {purchaseError ? (
           <Text style={s.errorText}>{purchaseError}</Text>
         ) : null}
 
-        {/* ── Trust statement ── */}
+        {/* Trust statement */}
         <View style={s.trustRow}>
-          <MaterialIcons name="lock" size={13} color={colors.success} style={{ marginRight: 5, marginTop: 1 }} />
+          <MaterialIcons name="lock" size={13} color="#34D399" style={{ marginRight: 5, marginTop: 1 }} />
           <Text style={s.trustText}>Private. On-device. No health data sold.</Text>
         </View>
 
-        {/* ── Disclosure (Apple 3.1.2(c) — MUST appear directly above CTA) ── */}
-        <View style={s.disclosureBox}>
-          <Text style={[s.disclosureText, { textAlign: 'center' }]}>
-            {disclosureText}
-          </Text>
-        </View>
+        {/* Disclosure (Apple 3.1.2(c) — MUST appear directly above CTA) */}
+        <Text style={s.disclosureText}>{disclosureText}</Text>
 
-        {/* ── Primary CTA ── */}
+        {/* Primary CTA */}
         <Pressable
           style={({ pressed }) => [
             selectedPlan === FREE_PLAN_ID ? s.freePlanCtaButton : s.ctaButton,
@@ -529,24 +593,20 @@ export function PaywallScreen({
           {purchasing && selectedPlan !== FREE_PLAN_ID ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={selectedPlan === FREE_PLAN_ID ? [s.ctaText, { color: colors.primary }] : s.ctaText}>
+            <Text style={selectedPlan === FREE_PLAN_ID ? [s.ctaText, { color: BRAND_BLUE_INLINE }] : s.ctaText}>
               {ctaLabel}
             </Text>
           )}
         </Pressable>
 
-        {/* ── Restore Purchases ── */}
+        {/* Restore Purchases */}
         <Pressable
-          style={({ pressed }) => [
-            s.restoreButton,
-            pressed && s.ctaButtonPressed,
-            restoring && s.ctaButtonDisabled,
-          ]}
+          style={({ pressed }) => [s.restoreButton, pressed && { opacity: 0.7 }, restoring && s.ctaButtonDisabled]}
           onPress={handleRestore}
           disabled={restoring || purchasing}
         >
           {restoring ? (
-            <ActivityIndicator color={colors.primary} size="small" />
+            <ActivityIndicator color="rgba(255,255,255,0.7)" size="small" />
           ) : (
             <Text style={s.restoreButtonText}>
               {restoreSuccess ? '✓ Purchases Restored' : pw.restorePurchases}
@@ -554,19 +614,19 @@ export function PaywallScreen({
           )}
         </Pressable>
 
-        {/* ── Mandatory legal copy ── */}
-        <Text style={[s.legalText, { textAlign: 'center' }]}>
+        {/* Legal copy */}
+        <Text style={s.legalText}>
           {Platform.OS === 'android' ? pw.legalGoogle : pw.legalApple}
         </Text>
 
-        {/* ── Secondary actions ── */}
+        {/* Secondary actions */}
         <View style={s.secondaryRow}>
           <Pressable onPress={handleManage}>
             <Text style={s.secondaryLink}>{pw.manageSubscription}</Text>
           </Pressable>
         </View>
 
-        {/* ── Privacy / Terms — always visible ── */}
+        {/* Privacy / Terms */}
         <View style={s.legalLinks}>
           <Pressable onPress={() => openLink(LEGAL_LINKS.privacy)}>
             <Text style={s.legalLink}>{pw.privacyPolicy}</Text>
@@ -576,24 +636,63 @@ export function PaywallScreen({
             <Text style={s.legalLink}>{pw.termsOfService}</Text>
           </Pressable>
         </View>
-
-        <View style={{ height: insets.bottom + 16 }} />
       </ScrollView>
     </View>
   );
 }
 
+// ─── Carousel slide data ──────────────────────────────────────────────────────
+function getCarouselSlides(pw: any): CarouselSlide[] {
+  return [
+    {
+      icon: '🔬',
+      title: pw.slide1Title ?? 'Evidence-Based Insights',
+      subtitle: pw.slide1Sub ?? 'Peer-reviewed correlations between your vitals, nutrition, and lifestyle.',
+    },
+    {
+      icon: '🥗',
+      title: pw.slide2Title ?? 'AI-Powered Nutrition',
+      subtitle: pw.slide2Sub ?? 'Scan meals instantly with Apple Intelligence or Gemini for macro tracking.',
+    },
+    {
+      icon: '📋',
+      title: pw.slide3Title ?? 'Clinical-Grade Reports',
+      subtitle: pw.slide3Sub ?? 'Generate PDF health reports to share with your doctor.',
+    },
+    {
+      icon: '⏰',
+      title: pw.slide4Title ?? 'Smart Reminders',
+      subtitle: pw.slide4Sub ?? 'Never miss a medication dose, blood pressure check, or appointment.',
+    },
+    {
+      icon: '🔒',
+      title: pw.slide5Title ?? 'Private & On-Device',
+      subtitle: pw.slide5Sub ?? 'All your health data stays on your device. Nothing is sold or shared.',
+    },
+  ];
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number; bottom: number }) {
+  // VitalSync brand palette (dark mode)
+  const GLASS_BG = 'rgba(13,17,23,0.82)';       // #0D1117 at 82% — matches app background
+  const GLASS_BORDER = 'rgba(34,197,94,0.18)';  // emerald-green glass border (glowGreen)
+  const TEXT_WHITE = '#F0F2FA';                  // foreground token
+  const TEXT_MUTED = 'rgba(154,160,186,0.85)';  // muted token
+  const BRAND_GREEN = '#22C55E';                 // primary / tint
+  const BRAND_BLUE  = '#38BDF8';                 // secondary
+  const BRAND_BLUE_DIM = 'rgba(56,189,248,0.18)'; // secondaryMuted
+
   return StyleSheet.create({
     root: {
       flex: 1,
-      backgroundColor: colors.background,
+      backgroundColor: '#050A14',
     },
     centeredRoot: {
       justifyContent: "center",
       alignItems: "center",
       paddingHorizontal: 24,
+      backgroundColor: colors.background,
     },
     loadingLogo: {
       width: 80,
@@ -606,284 +705,341 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       color: colors.muted,
       textAlign: "center",
     },
-    scroll: {
-      paddingTop: insets.top + 20,
-      paddingHorizontal: 20,
+    // ── Dismiss button ──────────────────────────────────────────────────────
+    dismissBtn: {
+      position: 'absolute',
+      right: 16,
+      zIndex: 100,
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: 'rgba(0,0,0,0.35)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    header: {
-      alignItems: "center",
-      marginBottom: 20,
+    // ── Logo area ───────────────────────────────────────────────────────────
+    logoArea: {
+      alignItems: 'center',
+      paddingHorizontal: 24,
+      zIndex: 10,
     },
     headerLogo: {
-      width: 88,
-      height: 88,
-      marginBottom: 12,
+      width: 72,
+      height: 72,
+      marginBottom: 8,
+      borderRadius: 16,
+      ...Platform.select({
+        ios: {
+          shadowColor: '#22C55E',
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.6,
+          shadowRadius: 16,
+        },
+        android: { elevation: 12 },
+      }),
     },
     badge: {
       fontSize: 11,
-      fontWeight: "700",
-      letterSpacing: 1.5,
-      color: colors.primary,
-      marginBottom: 6,
+      fontWeight: '800',
+      letterSpacing: 2,
+      color: BRAND_GREEN,
+      marginBottom: 4,
+      textAlign: 'center',
     },
     headline: {
       fontSize: 26,
-      fontWeight: "800",
-      color: colors.foreground,
-      textAlign: "center",
+      fontWeight: '800',
+      color: TEXT_WHITE,
+      textAlign: 'center',
       marginBottom: 6,
       lineHeight: 32,
     },
     subheadline: {
       fontSize: 14,
-      color: colors.muted,
-      textAlign: "center",
+      color: TEXT_MUTED,
+      textAlign: 'center',
       lineHeight: 20,
       paddingHorizontal: 8,
     },
-    // ── Plan cards ──────────────────────────────────────────────────────────
-    planContainer: {
-      flexDirection: "row",
+    // ── Carousel ────────────────────────────────────────────────────────────
+    carouselArea: {
+      flex: 1,
+      justifyContent: 'center',
+      zIndex: 10,
+    },
+    carouselSlide: {
+      width: SCREEN_WIDTH,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 40,
       gap: 10,
-      marginBottom: 10,
+    },
+    carouselIcon: {
+      fontSize: 48,
+      marginBottom: 4,
+    },
+    carouselTitle: {
+      fontSize: 22,
+      fontWeight: '800',
+      color: TEXT_WHITE,
+      textAlign: 'center',
+      lineHeight: 28,
+    },
+    carouselSub: {
+      fontSize: 14,
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      lineHeight: 21,
+    },
+    dotsRow: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 14,
+      marginBottom: 6,
+    },
+    dot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: 'rgba(255,255,255,0.30)',
+    },
+    dotActive: {
+      width: 18,
+      backgroundColor: BRAND_GREEN,
+    },
+    // ── CTA panel ───────────────────────────────────────────────────────────
+    ctaPanel: {
+      backgroundColor: GLASS_BG,
+      borderTopLeftRadius: 28,
+      borderTopRightRadius: 28,
+      borderTopWidth: 1,
+      borderLeftWidth: 1,
+      borderRightWidth: 1,
+      borderColor: GLASS_BORDER,
+      maxHeight: '65%',
+      zIndex: 20,
+    },
+    ctaPanelContent: {
+      paddingHorizontal: 20,
+      paddingTop: 20,
+      gap: 10,
+    },
+    // ── Plan cards ──────────────────────────────────────────────────────────
+    planRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginBottom: 4,
     },
     planCard: {
       flex: 1,
-      backgroundColor: colors.surface,
+      backgroundColor: 'rgba(255,255,255,0.08)',
       borderRadius: 16,
       padding: 14,
-      borderWidth: 2,
-      borderColor: colors.border,
-      minHeight: 140,
+      borderWidth: 1.5,
+      borderColor: GLASS_BORDER,
+      minHeight: 130,
       position: 'relative',
     },
     planCardSelected: {
-      borderColor: colors.primary,
+      borderColor: BRAND_GREEN,
+      backgroundColor: 'rgba(34,197,94,0.12)',
       ...Platform.select({
         ios: {
-          shadowColor: colors.primary,
+          shadowColor: BRAND_GREEN,
           shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.45,
+          shadowOpacity: 0.5,
           shadowRadius: 10,
         },
         android: { elevation: 8 },
       }),
     },
-    planCardPressed: {
-      opacity: 0.85,
-    },
-    planBadgeRow: {
-      marginBottom: 6,
-    },
     bestValueBadge: {
-      backgroundColor: colors.primary,
+      backgroundColor: 'rgba(34,197,94,0.22)',
       borderRadius: 6,
       paddingHorizontal: 6,
       paddingVertical: 2,
-      alignSelf: "flex-start",
+      alignSelf: 'flex-start',
+      marginBottom: 6,
+      borderWidth: 1,
+      borderColor: 'rgba(34,197,94,0.45)',
     },
     bestValueText: {
       fontSize: 9,
-      fontWeight: "800",
-      color: "#fff",
+      fontWeight: '800',
+      color: BRAND_GREEN,
       letterSpacing: 0.8,
     },
     planLabel: {
-      fontSize: 11,
-      fontWeight: "700",
-      color: colors.muted,
-      letterSpacing: 0.8,
+      fontSize: 10,
+      fontWeight: '700',
+      color: TEXT_MUTED,
+      letterSpacing: 1,
       marginBottom: 4,
       textTransform: 'uppercase',
     },
-    // Price is the LARGEST element — Apple 3.1.2(c) compliance
     planPrice: {
-      fontSize: 28,
-      fontWeight: "800",
-      color: colors.foreground,
-      marginBottom: 4,
+      fontSize: 26,
+      fontWeight: '800',
+      color: TEXT_WHITE,
+      marginBottom: 2,
     },
     planPeriodUnit: {
-      fontSize: 14,
-      fontWeight: "400",
-      color: colors.muted,
+      fontSize: 13,
+      fontWeight: '400',
+      color: TEXT_MUTED,
     },
-    // Free trial text is SUBORDINATE — smaller, muted — Apple 3.1.2(c)
     trialSubText: {
-      fontSize: 11,
-      color: colors.muted,
-      marginBottom: 4,
-      lineHeight: 15,
+      fontSize: 10,
+      color: TEXT_MUTED,
+      marginBottom: 2,
+      lineHeight: 14,
     },
-    planSaving: {
-      fontSize: 11,
-      color: colors.success,
+    savingText: {
+      fontSize: 10,
+      color: '#34D399',
       fontWeight: '600',
-      marginTop: 2,
     },
     radioOuter: {
-      width: 20,
-      height: 20,
-      borderRadius: 10,
-      borderWidth: 2,
-      borderColor: colors.border,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
+      borderWidth: 1.5,
+      borderColor: GLASS_BORDER,
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',
-      top: 12,
-      right: 12,
+      top: 10,
+      right: 10,
     },
     radioOuterSelected: {
-      borderColor: colors.primary,
+      borderColor: BRAND_GREEN,
     },
     radioInner: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: colors.primary,
-    },
-    priceSkeleton: {
-      marginTop: 4,
+      width: 9,
+      height: 9,
+      borderRadius: 4.5,
+      backgroundColor: BRAND_GREEN,
     },
     skeletonLine: {
-      backgroundColor: colors.border,
+      backgroundColor: 'rgba(255,255,255,0.12)',
       borderRadius: 6,
-      opacity: 0.7,
     },
     // Free plan card
     freePlanCard: {
-      backgroundColor: colors.surface,
-      borderRadius: 16,
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      borderRadius: 14,
       padding: 14,
-      borderWidth: 2,
-      borderColor: colors.border,
-      marginBottom: 16,
+      borderWidth: 1.5,
+      borderColor: GLASS_BORDER,
     },
     freePlanCardSelected: {
-      borderColor: colors.primary,
-      ...Platform.select({
-        ios: {
-          shadowColor: colors.primary,
-          shadowOffset: { width: 0, height: 0 },
-          shadowOpacity: 0.35,
-          shadowRadius: 8,
-        },
-        android: { elevation: 6 },
-      }),
+      borderColor: BRAND_BLUE,
+      backgroundColor: BRAND_BLUE_DIM,
     },
     freePlanCtaButton: {
-      backgroundColor: colors.surface,
+      backgroundColor: 'rgba(255,255,255,0.08)',
       borderRadius: 14,
       paddingVertical: 16,
       alignItems: 'center',
-      marginBottom: 12,
-      borderWidth: 2,
-      borderColor: colors.primary,
+      borderWidth: 1.5,
+      borderColor: BRAND_BLUE,
     },
     // Feature list
     featureList: {
-      backgroundColor: colors.surface,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
-      gap: 10,
+      backgroundColor: 'rgba(255,255,255,0.06)',
+      borderRadius: 14,
+      padding: 14,
+      gap: 8,
+      borderWidth: 1,
+      borderColor: GLASS_BORDER,
     },
     featureSectionTitle: {
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: '700',
-      color: colors.foreground,
+      color: TEXT_WHITE,
       marginBottom: 4,
       letterSpacing: 0.3,
     },
     featureRow: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      gap: 10,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
     },
     featureText: {
-      fontSize: 14,
-      color: colors.foreground,
+      fontSize: 13,
+      color: TEXT_MUTED,
       flex: 1,
-      lineHeight: 20,
+      lineHeight: 18,
     },
     crownBadge: {
       backgroundColor: 'rgba(255, 196, 0, 0.15)',
-      borderRadius: 8,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      borderRadius: 6,
+      paddingHorizontal: 5,
+      paddingVertical: 1,
       borderWidth: 1,
-      borderColor: 'rgba(255, 196, 0, 0.35)',
+      borderColor: 'rgba(255, 196, 0, 0.30)',
       alignItems: 'center',
       justifyContent: 'center',
     },
     crownIcon: {
-      fontSize: 11,
-      lineHeight: 15,
+      fontSize: 10,
+      lineHeight: 14,
     },
     seeAllRow: {
       marginTop: 4,
       paddingTop: 8,
       borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: colors.border,
-      alignItems: "center",
+      borderTopColor: GLASS_BORDER,
+      alignItems: 'center',
     },
     seeAllText: {
-      fontSize: 13,
-      fontWeight: "600",
-      color: colors.primary,
+      fontSize: 12,
+      fontWeight: '600',
+      color: BRAND_BLUE,
     },
     // Trust row
     trustRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 10,
       paddingHorizontal: 8,
     },
     trustText: {
-      fontSize: 12,
-      color: colors.success,
+      fontSize: 11,
+      color: '#34D399',
       fontWeight: '600',
       textAlign: 'center',
       letterSpacing: 0.2,
     },
-    // Disclosure box — directly above CTA (Apple 3.1.2(c))
-    disclosureBox: {
-      backgroundColor: colors.surface,
-      borderRadius: 10,
-      paddingVertical: 10,
-      paddingHorizontal: 14,
-      marginBottom: 12,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
+    // Disclosure
     disclosureText: {
-      fontSize: 11,
-      color: colors.muted,
-      lineHeight: 16,
+      fontSize: 10,
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      lineHeight: 15,
     },
     // Error
     errorText: {
-      fontSize: 13,
-      color: colors.error,
-      textAlign: "center",
-      marginBottom: 8,
+      fontSize: 12,
+      color: '#F87171',
+      textAlign: 'center',
     },
     // CTA button
     ctaButton: {
-      backgroundColor: colors.primary,
+      backgroundColor: BRAND_GREEN,
       borderRadius: 14,
       paddingVertical: 16,
-      alignItems: "center",
-      marginBottom: 12,
+      alignItems: 'center',
       ...Platform.select({
         ios: {
-          shadowColor: colors.primary,
+          shadowColor: BRAND_GREEN,
           shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.35,
-          shadowRadius: 8,
+          shadowOpacity: 0.55,
+          shadowRadius: 12,
         },
-        android: { elevation: 6 },
+        android: { elevation: 8 },
       }),
     },
     ctaButtonPressed: {
@@ -891,73 +1047,69 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       transform: [{ scale: 0.97 }],
     },
     ctaButtonDisabled: {
-      opacity: 0.6,
+      opacity: 0.55,
     },
     ctaText: {
       fontSize: 17,
-      fontWeight: "700",
-      color: "#fff",
+      fontWeight: '700',
+      color: '#0D1117',
+      letterSpacing: 0.2,
     },
     // Restore
     restoreButton: {
-      backgroundColor: colors.surface,
-      borderRadius: 14,
-      paddingVertical: 14,
-      alignItems: "center",
-      marginBottom: 12,
-      borderWidth: 1.5,
-      borderColor: colors.border,
+      backgroundColor: 'transparent',
+      borderRadius: 12,
+      paddingVertical: 12,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: GLASS_BORDER,
     },
     restoreButtonText: {
-      fontSize: 15,
-      fontWeight: "600",
-      color: colors.primary,
+      fontSize: 14,
+      fontWeight: '600',
+      color: BRAND_BLUE,
     },
     // Legal
     legalText: {
-      fontSize: 11,
-      color: colors.muted,
-      textAlign: "center",
-      lineHeight: 16,
-      marginBottom: 10,
+      fontSize: 10,
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      lineHeight: 15,
     },
     secondaryRow: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
       gap: 8,
-      marginBottom: 10,
     },
     secondaryLink: {
-      fontSize: 13,
-      color: colors.primary,
-      fontWeight: "500",
+      fontSize: 12,
+      color: BRAND_BLUE,
+      fontWeight: '500',
     },
     secondarySep: {
-      fontSize: 13,
-      color: colors.muted,
+      fontSize: 12,
+      color: TEXT_MUTED,
     },
     legalLinks: {
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
       gap: 8,
-      marginBottom: 16,
     },
     legalLink: {
-      fontSize: 12,
-      color: colors.muted,
-      textDecorationLine: "underline",
+      fontSize: 11,
+      color: TEXT_MUTED,
+      textDecorationLine: 'underline',
     },
     freeTierButton: {
-      alignItems: "center",
+      alignItems: 'center',
       paddingVertical: 12,
-      marginBottom: 8,
     },
     freeTierText: {
-      fontSize: 14,
-      color: colors.muted,
-      textDecorationLine: "underline",
+      fontSize: 13,
+      color: TEXT_MUTED,
+      textDecorationLine: 'underline',
     },
   });
 }

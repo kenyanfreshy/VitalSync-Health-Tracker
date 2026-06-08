@@ -11,7 +11,7 @@ import { runCorrelationEngine } from './correlation-engine';
 import { getAbnormalAnalytes } from './lab-types';
 import { VITALSYNC_LOGO_B64 } from './report-logo';
 import { aggregateHrTo4HourBuckets, aggregatedToPulseRecords } from './hr-aggregation';
-import { CORRELATION_REFS, getRefsForCategories } from './peer-review-refs';
+import { CORRELATION_REFS, REPORT_METRIC_REFS, getRefsForCategories, getRefsForMetrics } from './peer-review-refs';
 import { getRestingHRReferenceRange, type UserProfile } from '@/lib/user-profile';
 
 export interface ReportConfig {
@@ -3252,22 +3252,32 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
   })()}
 
   ${(() => {
-    // Collect all categories from the correlation insights included in the report
+    // Collect all categories from the correlation insights + all metric refs + nutrition refs
     const allCategories = Object.keys(CORRELATION_REFS);
-    const reportRefs = getRefsForCategories(allCategories);
+    const correlationRefs = getRefsForCategories(allCategories);
+    const metricKeys = Object.keys(REPORT_METRIC_REFS);
+    const metricRefs = getRefsForMetrics(metricKeys);
+    // Merge and deduplicate by pmid/id
+    const seen = new Set<string>();
+    const reportRefs = [...correlationRefs, ...metricRefs].filter(ref => {
+      const key = ref.pmid || ref.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     if (!reportRefs.length) return '';
     const refRows = reportRefs.map((ref, idx) => `
       <div style="margin-bottom:10px;padding-left:24px;position:relative;">
         <span style="position:absolute;left:0;top:0;font-weight:700;color:#6366F1;">[${idx + 1}]</span>
         <span style="font-size:10px;color:#1E293B;line-height:1.5;">${ref.fullRef}</span><br>
         <span style="font-size:9px;color:#64748B;font-style:italic;">${ref.summary}</span>
-        ${ref.url ? `<br><a href="${ref.url}" style="font-size:9px;color:#6366F1;">PubMed: ${ref.pmid}</a>` : ''}
+        ${ref.url ? `<br><a href="${ref.url}" style="font-size:9px;color:#6366F1;">PubMed: ${ref.pmid || 'N/A'}</a>` : ''}
       </div>
     `).join('');
     return `
     <div style="page-break-inside:avoid;margin:24px 0 16px;padding:20px 24px;background:#F8FAFC;border-radius:12px;border:1px solid #E2E8F0;">
-      <div style="font-size:13px;font-weight:800;color:#6366F1;letter-spacing:0.8px;margin-bottom:14px;text-transform:uppercase;">Evidence-Based References</div>
-      <div style="font-size:9px;color:#94A3B8;font-style:italic;margin-bottom:12px;">All correlation insights in this report are grounded in peer-reviewed literature. Citations below are indexed in PubMed (NCBI) and follow Vancouver/ICMJE format.</div>
+      <div style="font-size:13px;font-weight:800;color:#6366F1;letter-spacing:0.8px;margin-bottom:14px;text-transform:uppercase;">Medical References</div>
+      <div style="font-size:9px;color:#94A3B8;font-style:italic;margin-bottom:12px;">All health metrics, correlation insights, and nutritional analyses in this report are grounded in peer-reviewed literature. Citations are indexed in PubMed (NCBI) and follow Vancouver/ICMJE format.</div>
       ${refRows}
     </div>`;
   })()}

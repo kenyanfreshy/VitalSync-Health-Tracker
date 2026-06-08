@@ -741,6 +741,31 @@ function InsightCard({
         {insight.summary}
       </Text>
 
+      {/* EBP Citation — always visible even when collapsed */}
+      {!expanded && (
+        <TouchableOpacity
+          style={[styles.citationBlock, { marginTop: 4 }]}
+          onPress={() => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            Linking.openURL(insight.citationUrl);
+          }}
+          activeOpacity={0.7}
+          accessibilityRole="link"
+          accessibilityLabel={`Open source: ${insight.citation}`}
+          accessibilityHint="Opens the journal website in your browser"
+        >
+          <Text style={[styles.citationLabel, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)' }]}>
+            {cs.ebpSource}
+          </Text>
+          <Text style={[styles.citationText, { color: isDark ? 'rgba(160,200,255,0.65)' : 'rgba(30,80,200,0.65)' }]}>
+            {insight.citation}
+          </Text>
+          <Text style={[styles.citationDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' }]}>
+            {cs.tapToOpenSource}
+          </Text>
+        </TouchableOpacity>
+      )}
+
       {/* Expanded content */}
       {expanded && (
         <View style={styles.expandedContent}>

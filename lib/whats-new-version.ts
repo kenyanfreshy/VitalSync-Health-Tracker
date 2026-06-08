@@ -10,7 +10,7 @@
 export const WHATS_NEW_SEEN_KEY = "@vsht:whatsNewSeenVersion";
 
 /**
- * The latest release version string — must match `whatsNewV2755Strings.version`
+ * The latest release version string — must match `whatsNewV2935Strings.version`
  * in components/whats-new-sheet.tsx.
  */
-export const LATEST_WHATS_NEW_VERSION = "2.8.32";
+export const LATEST_WHATS_NEW_VERSION = "2.9.35";

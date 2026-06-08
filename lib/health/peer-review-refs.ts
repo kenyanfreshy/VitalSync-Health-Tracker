@@ -228,6 +228,89 @@ export const CORRELATION_REFS: Record<string, PeerRef[]> = {
       summary: 'Inverse relationship between resting HR and HRV; low HRV + high resting HR predicts all-cause and cardiovascular mortality.',
     },
   ],
+
+  // ─── Nutrition Analysis References ─────────────────────────────────────────
+
+  'nutrition': [
+    {
+      id: 'nutrition-1',
+      shortRef: 'Willett et al., 2019',
+      fullRef: 'Willett W, Rockström J, Loken B, et al. Food in the Anthropocene: the EAT-Lancet Commission on healthy diets from sustainable food systems. Lancet. 2019;393(10170):447–492.',
+      pmid: '30660336',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/30660336/',
+      summary: 'EAT-Lancet Commission: plant-forward dietary patterns with optimal macro balance reduce chronic disease risk and support metabolic health.',
+    },
+    {
+      id: 'nutrition-2',
+      shortRef: 'Hu, 2002',
+      fullRef: 'Hu FB. Dietary pattern analysis: a new direction in nutritional epidemiology. Curr Opin Lipidol. 2002;13(1):3–9.',
+      pmid: '11790957',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/11790957/',
+      summary: 'Dietary pattern scoring reflects peer-reviewed meta-analytic evidence on dietary quality and its association with cardiovascular outcomes.',
+    },
+    {
+      id: 'nutrition-3',
+      shortRef: 'Mozaffarian, 2016',
+      fullRef: 'Mozaffarian D. Dietary and policy priorities for cardiovascular disease, diabetes, and obesity: a comprehensive review. Circulation. 2016;133(2):187–225.',
+      pmid: '26746178',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/26746178/',
+      summary: 'Comprehensive review: macronutrient quality (not quantity alone) drives cardiometabolic risk; fiber-rich, minimally processed diets are most protective.',
+    },
+  ],
+
+  'caloric': [
+    {
+      id: 'caloric-1',
+      shortRef: 'Hall et al., 2012',
+      fullRef: 'Hall KD, Heymsfield SB, Kemnitz JW, Klein S, Schoeller DA, Speakman JR. Energy balance and its components: implications for body weight regulation. Am J Clin Nutr. 2012;95(4):989–994.',
+      pmid: '22434603',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/22434603/',
+      summary: 'Energy balance model: sustained caloric surplus of 500 kcal/day leads to approximately 0.45 kg/week weight gain; deficit produces equivalent loss.',
+    },
+    {
+      id: 'caloric-2',
+      shortRef: 'Mifflin et al., 1990',
+      fullRef: 'Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO. A new predictive equation for resting energy expenditure in healthy individuals. Am J Clin Nutr. 1990;51(2):241–247.',
+      pmid: '2305711',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/2305711/',
+      summary: 'Mifflin-St Jeor equation: the most validated BMR formula for estimating resting energy expenditure in clinical and research settings.',
+    },
+    {
+      id: 'caloric-3',
+      shortRef: 'Sacks et al., 2009',
+      fullRef: 'Sacks FM, Bray GA, Carey VJ, et al. Comparison of weight-loss diets with different compositions of fat, protein, and carbohydrates. N Engl J Med. 2009;360(9):859–873.',
+      pmid: '19246357',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/19246357/',
+      summary: 'Caloric deficit, not macronutrient ratio, is the primary driver of weight loss; adherence to any reduced-calorie diet produces equivalent outcomes.',
+    },
+  ],
+
+  'correlate': [
+    {
+      id: 'correlate-1',
+      shortRef: 'Mente et al., 2017',
+      fullRef: 'Mente A, Dehghan M, Rangarajan S, et al. Association of dietary nutrients with blood lipids and blood pressure in 18 countries: a cross-sectional analysis from the PURE study. Lancet Diabetes Endocrinol. 2017;5(10):774–787.',
+      pmid: '28864143',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/28864143/',
+      summary: 'PURE study: dietary fat and carbohydrate intake correlate with blood lipids and BP across diverse populations; higher fat intake associated with lower cardiovascular mortality.',
+    },
+    {
+      id: 'correlate-2',
+      shortRef: 'Estruch et al., 2013',
+      fullRef: 'Estruch R, Ros E, Salas-Salvadó J, et al. Primary prevention of cardiovascular disease with a Mediterranean diet. N Engl J Med. 2013;368(14):1279–1290.',
+      pmid: '23432189',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/23432189/',
+      summary: 'PREDIMED trial: Mediterranean diet supplemented with olive oil or nuts reduced major cardiovascular events by 30% vs low-fat diet.',
+    },
+    {
+      id: 'correlate-3',
+      shortRef: 'Sacks et al., 2001',
+      fullRef: 'Sacks FM, Svetkey LP, Vollmer WM, et al. Effects on blood pressure of reduced dietary sodium and the DASH diet. N Engl J Med. 2001;344(1):3–10.',
+      pmid: '11136953',
+      url: 'https://pubmed.ncbi.nlm.nih.gov/11136953/',
+      summary: 'DASH-Sodium trial: combined dietary pattern (DASH) with sodium reduction achieves the greatest blood pressure reduction of any dietary intervention.',
+    },
+  ],
 };
 
 // ─── Health Report Metric References ─────────────────────────────────────────

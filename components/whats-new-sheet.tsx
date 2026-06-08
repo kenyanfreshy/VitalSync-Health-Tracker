@@ -147,6 +147,25 @@ export const whatsNewV2366Strings = {
   i2Desc: "The Surgical History tile in About now routes to the dedicated Surgical History screen (/log/surgical-history) rather than the Medical Conditions screen.",
 } as const;
 
+/** Release note content — v1.0.34 */
+export const whatsNewV1034Strings = {
+  version: "1.0.34",
+  date: "June 2026",
+  headline: "Immersive Paywall & Evidence Citations",
+  // New
+  n1Title: "Immersive Paywall Redesign",
+  n1Desc: "The subscription screen now features a full-bleed clinical background image, an auto-advancing feature carousel with pagination dots, and a frosted-glass CTA panel — inspired by best-in-class iOS app design.",
+  n2Title: "Medical References in Health Reports",
+  n2Desc: "PDF health reports now include a comprehensive Medical References section citing all peer-reviewed studies that underpin the correlation insights, metric analyses, and nutritional data in the report.",
+  n3Title: "Nutrition Peer-Review Citations",
+  n3Desc: "The Diabetic Nutrition and Caloric Trend tabs now display tappable peer-review citation badges linking directly to PubMed studies.",
+  // Improved
+  i1Title: "Citations Always Visible",
+  i1Desc: "Evidence-based citation badges in the Smart Insights section are now always visible — no longer hidden behind the expand toggle.",
+  i2Title: "Sleep Coefficient of Variation Removed",
+  i2Desc: "The sleep-cv insight card has been removed from the Smart Insights section to reduce noise and improve signal quality.",
+} as const;
+
 /** Release note content — v1.5 */
 export const whatsNewV15Strings = {
   version: "1.5",
@@ -270,6 +289,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1034 = useT(whatsNewV1034Strings);
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
@@ -478,6 +498,20 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.34 ── */}
+          <OlderVersionHeader version={v1034.version} date={v1034.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🎨" title={v1034.n1Title} desc={v1034.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📚" title={v1034.n2Title} desc={v1034.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔬" title={v1034.n3Title} desc={v1034.n3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="📎" title={v1034.i1Title} desc={v1034.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="😴" title={v1034.i2Title} desc={v1034.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.5 ── */}
