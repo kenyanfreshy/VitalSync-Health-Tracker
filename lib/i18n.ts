@@ -27872,7 +27872,7 @@ export const paywallExtStrings = {
     slide4Sub: 'Smart medication reminders, refill tracking, and a built-in drug interaction checker — all in one place.',
     slide5Title: 'Your Data Stays Yours',
     slide5Sub: 'Everything is stored on your device. No accounts. No cloud. No data sold or shared — ever.',
-    continueWithAnnual: 'Start My Free Trial',
+    continueWithAnnual: 'Start My Free Trial — Annual',
     continueWithMonthly: 'Unlock Personal Insights',
     continueWithFree: 'Continue with Free Plan',
     orContinueFree: 'or continue with limited free version',

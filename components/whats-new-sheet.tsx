@@ -190,6 +190,15 @@ export const whatsNewV1035Strings = {
   f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
+/** Release note content — v1.0.44 */
+export const whatsNewV1044Strings = {
+  version: "1.0.44",
+  date: "June 2026",
+  headline: "Annual CTA Clarity",
+  i1Title: "Annual Plan CTA Updated",
+  i1Desc: "The annual subscription button now reads \"Start My Free Trial — Annual\" so users immediately know which plan they're selecting before tapping.",
+} as const;
+
 /** Release note content — v1.0.43 */
 export const whatsNewV1043Strings = {
   version: "1.0.43",
@@ -349,6 +358,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1044 = useT(whatsNewV1044Strings);
   const v1043 = useT(whatsNewV1043Strings);
   const v1037 = useT(whatsNewV1037Strings);
   const v1036 = useT(whatsNewV1036Strings);
@@ -562,6 +572,13 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.44 ── */}
+          <OlderVersionHeader version={v1044.version} date={v1044.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🏷️" title={v1044.i1Title} desc={v1044.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.43 ── */}
