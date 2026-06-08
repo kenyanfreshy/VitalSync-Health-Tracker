@@ -190,6 +190,20 @@ export const whatsNewV1035Strings = {
   f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
+/** Release note content — v1.0.37 */
+export const whatsNewV1037Strings = {
+  version: "1.0.37",
+  date: "June 2026",
+  headline: "CTA Copy & App Store Refresh",
+  // Improved
+  i1Title: "Clearer Paywall CTA Buttons",
+  i1Desc: "The subscription CTA now reads \"Start My Free Trial\" (annual) and \"Unlock Clinical Insights\" (monthly) for stronger, more direct conversion messaging.",
+  i2Title: "App Store Description Rewritten",
+  i2Desc: "The App Store listing now leads with \"Built by a critical care nurse\" and the peer-reviewed evidence angle, removing all AI references.",
+  i3Title: "Feature Labels Updated",
+  i3Desc: "Nutrition analysis features now reference USDA-verified data; clinical insight rows no longer reference AI brand names.",
+} as const;
+
 /** Release note content — v1.0.36 */
 export const whatsNewV1036Strings = {
   version: "1.0.36",
@@ -327,6 +341,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1037 = useT(whatsNewV1037Strings);
   const v1036 = useT(whatsNewV1036Strings);
   const v1035 = useT(whatsNewV1035Strings);
   const v1034 = useT(whatsNewV1034Strings);
@@ -538,6 +553,15 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.37 ── */}
+          <OlderVersionHeader version={v1037.version} date={v1037.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🎯" title={v1037.i1Title} desc={v1037.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🏥" title={v1037.i2Title} desc={v1037.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🆙" title={v1037.i3Title} desc={v1037.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.36 ── */}

@@ -10294,7 +10294,16 @@
 
 ## v1.0.36 — Copy Refinement + Paywall Carousel Polish
 
-- [ ] Refine Welcome slide tab copy in i18n.ts (Mission/Features/Privacy/Evidence) for App Store review
-- [ ] Sharpen paywall carousel 4-slide headlines and body copy for conversion optimization
-- [ ] Bump version to 1.0.36 in app.config.ts
-- [ ] Commit, push to GitHub, EAS build + TestFlight submit
+- [x] Refine Welcome slide tab copy in i18n.ts (Mission/Features/Privacy/Evidence) for App Store review
+- [x] Sharpen paywall carousel 5-slide headlines and body copy for conversion optimization
+- [x] Bump version to 1.0.36 in app.config.ts
+- [x] Commit (57db250), push to GitHub (4e21b0a → 57db250), EAS build queued
+
+## v1.0.37 — CTA Copy + App Store Description
+
+- [x] Update paywall CTA button copy to "Start My Free Trial" (trial) and "Unlock Clinical Insights" (subscribe)
+- [x] Write new App Store description: lead with "Built by a critical care nurse", peer-reviewed evidence angle, remove AI references
+- [x] Add App Store description to store-listing.md
+- [x] Bump version to 1.0.37 in app.config.ts (buildNumber 10037, versionCode 37)
+- [x] Add v1.0.37 What's New entry in whats-new-sheet.tsx
+- [x] Commit, push to GitHub, EAS build + TestFlight submit
