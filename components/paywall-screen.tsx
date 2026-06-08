@@ -646,28 +646,28 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
   return [
     {
       icon: '🔬',
-      title: pw.slide1Title ?? 'Evidence-Based Insights',
-      subtitle: pw.slide1Sub ?? 'Peer-reviewed correlations between your vitals, nutrition, and lifestyle.',
+      title: pw.slide1Title ?? 'Your Vitals, Clinically Interpreted',
+      subtitle: pw.slide1Sub ?? 'Peer-reviewed correlations across BP, sleep, glucose, and nutrition — the same analysis used in clinical research, now on your phone.',
     },
     {
       icon: '🥗',
-      title: pw.slide2Title ?? 'Smart Nutrition Tracking',
-      subtitle: pw.slide2Sub ?? 'Scan meals instantly to track macros, calories, and glycemic load.',
+      title: pw.slide2Title ?? 'Know Exactly What You Eat',
+      subtitle: pw.slide2Sub ?? 'Point your camera at any meal. Get USDA-verified macros, calories, and glycemic load in seconds — no guessing.',
     },
     {
       icon: '📋',
-      title: pw.slide3Title ?? 'Clinical-Grade Reports',
-      subtitle: pw.slide3Sub ?? 'Generate PDF health reports to share with your doctor.',
+      title: pw.slide3Title ?? 'Reports Your Doctor Will Actually Read',
+      subtitle: pw.slide3Sub ?? 'Generate a structured PDF health summary — vitals, labs, medications, and trends — ready to share at your next appointment.',
     },
     {
-      icon: '⏰',
-      title: pw.slide4Title ?? 'Smart Reminders',
-      subtitle: pw.slide4Sub ?? 'Never miss a medication dose, blood pressure check, or appointment.',
+      icon: '💊',
+      title: pw.slide4Title ?? 'Never Miss a Dose Again',
+      subtitle: pw.slide4Sub ?? 'Smart medication reminders, refill tracking, and a built-in drug interaction checker — all in one place.',
     },
     {
       icon: '🔒',
-      title: pw.slide5Title ?? 'Private & On-Device',
-      subtitle: pw.slide5Sub ?? 'All your health data stays on your device. Nothing is sold or shared.',
+      title: pw.slide5Title ?? 'Your Data Stays Yours',
+      subtitle: pw.slide5Sub ?? 'Everything is stored on your device. No accounts. No cloud. No data sold or shared — ever.',
     },
   ];
 }

@@ -10283,11 +10283,18 @@
 
 ## v1.0.35 — Paywall Unification + AI Removal + Correlate Cleanup + Report Refs
 
-- [ ] Unify onboarding paywall to use the same full-bleed immersive PaywallScreen component
-- [ ] Remove all "AI" references from onboarding screens, paywall, and app-wide UI
-- [ ] Remove Health Insights section from Correlate tab in analytics.tsx
-- [ ] Add peer-review citation refs to Observed Historical Patterns section in analytics.tsx
-- [ ] Add NeoVital graph and NeoSleep references to health report (report-generator.ts)
-- [ ] Bump version to 1.0.35, commit, push to GitHub, EAS build, submit to TestFlight
-- [ ] Find and redesign "Rooted in Love, Culture and Purpose" screen with scrollable top tabs, more appealing layout
-- [ ] Convert all British English spellings to American English (personalise→personalize, colour→color, behaviour→behavior, etc.) across all user-facing strings, i18n files, and UI components
+- [x] Unify onboarding paywall to use the same full-bleed immersive PaywallScreen component
+- [x] Remove all "AI" references from onboarding screens, paywall, and app-wide UI
+- [x] Remove Health Insights section from Correlate tab in analytics.tsx
+- [x] Add peer-review citation refs to Observed Historical Patterns section in analytics.tsx
+- [x] Add NeoVital graph and NeoSleep references to health report (report-generator.ts)
+- [x] Bump version to 1.0.35, commit (4e21b0a), push to GitHub
+- [x] Find and redesign "Rooted in Love, Culture and Purpose" screen with scrollable top tabs, more appealing layout
+- [x] Convert all British English spellings to American English (personalise→personalize, colour→color, behaviour→behavior, etc.) across all user-facing strings, i18n files, and UI components
+
+## v1.0.36 — Copy Refinement + Paywall Carousel Polish
+
+- [ ] Refine Welcome slide tab copy in i18n.ts (Mission/Features/Privacy/Evidence) for App Store review
+- [ ] Sharpen paywall carousel 4-slide headlines and body copy for conversion optimization
+- [ ] Bump version to 1.0.36 in app.config.ts
+- [ ] Commit, push to GitHub, EAS build + TestFlight submit

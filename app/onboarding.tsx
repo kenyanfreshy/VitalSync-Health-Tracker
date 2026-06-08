@@ -772,7 +772,7 @@ export default function OnboardingScreen() {
                     Our Mission
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 20, fontStyle: 'italic' }}>
-                    "{ab.missionBody1}"
+                    "Built by a critical care nurse to give every person the same clinical-grade health visibility that only hospital monitors provide — privately, on your own device."
                   </Text>
                 </View>
                 {/* Creator badge */}
@@ -802,8 +802,8 @@ export default function OnboardingScreen() {
                   <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.45)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
                     Dedicated To
                   </Text>
-                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)', lineHeight: 18 }}>
-                    Family, the Poror Diaspora community, and every patient and family who deserves better health tools.
+                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)', lineHeight: 18 }}>
+                    Dedicated to family, the Poror Diaspora community, and every patient who deserves better tools to understand their own health.
                   </Text>
                 </View>
               </ScrollView>
@@ -813,14 +813,14 @@ export default function OnboardingScreen() {
             {welcomeTab === 1 && (
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
                 {[
-                  { icon: '🩺', label: o.featureBP,         color: '#3B82F6', desc: 'Blood pressure, heart rate & SpO₂ trends' },
-                  { icon: '🌙', label: o.featureSleep,      color: '#8B5CF6', desc: 'Sleep stages, efficiency & circadian patterns' },
-                  { icon: '🩸', label: o.featureBloodSugar, color: '#DC2626', desc: 'Glucose logs with diabetic range alerts' },
-                  { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: 'Vision food scan — macros in seconds' },
-                  { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: 'Medication reminders & adherence tracking' },
-                  { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: 'Lab record storage & trend visualization' },
-                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: 'Evidence-based cross-metric correlation engine' },
-                  { icon: '💉', label: o.featureVaccines,   color: '#FB923C', desc: 'Vaccine schedule with CDC/WHO reference' },
+                  { icon: '🩺', label: o.featureBP,         color: '#3B82F6', desc: 'Track BP, heart rate & SpO₂ with AHA-aligned reference ranges' },
+                  { icon: '🌙', label: o.featureSleep,      color: '#8B5CF6', desc: 'AASM-scored sleep stages, efficiency & circadian rhythm analysis' },
+                  { icon: '🩸', label: o.featureBloodSugar, color: '#DC2626', desc: 'Glucose logging with ADA diabetic & pre-diabetic alert thresholds' },
+                  { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: 'Camera food scan — USDA-verified macros in seconds' },
+                  { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: 'Medication reminders, refill tracking & interaction checker' },
+                  { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: 'Lab result storage with trend visualization over time' },
+                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: 'Cross-metric correlation engine grounded in meta-analyzed research' },
+                  { icon: '💉', label: o.featureVaccines,   color: '#FB923C', desc: 'Vaccine schedule tracker with CDC & WHO reference guidelines' },
                 ].map(({ icon, label, color, desc }) => (
                   <View key={label} style={{
                     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -853,7 +853,7 @@ export default function OnboardingScreen() {
                     Privacy First
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
-                    Your health data never leaves your device. No accounts. No cloud. No third-party access.
+                    Your health data is yours alone. Everything is stored on-device — no accounts required, no cloud uploads, no data sold or shared with anyone.
                   </Text>
                 </View>
                 {(ab.privacyPoints as readonly { icon: string; label: string }[]).map((pt) => (
@@ -880,15 +880,15 @@ export default function OnboardingScreen() {
                     Evidence-Based
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
-                    Every insight, correlation, and health range in VitalSync is grounded in peer-reviewed, PubMed-indexed research.
+                    Every health range, insight, and correlation in VitalSync is grounded in peer-reviewed, PubMed-indexed clinical research — not opinion.
                   </Text>
                 </View>
                 {[
-                  { icon: '📊', title: 'Correlation Engine', desc: 'Cross-metric pattern detection backed by meta-analyzed clinical data', color: '#F472B6' },
-                  { icon: '🩺', title: 'Clinical Ranges', desc: 'AHA, ADA, AASM, and WHO reference thresholds for all vital signs', color: '#60A5FA' },
-                  { icon: '🍽️', title: 'Nutrition Science', desc: 'USDA FoodData Central & peer-reviewed macronutrient databases', color: '#22C55E' },
-                  { icon: '💤', title: 'NeoSleep Analysis', desc: 'AASM sleep scoring criteria — Pittsburgh Sleep Quality Index aligned', color: '#8B5CF6' },
-                  { icon: '📈', title: 'NeoVital Monitor', desc: 'Multi-axis normalized vital trend visualization — IEEE & Br J Anaesth methodology', color: '#FB923C' },
+                  { icon: '📊', title: 'Correlation Engine', desc: 'Detects cross-metric patterns using meta-analyzed clinical datasets — not user-submitted averages', color: '#F472B6' },
+                  { icon: '🩺', title: 'Clinical Reference Ranges', desc: 'AHA, ADA, AASM, and WHO thresholds applied to every vital sign and lab value', color: '#60A5FA' },
+                  { icon: '🍽️', title: 'USDA Nutrition Database', desc: 'Macros and micronutrients sourced from USDA FoodData Central — lab-verified, not crowd-sourced', color: '#22C55E' },
+                  { icon: '💤', title: 'NeoSleep Analysis', desc: 'Sleep scored against AASM criteria and Pittsburgh Sleep Quality Index methodology', color: '#8B5CF6' },
+                  { icon: '📈', title: 'NeoVital Monitor', desc: 'Multi-axis normalized vital trend visualization validated against IEEE and British Journal of Anaesthesia standards', color: '#FB923C' },
                 ].map(({ icon, title, desc, color }) => (
                   <View key={title} style={{
                     flexDirection: 'row', alignItems: 'flex-start', gap: 12,
