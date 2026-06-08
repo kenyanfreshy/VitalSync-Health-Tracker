@@ -81,7 +81,7 @@ interface CarouselSlide {
   icon: string;
   title: string;
   subtitle: string; // kept for type compat — not rendered
-  description: string; // 5-word tagline shown below title
+  description: string; // kept for type compat — not rendered
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -402,7 +402,6 @@ export function PaywallScreen({
             <View style={s.carouselSlide}>
               <Text style={s.carouselIcon}>{item.icon}</Text>
               <Text style={s.carouselTitle}>{item.title}</Text>
-              <Text style={s.carouselDesc}>{item.description}</Text>
             </View>
           )}
         />
