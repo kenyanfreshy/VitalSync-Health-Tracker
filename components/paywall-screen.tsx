@@ -30,6 +30,7 @@ import {
   ViewToken,
 } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { LinearGradient } from "expo-linear-gradient";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
@@ -380,7 +381,7 @@ export function PaywallScreen({
         style={StyleSheet.absoluteFillObject}
       />
 
-      {/* Dismiss button (top-right) */
+      {/* Dismiss button (top-right) */}
       {onDismiss && (
         <Pressable
           style={[s.dismissBtn, { top: insets.top + 12 }]}
