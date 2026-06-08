@@ -4,17 +4,28 @@
  * Sends a prescription/label image directly to Gemini Vision API and returns
  * structured medication data. Works fully client-side — no server required.
  *
+ * Uses the same stable 3-model fallback chain as the food and lab scanners:
+ *   1. gemini-2.5-flash       (primary — stable, confirmed working)
+ *   2. gemini-2.5-flash-lite  (faster fallback, lower cost)
+ *   3. gemini-flash-latest    (alias, always points to latest stable flash)
+ *
  * Features:
- * - Gemini 2.5-flash as primary engine
  * - Hardened JSON parser: handles valid JSON, markdown-wrapped JSON, partial JSON
  * - Full field validation: no undefined, NaN, or empty required fields
  * - Confidence-based "Needs Review" flagging
- * - 20-second timeout
+ * - 20-second timeout per attempt
  */
 
 const GEMINI_API_KEY =
   process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? 'AIzaSyATmWsC3LsPqAZQo4s2T20c3oYpOUcNpNk';
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
+
+// Primary model — gemini-2.5-flash (stable, confirmed working with this API key)
+const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+// Fallback model — gemini-2.5-flash-lite (faster, lower cost, confirmed working)
+const GEMINI_FALLBACK_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${GEMINI_API_KEY}`;
+// Last resort — gemini-flash-latest (alias, always points to latest stable flash)
+const GEMINI_LAST_RESORT_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+
 const TIMEOUT_MS = 20_000;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -110,31 +121,30 @@ function coerceConfidence(val: unknown): number {
 function parseMedicationItem(raw: Record<string, unknown>): PrescriptionMedication {
   const confidence = coerceConfidence(raw.confidence);
   return {
-    name:          coerceString(raw.name),
-    strength:      coerceString(raw.strength),
-    dose:          coerceString(raw.dose),
-    frequency:     coerceString(raw.frequency),
-    route:         coerceString(raw.route),
-    quantity:      coerceString(raw.quantity),
-    refills:       coerceString(raw.refills),
-    instructions:  coerceString(raw.instructions),
+    name:           coerceString(raw.name),
+    strength:       coerceString(raw.strength),
+    dose:           coerceString(raw.dose),
+    frequency:      coerceString(raw.frequency),
+    route:          coerceString(raw.route),
+    quantity:       coerceString(raw.quantity),
+    refills:        coerceString(raw.refills),
+    instructions:   coerceString(raw.instructions),
     prescriberName: coerceString(raw.prescriberName ?? raw.prescriber),
-    pharmacyName:  coerceString(raw.pharmacyName ?? raw.pharmacy),
+    pharmacyName:   coerceString(raw.pharmacyName ?? raw.pharmacy),
     confidence,
-    needsReview:   confidence < 0.6,
+    needsReview:    confidence < 0.6,
   };
 }
 
-// ─── Main export ──────────────────────────────────────────────────────────────
+// ─── Core vision call (mirrors food/lab scanner pattern) ──────────────────────
 
-export async function parsePrescriptionWithGemini(
+async function callGeminiPrescriptionVision(
   base64Image: string,
-  mimeType: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg',
-): Promise<PrescriptionScanResult> {
+  mimeType: string,
+  apiUrl: string,
+): Promise<{ rawJson: string; error?: string }> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
-
-  let rawJson = '';
   try {
     const body = JSON.stringify({
       contents: [
@@ -152,7 +162,7 @@ export async function parsePrescriptionWithGemini(
       },
     });
 
-    const response = await fetch(GEMINI_API_URL, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body,
@@ -160,16 +170,71 @@ export async function parsePrescriptionWithGemini(
     });
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errBody = await response.text().catch(() => '');
+      console.warn(
+        `[GeminiPrescription] HTTP ${response.status} from ${apiUrl.split('models/')[1]?.split(':')[0] ?? 'unknown'}: ${errBody.slice(0, 200)}`,
+      );
+      return { rawJson: '', error: `HTTP ${response.status}` };
     }
 
     const data = await response.json() as {
       candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+      error?: { message?: string };
     };
 
-    rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-    if (!rawJson) throw new Error('Gemini returned empty response');
+    if (data.error) {
+      console.warn(`[GeminiPrescription] API error: ${data.error.message ?? JSON.stringify(data.error)}`);
+      return { rawJson: '', error: data.error.message ?? 'API error' };
+    }
 
+    const rawJson = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    if (!rawJson) return { rawJson: '', error: 'Empty response' };
+
+    return { rawJson };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.warn(`[GeminiPrescription] Request failed: ${message}`);
+    return { rawJson: '', error: message };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
+export async function parsePrescriptionWithGemini(
+  base64Image: string,
+  mimeType: 'image/jpeg' | 'image/png' | 'image/webp' = 'image/jpeg',
+): Promise<PrescriptionScanResult> {
+  let rawJson = '';
+  let usedFallback = false;
+
+  // Attempt 1: gemini-2.5-flash (primary — stable)
+  const result1 = await callGeminiPrescriptionVision(base64Image, mimeType, GEMINI_API_URL);
+  if (result1.rawJson) {
+    rawJson = result1.rawJson;
+  } else {
+    // Attempt 2: gemini-2.5-flash-lite (faster fallback)
+    usedFallback = true;
+    const result2 = await callGeminiPrescriptionVision(base64Image, mimeType, GEMINI_FALLBACK_URL);
+    if (result2.rawJson) {
+      rawJson = result2.rawJson;
+    } else {
+      // Attempt 3: gemini-flash-latest (last resort alias)
+      const result3 = await callGeminiPrescriptionVision(base64Image, mimeType, GEMINI_LAST_RESORT_URL);
+      rawJson = result3.rawJson;
+      if (!rawJson) {
+        return {
+          medications: [],
+          rawJson: '',
+          usedFallback: true,
+          error: result3.error ?? 'All Gemini models failed',
+        };
+      }
+    }
+  }
+
+  try {
     const jsonText = extractJsonFromText(rawJson);
     const parsed = JSON.parse(jsonText) as { medications?: unknown[] };
 
@@ -179,7 +244,7 @@ export async function parsePrescriptionWithGemini(
       .map(parseMedicationItem)
       .filter(m => m.name !== ''); // drop completely empty entries
 
-    return { medications, rawJson, usedFallback: false };
+    return { medications, rawJson, usedFallback };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
     return {
@@ -188,7 +253,5 @@ export async function parsePrescriptionWithGemini(
       usedFallback: true,
       error: message,
     };
-  } finally {
-    clearTimeout(timer);
   }
 }
