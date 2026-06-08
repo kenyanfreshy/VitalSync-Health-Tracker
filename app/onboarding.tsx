@@ -962,7 +962,7 @@ export default function OnboardingScreen() {
           <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.contentCard}>
 
-            {/* ── Apple Health (iOS) ── */
+            {/* ── Apple Health (iOS) ── */}
             <View style={[styles.permPlatformCard, {
               backgroundColor: 'rgba(229,83,62,0.10)',
               borderColor: '#E53E3E50',
