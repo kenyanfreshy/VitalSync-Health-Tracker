@@ -27873,7 +27873,7 @@ export const paywallExtStrings = {
     slide5Title: 'Your Data Stays Yours',
     slide5Sub: 'Everything is stored on your device. No accounts. No cloud. No data sold or shared — ever.',
     continueWithAnnual: 'Start My Free Trial',
-    continueWithMonthly: 'Unlock Clinical Insights',
+    continueWithMonthly: 'Unlock Personal Insights',
     continueWithFree: 'Continue with Free Plan',
     orContinueFree: 'or continue with limited free version',
   },

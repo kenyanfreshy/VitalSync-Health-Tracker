@@ -105,7 +105,7 @@ Health & Fitness
 
 **Copy Refinement & Paywall Polish**
 
-- Paywall CTA buttons now read "Start My Free Trial" and "Unlock Clinical Insights" for clearer conversion messaging
+- Paywall CTA buttons now read "Start My Free Trial" and "Unlock Personal Insights" for clearer conversion messaging
 - All AI references replaced with neutral, clinically accurate descriptions throughout the app
 - Welcome slide redesigned with scrollable Mission, Features, Privacy, and Evidence tabs
 - American English used consistently across all screens and strings

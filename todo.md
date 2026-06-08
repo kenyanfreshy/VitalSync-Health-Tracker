@@ -10301,7 +10301,7 @@
 
 ## v1.0.37 — CTA Copy + App Store Description
 
-- [x] Update paywall CTA button copy to "Start My Free Trial" (trial) and "Unlock Clinical Insights" (subscribe)
+- [x] Update paywall CTA button copy to "Start My Free Trial" (trial) and "Unlock Personal Insights" (subscribe)
 - [x] Write new App Store description: lead with "Built by a critical care nurse", peer-reviewed evidence angle, remove AI references
 - [x] Add App Store description to store-listing.md
 - [x] Bump version to 1.0.37 in app.config.ts (buildNumber 10037, versionCode 37)
