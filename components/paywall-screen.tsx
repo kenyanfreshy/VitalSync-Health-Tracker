@@ -542,7 +542,7 @@ export function PaywallScreen({
               style={{ marginRight: 4 }}
             />
             <Text style={s.seeAllText}>
-              {featuresExpanded ? (pw.hideFeatures ?? "Hide what's included ▲") : (pw.showFeatures ?? "What's included ▼")}
+              {featuresExpanded ? (pw.hideFeatures ?? "Hide Premium Features ▲") : (pw.showFeatures ?? "Premium Features ▼")}
             </Text>
           </Pressable>
 
@@ -582,7 +582,7 @@ export function PaywallScreen({
         {/* Trust statement */}
         <View style={s.trustRow}>
           <MaterialIcons name="lock" size={13} color="#34D399" style={{ marginRight: 5, marginTop: 1 }} />
-          <Text style={s.trustText}>Private. On-device. No health data sold.</Text>
+          <Text style={s.trustText}>On device. No server. Know what your health means.</Text>
         </View>
 
         {/* Disclosure (Apple 3.1.2(c) — MUST appear directly above CTA) */}

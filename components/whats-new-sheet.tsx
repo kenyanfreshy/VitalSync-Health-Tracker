@@ -72,6 +72,21 @@ export const whatsNewV2365Strings = {
   i2Desc: "Added react-native-nitro-modules as an explicit package dependency so EAS builds always include the correct native pod for HealthKit's JSI bridge.",
 } as const;
 
+/** Release note content — v1.0.52 */
+export const whatsNewV1052Strings = {
+  version: "1.0.52",
+  date: "Jun 2026",
+  headline: "Paywall Copy & Trust Statement",
+
+  // Improved
+  i1Title: "\"Premium Features\" Toggle",
+  i1Desc: "The collapsible feature list is now labelled 'Premium Features' — clearer about what expands.",
+  i2Title: "Free Plan Limits Simplified",
+  i2Desc: "Removed 'No clinical insights' from the free plan description. Now reads: Basic logging · 30-day history.",
+  i3Title: "Trust Statement Updated",
+  i3Desc: "Footer now reads: 'On device. No server. Know what your health means.' — more direct and brand-aligned.",
+} as const;
+
 /** Release note content — v1.0.51 */
 export const whatsNewV1051Strings = {
   version: "1.0.51",
@@ -471,6 +486,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1052 = useT(whatsNewV1052Strings);
   const v1051 = useT(whatsNewV1051Strings);
   const v1050 = useT(whatsNewV1050Strings);
   const v1049 = useT(whatsNewV1049Strings);
@@ -478,7 +494,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1051;
+  const latestVersion = v1052;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -608,7 +624,15 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.51 (latest) ── */}
+          {/* ── v1.0.52 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🏦" title={v1052.i1Title} desc={v1052.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📝" title={v1052.i2Title} desc={v1052.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔒" title={v1052.i3Title} desc={v1052.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.51 ── */}
+          <OlderVersionHeader version={v1051.version} date={v1051.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="🎨" title={v1051.i1Title} desc={v1051.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
