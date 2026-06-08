@@ -5,7 +5,7 @@
  * ────────────
  * EKG records are deliberately segregated from the standard vitals store
  * (@vsht:health_data) because a single 30-second Apple Watch EKG
- * recording carries ~15 330 voltage data points (≈ 120 KB serialised).
+ * recording carries ~15 330 voltage data points (≈ 120 KB serialized).
  * Mixing waveform payloads into the vitals blob would push it past the 4 MB
  * per-key hard limit in safe-async-storage.ts within a few dozen recordings.
  *

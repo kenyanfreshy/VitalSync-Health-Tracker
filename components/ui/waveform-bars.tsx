@@ -1,7 +1,7 @@
 /**
  * WaveformBars
  *
- * A row of 5 animated bars that visualise microphone volume.
+ * A row of 5 animated bars that visualize microphone volume.
  *
  * - When `isActive` is false: bars sit at their minimum height (idle).
  * - When `isActive` is true and `volume` is 0: a gentle idle shimmer plays.

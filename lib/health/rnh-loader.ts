@@ -1,7 +1,7 @@
 /**
  * rnh-loader.ts
  *
- * Clean HealthKit permission initialiser and typed fetch helpers using
+ * Clean HealthKit permission initializer and typed fetch helpers using
  * `react-native-health` (AppleHealthKit / RCTAppleHealthKit bridge).
  *
  * WHY react-native-health for permissions:

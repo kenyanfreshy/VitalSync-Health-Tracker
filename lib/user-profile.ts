@@ -13,7 +13,7 @@ export type BiologicalSex = 'male' | 'female' | 'other' | 'preferNotToSay';
 export interface UserProfile {
   age: number | null;           // years
   sex: BiologicalSex | null;
-  firstName?: string | null;    // display name used for personalised greeting
+  firstName?: string | null;    // display name used for personalized greeting
   weightKg?: number | null;     // kg (optional, used for BMR)
   heightCm?: number | null;     // cm (optional, used for BMR)
   goalKcal?: number | null;     // daily caloric goal in kcal (default 2000)

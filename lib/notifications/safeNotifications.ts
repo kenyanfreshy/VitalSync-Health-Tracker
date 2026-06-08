@@ -15,7 +15,7 @@
  *   'PushNotificationManager') returns null → invariant throws → app crashes
  *   before React mounts, before any error boundary is active.
  *
- * Three-layer defence already in place:
+ * Three-layer defense already in place:
  *   1. Metro resolver stub  (metro.config.js)   — replaces PushNotificationIOS.js
  *      at bundle time with a safe no-op class.
  *   2. NativeEventEmitter polyfill (_layout.tsx first import)

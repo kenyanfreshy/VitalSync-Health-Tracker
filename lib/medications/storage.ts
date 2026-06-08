@@ -66,7 +66,7 @@ export async function saveMedications(meds: MedicationStore): Promise<void> {
   }
 
   // Trim doseLogs to the most recent MAX_DOSE_LOGS_PER_MED entries so the
-  // serialised payload stays well under the ~6 MB RNCAsyncStorage per-key cap.
+  // serialized payload stays well under the ~6 MB RNCAsyncStorage per-key cap.
   const trimmed = meds.map(m => ({
     ...m,
     doseLogs: Array.isArray(m.doseLogs) && m.doseLogs.length > MAX_DOSE_LOGS_PER_MED
@@ -74,7 +74,7 @@ export async function saveMedications(meds: MedicationStore): Promise<void> {
       : (m.doseLogs ?? []),
   }));
   const payload = JSON.stringify(trimmed);
-  // Guard: if the serialised payload exceeds 4 MB, drop the oldest half of
+  // Guard: if the serialized payload exceeds 4 MB, drop the oldest half of
   // dose logs across all medications and retry once before giving up.
   if (payload.length > 4 * 1024 * 1024) {
     const reduced = trimmed.map(m => ({

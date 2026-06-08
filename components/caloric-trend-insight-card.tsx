@@ -25,10 +25,9 @@ import { trpc } from '@/lib/trpc';
 import { getLastNDaysNutrients } from '@/lib/health/daily-nutrients';
 import type { SodiumRecord, BloodPressureRecord, BloodSugarRecord } from '@/lib/health/types';
 
-// Platform-specific branding: Apple Intelligence on iOS, Gemini on Android
-const INSIGHT_BRAND = Platform.OS === 'ios' ? 'Apple Intelligence' : Platform.OS === 'android' ? 'Gemini' : 'Smart';
-// Platform logo emoji — Apple logo on iOS, Google color dots on Android
-const INSIGHT_BRAND_LOGO = Platform.OS === 'ios' ? '' : Platform.OS === 'android' ? '🌐' : '🤖';
+// Neutral brand label
+const INSIGHT_BRAND = 'Caloric';
+const INSIGHT_BRAND_LOGO = '📊';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -180,7 +179,7 @@ export function CaloricTrendInsightCard({ sodiumIntake, bloodPressure, bloodSuga
             <IconSymbol name="sparkles" size={15} color="#fff" />
           )}
           <Text style={styles.analyzeBtnText}>
-            {analyzeTrends.isPending ? 'Analysing…' : 'Analyse My Nutrition Trends'}
+            {analyzeTrends.isPending ? 'Analyzing…' : 'Analyze My Nutrition Trends'}
           </Text>
         </TouchableOpacity>
       )}
@@ -255,14 +254,14 @@ export function CaloricTrendInsightCard({ sodiumIntake, bloodPressure, bloodSuga
           {/* Disclaimer */}
           <Text style={[styles.disclaimer, { color: colors.muted }]}>{result.disclaimer}</Text>
 
-          {/* Re-analyse button */}
+          {/* Re-analyze button */}
           <TouchableOpacity
             style={[styles.reanalyzeBtn, { borderColor: colors.primary + '55' }]}
             onPress={() => { setResult(null); handleAnalyze(); }}
             disabled={analyzeTrends.isPending}
           >
             <IconSymbol name="arrow.clockwise" size={13} color={colors.primary} />
-            <Text style={[styles.reanalyzeBtnText, { color: colors.primary }]}>Re-analyse</Text>
+            <Text style={[styles.reanalyzeBtnText, { color: colors.primary }]}>Re-analyze</Text>
           </TouchableOpacity>
         </>
       ) : null}

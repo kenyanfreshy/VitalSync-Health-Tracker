@@ -78,7 +78,7 @@ export function MealIQTrendCard({ defaultExpanded = false, overrideExpanded }: M
 
   // Build 7-day buckets (today = index 6, 6 days ago = index 0)
   const { buckets, hasData, avgScore, trend, lastAnalysisTs } = useMemo(() => {
-    const analyses = state.data?.mealIQAnalyses ?? [];
+    const analyzes = state.data?.mealIQAnalyzes ?? [];
     const now = new Date();
     const days: { date: Date; scores: number[] }[] = [];
     for (let i = 6; i >= 0; i--) {
@@ -88,7 +88,7 @@ export function MealIQTrendCard({ defaultExpanded = false, overrideExpanded }: M
       days.push({ date: d, scores: [] });
     }
 
-    analyses.forEach((a) => {
+    analyzes.forEach((a) => {
       const t = new Date(a.analyzedAt);
       t.setHours(0, 0, 0, 0);
       const idx = days.findIndex((d) => d.date.getTime() === t.getTime());
@@ -117,10 +117,10 @@ export function MealIQTrendCard({ defaultExpanded = false, overrideExpanded }: M
       : 'stable';
 
     // Last analysis timestamp
-    const sortedTs = [...analyses].sort((a, b) => new Date(b.analyzedAt).getTime() - new Date(a.analyzedAt).getTime());
+    const sortedTs = [...analyzes].sort((a, b) => new Date(b.analyzedAt).getTime() - new Date(a.analyzedAt).getTime());
     const lastAnalysisTs = sortedTs.length > 0 ? new Date(sortedTs[0].analyzedAt) : null;
     return { buckets, hasData, avgScore, trend, lastAnalysisTs };
-  }, [state.data?.mealIQAnalyses]);
+  }, [state.data?.mealIQAnalyzes]);
 
   // Normalize for chart
   const chartPoints = useMemo(() => {
@@ -197,7 +197,7 @@ export function MealIQTrendCard({ defaultExpanded = false, overrideExpanded }: M
         !hasData ? (
           <View style={s.empty}>
             <Text style={[s.emptyText, { color: colors.muted }]}>
-              No Meal IQ analyses yet. Tap 🧠 on a meal entry in your Sodium Log to generate your first analysis.
+              No Meal IQ analyzes yet. Tap 🧠 on a meal entry in your Sodium Log to generate your first analysis.
             </Text>
           </View>
         ) : (

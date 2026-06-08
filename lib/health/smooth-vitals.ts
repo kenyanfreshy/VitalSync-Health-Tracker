@@ -10,7 +10,7 @@
  *   raw      — no smoothing; raw readings passed through unchanged
  *   light    — narrow buckets / small windows; preserves short-term variation
  *   standard — default; clinically reassuring without hiding genuine trends
- *   heavy    — wide buckets / large windows; maximises trend clarity
+ *   heavy    — wide buckets / large windows; maximizes trend clarity
  *
  * Bucket sizes by range and strength (smoothVitalSeries):
  *
@@ -141,7 +141,7 @@ export function smoothVitalSeries(
   const bucketMs = BUCKET_MS[range][strength];
 
   // For raw strength with 1-minute buckets, most readings land in their own
-  // bucket — effectively a pass-through that still normalises timestamps to
+  // bucket — effectively a pass-through that still normalizes timestamps to
   // bucket midpoints and applies the SpO2 alert check.
 
   type BucketEntry = {
@@ -203,7 +203,7 @@ export function smoothVitalSeries(
 // ─── smoothSparkline ──────────────────────────────────────────────────────────
 
 /**
- * Smooth a pre-aggregated sparkline (array of numbers) using a centred
+ * Smooth a pre-aggregated sparkline (array of numbers) using a centerd
  * moving average. Suitable for `buildSparklineData` output where each
  * element already represents a daily average.
  *

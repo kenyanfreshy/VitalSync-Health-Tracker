@@ -45,7 +45,7 @@ function getSpO2StatusColor(status: 'normal' | 'low' | 'critical', colors: Retur
 
 /**
  * Overlay a horizontal normal-range band (95–100%) on the chart.
- * The chart normalises values to 0–1 based on min/max in the dataset.
+ * The chart normalizes values to 0–1 based on min/max in the dataset.
  * We compute the y-positions for 95 and 100 using the same normalisation.
  */
 function NormalRangeBand({
@@ -65,7 +65,7 @@ function NormalRangeBand({
 }) {
   const plotH = height - padding * 2;
   const range = maxVal - minVal || 1;
-  // y=0 is top in SVG; normalised y=1 → top of chart
+  // y=0 is top in SVG; normalized y=1 → top of chart
   const y95 = padding + (1 - (95 - minVal) / range) * plotH;
   const y100 = padding + (1 - (100 - minVal) / range) * plotH;
   const bandTop = Math.max(padding, Math.min(y95, y100));

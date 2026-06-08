@@ -6,7 +6,7 @@
 import { getNotificationsAsync } from '@/lib/notifications/safe-notifications';
 import { Platform } from 'react-native';
 import type { Medication } from './types';
-import { getOpenTodayHours, getAllPharmacies, normalisePharmacyName } from './pharmacy-store';
+import { getOpenTodayHours, getAllPharmacies, normalizePharmacyName } from './pharmacy-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { safeSetItem } from '@/lib/safe-async-storage';
 
@@ -186,8 +186,8 @@ async function buildRefillBody(med: Medication): Promise<{
   let mapUrl: string | undefined;
   try {
     const store = await getAllPharmacies();
-    const key = normalisePharmacyName(med.pharmacyName);
-    const entry = store.find((e) => normalisePharmacyName(e.name) === key);
+    const key = normalizePharmacyName(med.pharmacyName);
+    const entry = store.find((e) => normalizePharmacyName(e.name) === key);
     const todayHours = getOpenTodayHours(entry?.hours);
     if (todayHours) hoursClause = ` Open today: ${todayHours}.`;
     const address = (med as any).pharmacyAddress || entry?.address;

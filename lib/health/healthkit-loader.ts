@@ -264,7 +264,7 @@ export const authorizeHealthKit = async (): Promise<boolean> => {
     _cached = hk;
     return true;
   } catch (err) {
-    console.warn('[VitalSync] Failed to authorise HealthKit:', err);
+    console.warn('[VitalSync] Failed to authorize HealthKit:', err);
     _cached = null;
     return false;
   }

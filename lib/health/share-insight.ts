@@ -58,7 +58,7 @@ export function formatInsightForShare(insight: EngineInsight): string {
     `Model: ${CATEGORY_NAMES[insight.category]}`,
     `Status: ${SEVERITY_LABELS[insight.severity]}`,
     `Evidence Level: ${evidenceStars(insight.evidenceLevel)}  (${insight.evidenceLabel})`,
-    `Data Points Analysed: ${insight.dataPoints}`,
+    `Data Points Analyzed: ${insight.dataPoints}`,
     '',
     '── HYPOTHESIS ──────────────────',
     insight.hypothesis,

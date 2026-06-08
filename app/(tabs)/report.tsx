@@ -1047,7 +1047,7 @@ export default function ReportScreen() {
           />
           <ToggleRow
             label={t.mealIqInsights ?? 'Meal IQ Insights'}
-            subtitle={(t.mealIqSubtitle ?? '{n} analyses · top 5 by impact score').replace('{n}', String((state.data?.mealIQAnalyses ?? []).length))}
+            subtitle={(t.mealIqSubtitle ?? '{n} analyzes · top 5 by impact score').replace('{n}', String((state.data?.mealIQAnalyzes ?? []).length))}
             value={includeMealIQ}
             onToggle={setIncludeMealIQ}
             color="#F59E0B"

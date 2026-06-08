@@ -1,6 +1,6 @@
 /**
  * ConsentModal — shown once on first launch.
- * Summarises VitalSync's data-ownership commitment and links to Privacy Policy & Terms of Use.
+ * Summarizes VitalSync's data-ownership commitment and links to Privacy Policy & Terms of Use.
  * Dismissed permanently by storing a flag in AsyncStorage.
  * Includes a language picker so first-launch users can read in their preferred language.
  *
@@ -321,7 +321,7 @@ export function ConsentModal() {
   const [langSearch, setLangSearch] = useState('');
 
   useEffect(() => {
-    // If the cache already says accepted, visible was initialised to false above
+    // If the cache already says accepted, visible was initialized to false above
     // so there is nothing to do — skip the AsyncStorage round-trip entirely.
     if (_consentVersionCache !== null && _consentVersionCache >= CONSENT_VERSION) return;
 

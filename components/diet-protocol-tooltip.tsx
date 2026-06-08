@@ -35,7 +35,7 @@ const NUTRIENT_COLORS: Record<string, string> = {
   Fat:           '#3B82F6',
   'Saturated Fat': '#3B82F6',
   'MUFA/PUFA':   '#3B82F6',
-  Fibre:         '#EAB308',
+  Fiber:         '#EAB308',
   Fiber:         '#EAB308',
   Calories:      '#8B5CF6',
   Sodium:        '#EF4444',
@@ -82,7 +82,7 @@ const MACRO_BREAKDOWN: Record<string, { rows: MacroRow[]; note?: string }> = {
     rows: [
       { label: 'Sodium',    value: '≤ 600 mg / meal', pct: 40 },
       { label: 'Potassium', value: '≥ 4,700 mg / day', pct: 80 },
-      { label: 'Fibre',     value: '≥ 30 g / day',     pct: 70 },
+      { label: 'Fiber',     value: '≥ 30 g / day',     pct: 70 },
     ],
     note: 'Compliance ring targets: Sodium ≤1,500 mg/day · Potassium ≥4,700 mg/day. Conflict triggered when a single entry exceeds 600 mg sodium.',
   },

@@ -286,9 +286,9 @@ function StepRingCell({
 
 
 /**
- * FibreRingCell — SVG arc ring for daily fibre vs. WHO 25g goal (JS-thread animation).
+ * FiberRingCell — SVG arc ring for daily fiber vs. WHO 25g goal (JS-thread animation).
  */
-function FibreRingCell({
+function FiberRingCell({
   todayFiber,
   borderColor: _borderColor,
   onPress,
@@ -309,8 +309,8 @@ function FibreRingCell({
   const FIBRE_GOAL = 25; // WHO recommendation g/day
   const targetProgress = todayFiber != null ? Math.min(todayFiber / FIBRE_GOAL, 1) : 0;
   const pct = Math.round(targetProgress * 100);
-  const fibreColor = targetProgress >= 1 ? '#10B981' : targetProgress >= 0.6 ? '#34D399' : targetProgress >= 0.3 ? '#EAB308' : '#6366F1';
-  const trackColor = fibreColor + '28'; // 16% opacity track
+  const fiberColor = targetProgress >= 1 ? '#10B981' : targetProgress >= 0.6 ? '#34D399' : targetProgress >= 0.3 ? '#EAB308' : '#6366F1';
+  const trackColor = fiberColor + '28'; // 16% opacity track
   // Use JS-thread Animated.Value to avoid Reanimated SVG animatedProps crash on native
   const animProgress = useRef(new Animated.Value(0)).current;
   const [dashArray, setDashArray] = useState(`0 ${circumference}`);
@@ -411,7 +411,7 @@ function FibreRingCell({
             {/* Progress arc */}
             <Circle
               cx={SIZE / 2} cy={SIZE / 2} r={R}
-              stroke={fibreColor}
+              stroke={fiberColor}
               strokeWidth={STROKE}
               fill="none"
               strokeLinecap="round"
@@ -422,15 +422,15 @@ function FibreRingCell({
           </Svg>
           {/* Center label: grams when data present, dash when not */}
           <View style={{ alignItems: 'center' }}>
-            <Text style={{ fontSize: todayFiber != null && todayFiber >= 10 ? 8 : 9, fontWeight: '800', color: fibreColor, lineHeight: 11 }}>
+            <Text style={{ fontSize: todayFiber != null && todayFiber >= 10 ? 8 : 9, fontWeight: '800', color: fiberColor, lineHeight: 11 }}>
               {todayFiber != null ? `${todayFiber}g` : '—'}
             </Text>
             {todayFiber != null && (
-              <Text style={{ fontSize: 7, fontWeight: '600', color: fibreColor + 'CC', lineHeight: 9 }}>{pct}%</Text>
+              <Text style={{ fontSize: 7, fontWeight: '600', color: fiberColor + 'CC', lineHeight: 9 }}>{pct}%</Text>
             )}
           </View>
         </View>
-        <Text style={{ fontSize: 8, color: '#687076', marginTop: 1 }}>/ {FIBRE_GOAL}g {ds.fibreGoalLabel ?? 'goal'}</Text>
+        <Text style={{ fontSize: 8, color: '#687076', marginTop: 1 }}>/ {FIBRE_GOAL}g {ds.fiberGoalLabel ?? 'goal'}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -1067,7 +1067,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
               setShowMealConfetti(true);
             });
           } else {
-            // Fallback: use screen centre when the ref is not yet attached
+            // Fallback: use screen center when the ref is not yet attached
             // eslint-disable-next-line @typescript-eslint/no-require-imports
             const { width, height } = require('react-native').Dimensions.get('window');
             setMealConfettiOrigin({ x: width / 2, y: height * 0.4 });
@@ -1653,7 +1653,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
     if (!todayRecs.length) return null;
     // SodiumRecord stores fiber as camelCase fiberG; also accept legacy snake_case variants
     const total = todayRecs.reduce((sum: number, r: any) =>
-      sum + (r.fiberG ?? r.fiber_g ?? r.fibre_g ?? r.dietary_fiber_g ?? 0), 0);
+      sum + (r.fiberG ?? r.fiber_g ?? r.fiber_g ?? r.dietary_fiber_g ?? 0), 0);
     return total > 0 ? Math.round(total * 10) / 10 : null;
   }, [data?.sodiumIntake]);
 
@@ -1702,8 +1702,8 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
   const [lastAiScan, setLastAiScan] = useState<{ description: string; calories: number | null } | null>(null);
   const [cameraSheetVisible, setCameraSheetVisible] = useState(false);
   const [cameraInitialMode, setCameraInitialMode] = useState<'home' | 'plate' | 'barcode' | 'search'>('home');
-  // Pre-fill search query for FibreRingCell long-press (high-fibre nudge)
-  const [fibreSearchPrefill, setFibreSearchPrefill] = useState<string | undefined>(undefined);
+  // Pre-fill search query for FiberRingCell long-press (high-fiber nudge)
+  const [fiberSearchPrefill, setFiberSearchPrefill] = useState<string | undefined>(undefined);
   const [dismissedReminderIds, setDismissedReminderIds] = useState<Set<string>>(new Set());
   // Timestamp (ms) of the last time the BP reminder was dismissed without logging
   const [bpLastDismissedAt, setBpLastDismissedAt] = useState<number>(0);
@@ -2419,7 +2419,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
                   onPress={async () => {
                     const needsRestart = await applyRTLForLang(opt.code);
                     await setLangOverride(opt.code as Lang);
-                    // Auto-apply regional unit defaults (only if user hasn't customised units yet)
+                    // Auto-apply regional unit defaults (only if user hasn't customized units yet)
                     await applyLangUnitDefaults(opt.code);
                     setLangPickerVisible(false);
                     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -5409,13 +5409,13 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
                       )}
                     </View>
                     <View style={{ width: 0.5, height: 36, backgroundColor: colors.border }} />
-                    <FibreRingCell
+                    <FiberRingCell
                       todayFiber={todayFiber}
                       borderColor={colors.border}
                       onPress={requireScanMealPremium(() => { setCameraInitialMode('home'); setCameraSheetVisible(true); }, { feature: fc.scanMealTitle ?? 'Scan a Meal' })}
                       onLongPress={() => {
                         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                        setFiberGoalEditorValue(String(macroGoals.fibre ?? 25));
+                        setFiberGoalEditorValue(String(macroGoals.fiber ?? 25));
                         setFiberGoalEditorVisible(true);
                       }}
                     />
@@ -5501,7 +5501,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
           onClose={() => setActionSheet((s) => ({ ...s, visible: false }))}
         />
         {/* CaloricBalanceMiniCard and WeeklyMacroTrendCard removed — caloric balance and
-             macro trends are not primary outcomes in DASH or Mediterranean meta-analyses.
+             macro trends are not primary outcomes in DASH or Mediterranean meta-analyzes.
              Evidence-based Tier 1 metrics (BP, Na:K, HbA1c, weight) are shown above. */}
 
         {/* ─── EBP Clinical Nutrition Cards ──────────────────────────────────────────────── */}
@@ -5552,7 +5552,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
             if (cal < 50) return 0;
             const calGoal = macroGoals.calories > 0 ? macroGoals.calories : 2000;
             const protGoal = macroGoals.protein > 0 ? macroGoals.protein : 150;
-            const fibGoal = (macroGoals.fibre ?? 25) > 0 ? (macroGoals.fibre ?? 25) : 25;
+            const fibGoal = (macroGoals.fiber ?? 25) > 0 ? (macroGoals.fiber ?? 25) : 25;
             const fatGoal = macroGoals.fat > 0 ? macroGoals.fat : 65;
             return Math.round(
               (Math.min(cal / calGoal, 1)   * 0.25 +
@@ -5609,15 +5609,15 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
                   protein:  macroGoals.protein  > 0 ? macroGoals.protein  : 150,
                   carbs:    macroGoals.carbs    > 0 ? macroGoals.carbs    : 300,
                   fat:      macroGoals.fat      > 0 ? macroGoals.fat      : 65,
-                  fiber:    (macroGoals.fibre ?? 25) > 0 ? (macroGoals.fibre ?? 25) : 25,
+                  fiber:    (macroGoals.fiber ?? 25) > 0 ? (macroGoals.fiber ?? 25) : 25,
                 }}
                 onGoalsChange={async (g) => {
-                  await saveGoals({ ...macroGoals, calories: g.calories, protein: g.protein, carbs: g.carbs, fat: g.fat, fibre: g.fiber });
+                  await saveGoals({ ...macroGoals, calories: g.calories, protein: g.protein, carbs: g.carbs, fat: g.fat, fiber: g.fiber });
                 }}
-                fiberGoal={macroGoals.fibre ?? 25}
+                fiberGoal={macroGoals.fiber ?? 25}
                 onFiberGoalEdit={() => {
                   if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  setFiberGoalEditorValue(String(macroGoals.fibre ?? 25));
+                  setFiberGoalEditorValue(String(macroGoals.fiber ?? 25));
                   setFiberGoalEditorVisible(true);
                 }}
                 onLogMeal={(mode) => {
@@ -5746,19 +5746,19 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
             <View style={{ width: 36, height: 4, borderRadius: 2, backgroundColor: isDark ? '#48484A' : '#C7C7CC', alignSelf: 'center', marginBottom: 16 }} />
             <Text style={{ fontSize: 17, fontWeight: '700', color: isDark ? '#FFFFFF' : '#000000', marginBottom: 2 }}>{h.dailyFiberGoal}</Text>
             <Text style={{ fontSize: 13, color: isDark ? '#8E8E93' : '#6C6C70', marginBottom: 20 }}>
-              Current: {macroGoals.fibre ?? 25} g · WHO recommends 25 g/day
+              Current: {macroGoals.fiber ?? 25} g · WHO recommends 25 g/day
             </Text>
             {/* Preset options */}
             {([{ g: 21, label: '21 g', desc: 'Minimum — IOM adequate intake (women)' },
                { g: 25, label: '25 g', desc: 'WHO recommended daily intake' },
                { g: 38, label: '38 g', desc: 'IOM adequate intake (men / athletes)' }] as const).map(opt => {
-              const isSelected = (macroGoals.fibre ?? 25) === opt.g;
+              const isSelected = (macroGoals.fiber ?? 25) === opt.g;
               return (
                 <TouchableOpacity
                   key={opt.g}
                   onPress={async () => {
                     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                    await saveGoals({ ...macroGoals, fibre: opt.g });
+                    await saveGoals({ ...macroGoals, fiber: opt.g });
                     setFiberGoalEditorVisible(false);
                   }}
                   activeOpacity={0.75}
@@ -5812,7 +5812,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
                   const v = parseInt(fiberGoalEditorValue, 10);
                   if (!isNaN(v) && v > 0 && v <= 200) {
                     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                    await saveGoals({ ...macroGoals, fibre: v });
+                    await saveGoals({ ...macroGoals, fiber: v });
                     setFiberGoalEditorVisible(false);
                   }
                 }}
@@ -5822,7 +5822,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
                   const v = parseInt(fiberGoalEditorValue, 10);
                   if (!isNaN(v) && v > 0 && v <= 200) {
                     if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                    await saveGoals({ ...macroGoals, fibre: v });
+                    await saveGoals({ ...macroGoals, fiber: v });
                     setFiberGoalEditorVisible(false);
                   }
                 }}
@@ -6240,9 +6240,9 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
     {/* Smart Food Camera Sheet */}
     <AiFoodCameraSheet
       visible={cameraSheetVisible}
-      onClose={() => { setCameraSheetVisible(false); setFibreSearchPrefill(undefined); }}
+      onClose={() => { setCameraSheetVisible(false); setFiberSearchPrefill(undefined); }}
       initialMode={cameraInitialMode}
-      initialSearchQuery={fibreSearchPrefill}
+      initialSearchQuery={fiberSearchPrefill}
       onMealLogged={() => {
         safeSetItem(LAST_MEAL_LOGGED_KEY, String(Date.now())).catch(() => {});
       }}

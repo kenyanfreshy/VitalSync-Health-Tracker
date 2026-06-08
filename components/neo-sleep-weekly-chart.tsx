@@ -359,7 +359,7 @@ export function NeoSleepWeeklyChart({ records, goalHrs, colors, isDark }: Props)
               />
             )}
           </Svg>
-          {/* Centre label */}
+          {/* Center label */}
           <View style={styles.ringLabel}>
             <Text style={[styles.ringCount, { color: ringColor }]}>{goalNights}</Text>
             <Text style={[styles.ringOf, { color: isDark ? '#94A3B8' : '#64748B' }]}>/7</Text>

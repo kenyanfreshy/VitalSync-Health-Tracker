@@ -65,7 +65,7 @@ export function CaloricBreakdownModal({
   const deltas = days.map((d) => (d.kcal > 0 ? d.kcal - adjustedGoal : 0));
   const maxAbs = Math.max(...deltas.map(Math.abs), 1);
 
-  // Chart geometry: centre line at midY; bars grow up (surplus) or down (deficit)
+  // Chart geometry: center line at midY; bars grow up (surplus) or down (deficit)
   const usableH = CHART_H - PAD_Y * 2;
   const midY    = PAD_Y + usableH / 2;
   const halfH   = usableH / 2;

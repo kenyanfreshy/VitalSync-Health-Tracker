@@ -377,7 +377,7 @@ function healthReducer(state: HealthState, action: HealthAction): HealthState {
         ...state,
         data: {
           ...state.data,
-          mealIQAnalyses: [...(state.data.mealIQAnalyses ?? []), action.payload],
+          mealIQAnalyzes: [...(state.data.mealIQAnalyzes ?? []), action.payload],
         },
       };
 
@@ -387,7 +387,7 @@ function healthReducer(state: HealthState, action: HealthAction): HealthState {
         ...state,
         data: {
           ...state.data,
-          mealIQAnalyses: (state.data.mealIQAnalyses ?? []).filter(r => r.id !== action.payload),
+          mealIQAnalyzes: (state.data.mealIQAnalyzes ?? []).filter(r => r.id !== action.payload),
         },
       };
     case 'MERGE_NATIVE_HEALTH': {

@@ -102,7 +102,7 @@ function evidenceLabelStr(level: EvidenceLevel, n: number, total: number): strin
  * indicating the user's recovery battery is depleted (allostatic overload).
  * Uses the user's own 30-day rolling baseline.
  */
-function analyseAllostaticLoad(
+function analyzeAllostaticLoad(
   pulse: PulseRecord[],
   bp: BloodPressureRecord[]
 ): EngineInsight | null {
@@ -149,7 +149,7 @@ function analyseAllostaticLoad(
     hypothesis: `Your resting heart rate has been ${delta} BPM above your personal baseline for ${elevatedCount} of the last 7 days, suggesting accumulated physiological stress (Allostatic Overload). ${bpElevated > 0 ? `Blood pressure is also trending elevated on ${bpElevated} recent readings.` : ''}`,
     evidenceLevel: level,
     evidenceLabel: evidenceLabelStr(level, elevatedCount, 7),
-    clinicalSuggestion: 'Prioritise sleep and reduce high-intensity exercise for 48–72 hours. Ensure adequate hydration and consider a short mindfulness or breathing session to activate the parasympathetic nervous system.',
+    clinicalSuggestion: 'Prioritize sleep and reduce high-intensity exercise for 48–72 hours. Ensure adequate hydration and consider a short mindfulness or breathing session to activate the parasympathetic nervous system.',
     dataPoints: recent7.length,
     severity: level >= 4 ? 'alert' : 'caution',
     color: '#EF4444',
@@ -162,7 +162,7 @@ function analyseAllostaticLoad(
  * the first systolic BP reading of the following morning.
  * Based on: Cappuccio et al. (2011) Sleep Fragmentation → Morning Hypertension.
  */
-function analyseSleepCVReciprocity(
+function analyzeSleepCVReciprocity(
   sleep: SleepRecord[],
   bp: BloodPressureRecord[]
 ): EngineInsight | null {
@@ -218,7 +218,7 @@ function analyseSleepCVReciprocity(
  * If the latest HRV drops below (baseline − 1 SD), flags a Recovery Day.
  * Gold standard used by Oura, Whoop, and elite sports medicine.
  */
-function analyseHRVTraining(pulse: PulseRecord[]): EngineInsight | null {
+function analyzeHRVTraining(pulse: PulseRecord[]): EngineInsight | null {
   const withHRV = pulse.filter((r) => r.hrv && r.hrv > 0);
   if (withHRV.length < 8) return null;
 
@@ -255,11 +255,11 @@ function analyseHRVTraining(pulse: PulseRecord[]): EngineInsight | null {
 
 // ─── 4. 72-Hour Lag Analysis ──────────────────────────────────────────────────
 /**
- * Analyses whether sleep deprivation on Day 1 predicts reduced HRV and
+ * Analyzes whether sleep deprivation on Day 1 predicts reduced HRV and
  * elevated BP on Day 3 — the "72-hour lag" pattern documented in
  * Mullington et al. (2009) Cardiovascular consequences of sleep deprivation.
  */
-function analyse72HourLag(
+function analyze72HourLag(
   sleep: SleepRecord[],
   pulse: PulseRecord[],
   bp: BloodPressureRecord[]
@@ -323,7 +323,7 @@ function analyse72HourLag(
     hypothesis: `In ${lagHits} of ${totalChecked} instances, a night of below-average sleep was followed by measurably lower HRV or elevated systolic BP exactly 3 days later — consistent with the 72-Hour Lag effect documented in cardiovascular sleep research.`,
     evidenceLevel: level,
     evidenceLabel: evidenceLabelStr(level, lagHits, totalChecked),
-    clinicalSuggestion: 'When you know you will have a poor night\'s sleep (travel, late shift), proactively reduce physical and emotional stressors on Days 2–3. Prioritise recovery sleep on Day 2 to blunt the delayed cardiovascular impact.',
+    clinicalSuggestion: 'When you know you will have a poor night\'s sleep (travel, late shift), proactively reduce physical and emotional stressors on Days 2–3. Prioritize recovery sleep on Day 2 to blunt the delayed cardiovascular impact.',
     dataPoints: totalChecked,
     severity: level >= 4 ? 'caution' : 'info',
     color: '#F59E0B',
@@ -335,7 +335,7 @@ function analyse72HourLag(
  * Correlates REM + Deep sleep architecture with fasting glucose and resting HR
  * to predict metabolic strain. Uses blood sugar records with 'fasting' context.
  */
-function analyseCircadianRhythm(
+function analyzeCircadianRhythm(
   sleep: SleepRecord[],
   pulse: PulseRecord[],
   bloodSugar: HealthData['bloodSugar']
@@ -417,7 +417,7 @@ function analyseCircadianRhythm(
  *   - Weinberger et al. (1986): salt-sensitive vs salt-resistant phenotypes
  *   - DASH-Sodium trial (Sacks et al., 2001): dose-response of sodium reduction on BP
  */
-function analyseSodiumSensitivity(
+function analyzeSodiumSensitivity(
   sodium: SodiumRecord[],
   bp: BloodPressureRecord[],
   weight: HealthData['weight']
@@ -529,7 +529,7 @@ function analyseSodiumSensitivity(
  *
  * Requires at least 5 records with both sodiumMg and potassiumMg logged.
  */
-function analyseNaKRatio(sodium: SodiumRecord[]): EngineInsight | null {
+function analyzeNaKRatio(sodium: SodiumRecord[]): EngineInsight | null {
   // Only use records that have both Na and K logged
   const paired = sodium.filter(r => r.potassiumMg !== undefined && r.potassiumMg > 0);
   if (paired.length < 5) return null;
@@ -599,7 +599,7 @@ function analyseNaKRatio(sodium: SodiumRecord[]): EngineInsight | null {
  *   - Ludwig (2002, JAMA): glycemic load as a predictor of post-prandial glucose excursions
  *   - Jenkins et al. (1981): glycemic index and post-prandial glucose response
  */
-function analysePostMealGlucose(
+function analyzePostMealGlucose(
   sodium: SodiumRecord[],
   bloodSugar: HealthData['bloodSugar']
 ): EngineInsight | null {
@@ -673,7 +673,7 @@ function analysePostMealGlucose(
  * (Mullington et al., 2009; Tobaldini et al., 2017).
  * Uses intra-individual baseline (user's own 30-day resting HR mean).
  */
-function analyseRestingHRSleep(
+function analyzeRestingHRSleep(
   sleep: SleepRecord[],
   restingHRSamples: PulseRecord[]
 ): EngineInsight | null {
@@ -734,7 +734,7 @@ function analyseRestingHRSleep(
  * Low HRV and elevated resting HR co-occur during autonomic imbalance
  * (Thayer et al., 2010 — vagal tone model).
  */
-function analyseRestingHRHRV(
+function analyzeRestingHRHRV(
   pulse: PulseRecord[],
   restingHRSamples: PulseRecord[]
 ): EngineInsight | null {
@@ -780,7 +780,7 @@ function analyseRestingHRHRV(
     hypothesis: `Your HRV and resting HR show a ${r < 0 ? 'negative' : 'positive'} correlation (r = ${r.toFixed(2)}) — on days when HRV is lower, resting HR tends to be higher (avg HRV: ${avgHRV} ms, avg resting HR: ${avgRHR} bpm). This inverse relationship reflects autonomic nervous system balance: reduced vagal tone simultaneously lowers HRV and raises resting HR (Thayer et al., 2010).`,
     evidenceLevel: level,
     evidenceLabel: evidenceLabelStr(level, Math.round(level), 5),
-    clinicalSuggestion: 'Strategies that improve HRV (consistent sleep, aerobic exercise, stress management, controlled breathing) typically also lower resting HR. If both HRV and resting HR are trending in the wrong direction simultaneously, this is a strong signal to prioritise recovery. Share this pattern with your physician if resting HR exceeds your age-adjusted upper bound for more than 3 consecutive days.',
+    clinicalSuggestion: 'Strategies that improve HRV (consistent sleep, aerobic exercise, stress management, controlled breathing) typically also lower resting HR. If both HRV and resting HR are trending in the wrong direction simultaneously, this is a strong signal to prioritize recovery. Share this pattern with your physician if resting HR exceeds your age-adjusted upper bound for more than 3 consecutive days.',
     dataPoints: pairs.length,
     severity: level >= 4 ? 'caution' : 'info',
     color: '#818CF8',
@@ -800,36 +800,36 @@ export function runCorrelationEngine(data: HealthData): EngineInsight[] {
   const sodiumIntake = data.sodiumIntake ?? [];
   const weight = data.weight ?? [];
 
-  const allostaticResult = analyseAllostaticLoad(pulse, bp);
+  const allostaticResult = analyzeAllostaticLoad(pulse, bp);
   if (allostaticResult) insights.push(allostaticResult);
 
-  const sleepCVResult = analyseSleepCVReciprocity(sleep, bp);
+  const sleepCVResult = analyzeSleepCVReciprocity(sleep, bp);
   if (sleepCVResult) insights.push(sleepCVResult);
 
-  const hrvResult = analyseHRVTraining(pulse);
+  const hrvResult = analyzeHRVTraining(pulse);
   if (hrvResult) insights.push(hrvResult);
 
-  const lagResult = analyse72HourLag(sleep, pulse, bp);
+  const lagResult = analyze72HourLag(sleep, pulse, bp);
   if (lagResult) insights.push(lagResult);
 
-  const circadianResult = analyseCircadianRhythm(sleep, pulse, bloodSugar);
+  const circadianResult = analyzeCircadianRhythm(sleep, pulse, bloodSugar);
   if (circadianResult) insights.push(circadianResult);
 
 
-  const sodiumResult = analyseSodiumSensitivity(sodiumIntake, bp, weight);
+  const sodiumResult = analyzeSodiumSensitivity(sodiumIntake, bp, weight);
   if (sodiumResult) insights.push(sodiumResult);
 
-  const nakResult = analyseNaKRatio(sodiumIntake);
+  const nakResult = analyzeNaKRatio(sodiumIntake);
   if (nakResult) insights.push(nakResult);
 
-  const postMealResult = analysePostMealGlucose(sodiumIntake, bloodSugar);
+  const postMealResult = analyzePostMealGlucose(sodiumIntake, bloodSugar);
   if (postMealResult) insights.push(postMealResult);
 
   const restingHRSamples = data.restingHRSamples ?? [];
-  const restingHRSleepResult = analyseRestingHRSleep(sleep, restingHRSamples);
+  const restingHRSleepResult = analyzeRestingHRSleep(sleep, restingHRSamples);
   if (restingHRSleepResult) insights.push(restingHRSleepResult);
 
-  const restingHRHRVResult = analyseRestingHRHRV(pulse, restingHRSamples);
+  const restingHRHRVResult = analyzeRestingHRHRV(pulse, restingHRSamples);
   if (restingHRHRVResult) insights.push(restingHRHRVResult);
 
   // Sort: alert → caution → info, then by evidence level desc

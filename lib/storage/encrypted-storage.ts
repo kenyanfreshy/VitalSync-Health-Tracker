@@ -18,7 +18,7 @@
  *
  * Thread safety
  * -------------
- * Key initialisation is serialised through a single Promise so concurrent
+ * Key initialisation is serialized through a single Promise so concurrent
  * reads/writes during app startup do not race to create multiple keys.
  *
  * Error handling

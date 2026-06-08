@@ -137,8 +137,8 @@ export function ReadinessBanner({
           )}
         </View>
 
-        {/* Centre: label + bar + chips */}
-        <View style={styles.centre}>
+        {/* Center: label + bar + chips */}
+        <View style={styles.center}>
           <View style={styles.labelRow}>
             <Text style={[styles.sectionLabel, { color: colors.muted }]}>DAILY READINESS</Text>
             <Text style={styles.statusEmoji}>{emoji}</Text>
@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     lineHeight: 12,
   },
-  centre: {
+  center: {
     flex: 1,
     gap: 5,
   },

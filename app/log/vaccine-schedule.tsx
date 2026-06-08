@@ -405,7 +405,7 @@ export default function VaccineScheduleScreen() {
       {/* Source note */}
       <View style={[s.sourceNote, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={{ fontSize: 11, color: colors.muted, lineHeight: 16 }}>
-          📋 Based on CDC & WHO 2024 recommended immunization schedules. Tap any row to expand details. Always consult your healthcare provider for personalised advice.
+          📋 Based on CDC & WHO 2024 recommended immunization schedules. Tap any row to expand details. Always consult your healthcare provider for personalized advice.
         </Text>
       </View>
 

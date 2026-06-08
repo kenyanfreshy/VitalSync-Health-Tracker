@@ -14,7 +14,7 @@
  *
  * Fix
  * ---
- * 1. safeSetItem / safeMultiSet check the serialised size before writing.
+ * 1. safeSetItem / safeMultiSet check the serialized size before writing.
  *    If the value exceeds SIZE_TELEMETRY_BYTES (500 KB) a telemetry entry is
  *    logged to the crash logger.
  *    If the value exceeds SIZE_ALERT_BYTES (3 MB) a push notification is fired

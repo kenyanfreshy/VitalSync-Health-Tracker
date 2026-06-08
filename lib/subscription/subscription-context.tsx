@@ -411,7 +411,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     } catch (e) {
       // Covers three failure modes:
       // 1. react-native-iap pod not linked (pre-EAS build)
-      // 2. Nitro runtime failed to initialise (New Architecture timing issue)
+      // 2. Nitro runtime failed to initialize (New Architecture timing issue)
       // 3. StoreKit/Play Billing timed out (5-second guard above)
       // In all cases, set accessState to 'unknown' so the app continues normally.
       // The app is fully usable in 'unknown' state — the user can still access

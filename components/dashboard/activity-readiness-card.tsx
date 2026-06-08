@@ -546,8 +546,8 @@ export function ActivityReadinessCard({
                 )}
               </View>
 
-              {/* Centre: label + bar + chips */}
-              <View style={styles.readinessCentre}>
+              {/* Center: label + bar + chips */}
+              <View style={styles.readinessCenter}>
                 <View style={styles.labelRow}>
                   <Text style={[styles.readinessSectionLabel, { color: colors.muted }]}>{ds.dailyReadinessHeader?.toUpperCase()}</Text>
                   <Text style={styles.statusEmoji}>{readinessEmoji}</Text>
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   },
   scoreNum: { fontSize: 22, fontWeight: '800', lineHeight: 26 },
   scoreMax: { fontSize: 9, fontWeight: '600', lineHeight: 12 },
-  readinessCentre: { flex: 1, gap: 5 },
+  readinessCenter: { flex: 1, gap: 5 },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   readinessSectionLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase' },
   statusEmoji: { fontSize: 10 },

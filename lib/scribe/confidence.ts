@@ -279,7 +279,7 @@ export function scoreAppointmentConfidence(raw: string, parsed: {
       : /\d{1,2}(?::\d{2})?\s*(?:am|pm)/i.test(raw) ? 'high' : 'medium',
 
     location: parsed.location === null ? null
-      : /(?:at|in)\s+(?:the\s+)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+(?:hospital|clinic|center|centre|office|building)/i.test(raw) ? 'high'
+      : /(?:at|in)\s+(?:the\s+)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?\s+(?:hospital|clinic|center|center|office|building)/i.test(raw) ? 'high'
       : 'medium',
 
     referredBy: parsed.referredBy === null ? null

@@ -1818,8 +1818,8 @@ export function AiFoodCameraSheet({
       advanceStep('detecting_foods', 'active');
       setAnalysisProgress(40);
 
-      // Step 1: Recognise food via Gemini Vision (primary) → fallback chain
-      const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
+      // Step 1: Recognize food via Gemini Vision (primary) → fallback chain
+      const { recognizeAndLookup } = await import('@/lib/nutrition/apple-vision-food');
       const SCAN_TIMEOUT_MS = 30_000;
       const scanWithTimeout = <T,>(p: Promise<T>): Promise<T> =>
         new Promise<T>((resolve, reject) => {
@@ -1828,10 +1828,10 @@ export function AiFoodCameraSheet({
         });
 
       // Auto-retry once at 20 seconds if still running
-      let recognition: Awaited<ReturnType<typeof recogniseAndLookup>>['recognition'];
-      let usdaItem: Awaited<ReturnType<typeof recogniseAndLookup>>['usdaItem'];
+      let recognition: Awaited<ReturnType<typeof recognizeAndLookup>>['recognition'];
+      let usdaItem: Awaited<ReturnType<typeof recognizeAndLookup>>['usdaItem'];
       try {
-        const res = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
+        const res = await scanWithTimeout(recognizeAndLookup(result.assets[0].base64));
         recognition = res.recognition;
         usdaItem = res.usdaItem;
       } catch (firstErr: any) {
@@ -1839,7 +1839,7 @@ export function AiFoodCameraSheet({
         if (analysisRetryCount.current < 1) {
           analysisRetryCount.current += 1;
           setAnalysisUsingFallback(true);
-          const res = await scanWithTimeout(recogniseAndLookup(result.assets[0].base64));
+          const res = await scanWithTimeout(recognizeAndLookup(result.assets[0].base64));
           recognition = res.recognition;
           usdaItem = res.usdaItem;
         } else {
@@ -1944,7 +1944,7 @@ export function AiFoodCameraSheet({
     } catch (err: any) {
       setOpeningCamera(false);
       setCapturedUri(null);
-      const errMsg: string = err?.message ?? 'Could not analyse the photo. Please try again.';
+      const errMsg: string = err?.message ?? 'Could not analyze the photo. Please try again.';
       Alert.alert(
         'Unable to load food results',
         errMsg,
@@ -2566,7 +2566,7 @@ export function AiFoodCameraSheet({
                           stepStates={analysisStepStates}
                           detectedFoods={analysisDetectedFoods}
                           progress={analysisProgress}
-                          isAnalysing={scanning}
+                          isAnalyzing={scanning}
                           usingFallback={analysisUsingFallback}
                           elapsedSeconds={analysisElapsed}
                           isDark={isDark}

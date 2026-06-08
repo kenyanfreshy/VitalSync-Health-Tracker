@@ -233,10 +233,10 @@ function applyDateRetention(records: EKGRecord[]): EKGRecord[] {
   return records.filter((r) => new Date(r.startDate).getTime() >= cutoff);
 }
 
-// ─── Classification normaliser ────────────────────────────────────────────────
+// ─── Classification normalizer ────────────────────────────────────────────────
 // Maps HKAppleECGClassification numeric codes and string names to our 4-bucket type.
 
-function normaliseClassification(raw: string | number | undefined | null): EKGClassification {
+function normalizeClassification(raw: string | number | undefined | null): EKGClassification {
   if (raw === null || raw === undefined) return 'Unclassified';
   // Numeric codes from HKAppleECGClassification
   if (raw === 1 || raw === 'sinusRhythm' || raw === 'SinusRhythm') return 'SinusRhythm';
@@ -428,7 +428,7 @@ export async function fetchEKGPage(
         id: s.uuid ?? s.id ?? `${s.startDate}-${s.endDate}`,
         startDate: s.startDate instanceof Date ? s.startDate.toISOString() : String(s.startDate),
         endDate: s.endDate instanceof Date ? s.endDate.toISOString() : String(s.endDate),
-        classification: normaliseClassification(classRaw),
+        classification: normalizeClassification(classRaw),
         averageHeartRate: avgHR,
         samplingFrequency: freq,
         device: typeof s.device === 'string' ? s.device : (s.device?.name ?? null),

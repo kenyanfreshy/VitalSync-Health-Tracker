@@ -5,7 +5,7 @@
  * Shows blood type, critical conditions, allergies, and emergency contacts at a glance.
  * Tapping expands a full-screen modal for editing and viewing all ICE data.
  *
- * Design: Red/crimson accent, high contrast, large tap target — optimised for
+ * Design: Red/crimson accent, high contrast, large tap target — optimized for
  * first responders who may be under stress and need information instantly.
  */
 

@@ -194,7 +194,7 @@ function ArcRing({ progress, color, glowColor, label, valueText, subText, isDark
           origin={`${RING_SIZE / 2}, ${RING_SIZE / 2}`}
         />
       </Svg>
-      {/* Centre text */}
+      {/* Center text */}
       <View style={styles.arcCenter}>
         <Text style={[styles.arcValue, { color: color }]}>{valueText}</Text>
         <Text style={[styles.arcSub, { color: isDark ? '#64748B' : '#94A3B8' }]}>{subText}</Text>
@@ -596,7 +596,7 @@ export function EBPNutritionCards({ data, isDark }: EBPNutritionCardsProps) {
                   />
                   {weightKg == null && (
                     <Text style={[styles.weightNote, { color: mutedColor }]}>
-                      Log your weight for personalised g/kg targets.
+                      Log your weight for personalized g/kg targets.
                     </Text>
                   )}
                 </View>
@@ -607,7 +607,7 @@ export function EBPNutritionCards({ data, isDark }: EBPNutritionCardsProps) {
                 Target: 1.2–1.6 g/kg for muscle protein synthesis.
                 {weightKg
                   ? ` Your weight: ${weightKg.toFixed(1)} kg · intake: ${proteinPerKg.toFixed(2)} g/kg.`
-                  : ' Log your weight to personalise this target.'}
+                  : ' Log your weight to personalize this target.'}
               </Text>
 
               {/* Source link */}

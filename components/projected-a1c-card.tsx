@@ -109,7 +109,7 @@ function getPostprandialTip(spikePercent: number): DietTip {
   if (spikePercent >= 50) {
     return {
       headline: 'High Glycaemic Load Detected',
-      body: 'This spike is significantly above your baseline. The DASH diet recommends replacing refined carbohydrates with high-fibre whole grains (≥25 g/day), legumes, and non-starchy vegetables to blunt post-meal glucose peaks.',
+      body: 'This spike is significantly above your baseline. The DASH diet recommends replacing refined carbohydrates with high-fiber whole grains (≥25 g/day), legumes, and non-starchy vegetables to blunt post-meal glucose peaks.',
       citation: 'Sacks FM et al. NEJM 2001; ADA Standards of Care 2024 §5.2',
     };
   }
@@ -122,7 +122,7 @@ function getPostprandialTip(spikePercent: number): DietTip {
   }
   return {
     headline: 'Post-Meal Spike Above Baseline',
-    body: 'Your post-meal reading is noticeably above your 30-day average. The DASH/Mediterranean approach suggests choosing low-glycaemic index foods, increasing soluble fibre intake, and taking a short walk after meals to improve insulin sensitivity.',
+    body: 'Your post-meal reading is noticeably above your 30-day average. The DASH/Mediterranean approach suggests choosing low-glycaemic index foods, increasing soluble fiber intake, and taking a short walk after meals to improve insulin sensitivity.',
     citation: 'DASH: Appel LJ et al. NEJM 1997; ADA 2024 §5.2',
   };
 }

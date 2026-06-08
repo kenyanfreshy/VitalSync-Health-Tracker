@@ -40,10 +40,10 @@ const STAGES: StageSection[] = [
     label: 'Deep Sleep (N3)',
     color: '#818CF8',
     emoji: '🔵',
-    tagline: 'Physical restoration & immune defence',
+    tagline: 'Physical restoration & immune defense',
     body:
       'Deep sleep — also called slow-wave sleep (SWS) or N3 — is the most physically restorative stage. ' +
-      'Growth hormone secretion peaks, muscles and tissues repair, and the immune system consolidates its defences. ' +
+      'Growth hormone secretion peaks, muscles and tissues repair, and the immune system consolidates its defenses. ' +
       'The brain clears metabolic waste products (including amyloid-β) via the glymphatic system, which operates ' +
       'most efficiently during this stage. Adults typically spend 13–23% of total sleep time in deep sleep, ' +
       'with the majority occurring in the first half of the night.',

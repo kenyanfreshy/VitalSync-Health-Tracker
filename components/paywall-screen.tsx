@@ -651,8 +651,8 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
     },
     {
       icon: '🥗',
-      title: pw.slide2Title ?? 'AI-Powered Nutrition',
-      subtitle: pw.slide2Sub ?? 'Scan meals instantly with Apple Intelligence or Gemini for macro tracking.',
+      title: pw.slide2Title ?? 'Smart Nutrition Tracking',
+      subtitle: pw.slide2Sub ?? 'Scan meals instantly to track macros, calories, and glycemic load.',
     },
     {
       icon: '📋',

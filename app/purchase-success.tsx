@@ -2,7 +2,7 @@
  * Post-Purchase Confirmation Screen
  *
  * Shown immediately after a successful subscription purchase or trial start.
- * Celebrates the unlock with a confetti burst, personalised plan headline,
+ * Celebrates the unlock with a confetti burst, personalized plan headline,
  * and a summary of what's now available, then routes back to the Dashboard.
  *
  * Receives `planId` as a route param from app/paywall.tsx.
@@ -31,19 +31,10 @@ type ConfettiCannonRef = InstanceType<typeof ConfettiCannon>;
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// ─── Platform-specific AI branding ──────────────────────────────────────────
-const AI_INSIGHTS_LABEL =
-  Platform.OS === 'ios'
-    ? 'Apple Intelligence powered health insights'
-    : 'Gemini powered health insights';
-
-const AI_INSIGHTS_ICON =
-  Platform.OS === 'ios' ? '🍎' : '✨';
-
-// ─── What's unlocked ─────────────────────────────────────────────────────────
+// ─── What's unlocked ─────────────────────────────────────────────────────
 const UNLOCKED_FEATURES = [
   { icon: "📊", label: "Unlimited vital signs & lab tracking" },
-  { icon: AI_INSIGHTS_ICON, label: AI_INSIGHTS_LABEL },
+  { icon: "✨", label: "Evidence-based personal health insights" },
   { icon: "💊", label: "Medication & appointment management" },
   { icon: "📄", label: "Advanced health reports & PDF export" },
   { icon: "🔗", label: "HealthKit sync & smart reminders" },

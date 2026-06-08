@@ -43,7 +43,7 @@ export function isImagePickerAvailable(): boolean {
   return ImagePicker !== null;
 }
 
-/** Returns the load error message if the module failed to initialise. */
+/** Returns the load error message if the module failed to initialize. */
 export function getImagePickerError(): string | null {
   return loadError;
 }

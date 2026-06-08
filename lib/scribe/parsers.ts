@@ -663,7 +663,7 @@ export function parseProcedureTranscript(raw: string): ParsedProcedure {
     if (surgMatch) result.surgeon = `Dr. ${surgMatch[1].trim()}`;
 
     // ── Hospital / facility ────────────────────────────────────────────────
-    const hospMatch = raw.match(/(?:at|in|hospital|clinic|center|centre|facility)\s+([A-Z][A-Za-z\s]{2,40}?)(?:\s*,|\s*\.|\s*$)/i);
+    const hospMatch = raw.match(/(?:at|in|hospital|clinic|center|center|facility)\s+([A-Z][A-Za-z\s]{2,40}?)(?:\s*,|\s*\.|\s*$)/i);
     if (hospMatch) result.hospital = hospMatch[1].trim();
 
     // ── Date ───────────────────────────────────────────────────────────────
@@ -1157,7 +1157,7 @@ export function parseNutritionTranscript(raw: string): ParsedNutrition {
     if (protMatch) result.proteinG = clamp(parseFloat(protMatch[1]), 0, 300);
 
     // ── Fiber ─────────────────────────────────────────────────────────────
-    const fiberMatch = t.match(/(\d{1,3}(?:\.\d)?)\s*(?:g\s*)?(?:fiber|fibre)/);
+    const fiberMatch = t.match(/(\d{1,3}(?:\.\d)?)\s*(?:g\s*)?(?:fiber|fiber)/);
     if (fiberMatch) result.fiberG = clamp(parseFloat(fiberMatch[1]), 0, 100);
 
     // ── Sodium ────────────────────────────────────────────────────────────
@@ -1541,7 +1541,7 @@ const LAB_DATE_PATTERNS: RegExp[] = [
   /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/,
 ];
 
-function normaliseLabDate(raw: string): string {
+function normalizeLabDate(raw: string): string {
   const clean = raw.trim().replace(/\-/g, '/');
   const parts = clean.split('/');
   if (parts.length !== 3) return raw;
@@ -1572,7 +1572,7 @@ export function parseLabOcr(lines: string[]): Record<string, string> {
   // Pass 2: Collection date
   for (const pattern of LAB_DATE_PATTERNS) {
     const m = fullText.match(pattern);
-    if (m) { result.__collectionDate = normaliseLabDate(m[1]); break; }
+    if (m) { result.__collectionDate = normalizeLabDate(m[1]); break; }
   }
 
   // Pass 3: Analyte values — scan each line

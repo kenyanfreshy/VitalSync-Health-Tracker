@@ -10,7 +10,7 @@
  * and it always appears first (with a ⭐ badge) in the autocomplete dropdown.
  *
  * Storage key: @vitalsync/pharmacies
- * Shape: Record<string (normalised name), PharmacyEntry>
+ * Shape: Record<string (normalized name), PharmacyEntry>
  */
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { safeSetItem } from '@/lib/safe-async-storage';
@@ -39,7 +39,7 @@ export interface PharmacyEntry {
 }
 
 /** Normalise a pharmacy name for use as a dictionary key */
-export function normalisePharmacyName(name: string): string {
+export function normalizePharmacyName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
@@ -78,7 +78,7 @@ export async function upsertPharmacy(
   if (!trimmedName) return;
 
   const store = await loadPharmacies();
-  const key = normalisePharmacyName(trimmedName);
+  const key = normalizePharmacyName(trimmedName);
   const existing = store[key];
 
   store[key] = {
@@ -103,8 +103,8 @@ export async function updatePharmacy(
   updated: Pick<PharmacyEntry, 'name' | 'phone' | 'address'> & { hours?: string },
 ): Promise<void> {
   const store = await loadPharmacies();
-  const oldKey = normalisePharmacyName(originalName);
-  const newKey = normalisePharmacyName(updated.name);
+  const oldKey = normalizePharmacyName(originalName);
+  const newKey = normalizePharmacyName(updated.name);
   const existing = store[oldKey];
   if (!existing) return;
 
@@ -133,7 +133,7 @@ export async function updatePharmacy(
  */
 export async function setPreferredPharmacy(name: string): Promise<void> {
   const store = await loadPharmacies();
-  const targetKey = normalisePharmacyName(name);
+  const targetKey = normalizePharmacyName(name);
 
   for (const key of Object.keys(store)) {
     store[key] = { ...store[key], isPreferred: key === targetKey && name.trim() !== '' };
@@ -178,14 +178,14 @@ export async function searchPharmacies(query: string): Promise<PharmacyEntry[]> 
 }
 
 /**
- * Look up a pharmacy by exact normalised name.
+ * Look up a pharmacy by exact normalized name.
  * Returns undefined if not found.
  */
 export async function getPharmacyByName(
   name: string,
 ): Promise<PharmacyEntry | undefined> {
   const store = await loadPharmacies();
-  return store[normalisePharmacyName(name)];
+  return store[normalizePharmacyName(name)];
 }
 
 /**
@@ -193,7 +193,7 @@ export async function getPharmacyByName(
  */
 export async function deletePharmacy(name: string): Promise<void> {
   const store = await loadPharmacies();
-  const key = normalisePharmacyName(name);
+  const key = normalizePharmacyName(name);
   if (key in store) {
     delete store[key];
     await savePharmacies(store);

@@ -390,8 +390,8 @@ export interface HealthData {
   // Medical & Surgical History
   medicalHistory: MedicalHistoryRecord[];
   surgicalHistory: SurgicalHistoryRecord[];
-  // Meal IQ analyses (persisted post-meal analysis results)
-  mealIQAnalyses?: MealIQAnalysisRecord[];
+  // Meal IQ analyzes (persisted post-meal analysis results)
+  mealIQAnalyzes?: MealIQAnalysisRecord[];
   // Doctor appointments
   appointments?: DoctorAppointment[];
   // Immunization records

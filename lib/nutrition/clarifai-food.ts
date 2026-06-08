@@ -7,7 +7,7 @@
  * Model used: food-item-recognition (clarifai/main)
  * Endpoint:   /v2/users/clarifai/apps/main/models/food-item-recognition/outputs
  *
- * This replaces the Manus-server analysePhoto tRPC call so Scan Plate works
+ * This replaces the Manus-server analyzePhoto tRPC call so Scan Plate works
  * in production EAS builds on physical devices without a backend server.
  *
  * Setup:
@@ -127,7 +127,7 @@ export async function clarifaiPredictBase64(
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Analyse a meal photo using Clarifai's food recognition model.
+ * Analyze a meal photo using Clarifai's food recognition model.
  *
  * Flow:
  *   1. Send base64 image to Clarifai food-item-recognition model
@@ -137,7 +137,7 @@ export async function clarifaiPredictBase64(
  *
  * @param base64Image - Base64-encoded image (with or without data URI prefix)
  */
-export async function analysePlatePhoto(
+export async function analyzePlatePhoto(
   base64Image: string,
 ): Promise<PlateAnalysisResult> {
   // Graceful degradation when PAT is not configured

@@ -391,7 +391,7 @@ export function OnDeviceInsightsCard({ data, maxItems = 5, todaySteps = null, st
               {sourcesExpanded && (
                 <View style={styles.sourcesBody}>
                   <Text style={[styles.sourcesDesc, { color: mutedColor }]}>
-                    All insights are grounded in peer-reviewed guidelines and meta-analyses.
+                    All insights are grounded in peer-reviewed guidelines and meta-analyzes.
                   </Text>
                   <View style={styles.sourcesChips}>
                     {allCitations.map(c => (

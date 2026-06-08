@@ -131,12 +131,12 @@ function MacroRingChart({ macros }: { macros: RecipeMacros }) {
             </G>
           );
         })}
-        {/* Centre kcal label */}
+        {/* Center kcal label */}
       </Svg>
-      {/* Centre text overlay */}
-      <View style={ringStyles.centre}>
-        <Text style={ringStyles.centreKcal}>{macros.kcal}</Text>
-        <Text style={ringStyles.centreLabel}>kcal</Text>
+      {/* Center text overlay */}
+      <View style={ringStyles.center}>
+        <Text style={ringStyles.centerKcal}>{macros.kcal}</Text>
+        <Text style={ringStyles.centerLabel}>kcal</Text>
       </View>
       {/* Legend */}
       <View style={ringStyles.legend}>
@@ -161,7 +161,7 @@ const ringStyles = StyleSheet.create({
     gap: 20,
     paddingHorizontal: 4,
   },
-  centre: {
+  center: {
     position: 'absolute',
     left: 0,
     width: RING_SIZE,
@@ -169,13 +169,13 @@ const ringStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  centreKcal: {
+  centerKcal: {
     fontSize: 22,
     fontWeight: '800',
     color: '#F1F5F9',
     letterSpacing: -0.5,
   },
-  centreLabel: {
+  centerLabel: {
     fontSize: 10,
     fontWeight: '600',
     color: '#64748B',

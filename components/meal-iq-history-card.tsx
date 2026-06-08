@@ -1,6 +1,6 @@
 /**
  * MealIQHistoryCard
- * Displays all persisted Meal IQ analyses sorted by impact score (highest first).
+ * Displays all persisted Meal IQ analyzes sorted by impact score (highest first).
  * Shown in the Records tab under a dedicated "Meal IQ History" section.
  */
 import { safeFormatDate } from '@/lib/utils';
@@ -195,16 +195,16 @@ export function MealIQHistoryCard({ defaultExpanded = false, overrideExpanded }:
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }
 
-  const analyses = [...(state.data?.mealIQAnalyses ?? [])]
+  const analyzes = [...(state.data?.mealIQAnalyzes ?? [])]
     .sort((a, b) => (b.impactScore ?? 0) - (a.impactScore ?? 0));
 
   const s = cardStyles(colors);
 
-  if (analyses.length === 0) {
+  if (analyzes.length === 0) {
     return (
       <View style={[s.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <IconSymbol name="brain" size={28} color={colors.muted} />
-        <Text style={[s.emptyTitle, { color: colors.foreground }]}>No Meal IQ Analyses Yet</Text>
+        <Text style={[s.emptyTitle, { color: colors.foreground }]}>No Meal IQ Analyzes Yet</Text>
         <Text style={[s.emptyText, { color: colors.muted }]}>
           Tap the 🧠 icon on any meal entry in your Sodium Log to generate a post-meal analysis.
         </Text>
@@ -220,7 +220,7 @@ export function MealIQHistoryCard({ defaultExpanded = false, overrideExpanded }:
           <Text style={[s.headerTitle, { color: colors.foreground }]}>Meal IQ History</Text>
         </View>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Text style={[s.headerCount, { color: colors.muted }]}>{analyses.length} analyses</Text>
+          <Text style={[s.headerCount, { color: colors.muted }]}>{analyzes.length} analyzes</Text>
           <IconSymbol
             name="chevron.right"
             size={14}
@@ -231,22 +231,22 @@ export function MealIQHistoryCard({ defaultExpanded = false, overrideExpanded }:
       </Pressable>
 
       {/* Compact summary — shown when collapsed */}
-      {!expanded && analyses.length > 0 && (
+      {!expanded && analyzes.length > 0 && (
         <View style={[s.compactRow, { borderTopColor: colors.border }]}>
           <Text style={[s.compactText, { color: colors.muted }]}>
-            {analyses.length} {analyses.length === 1 ? 'analysis' : 'analyses'}
+            {analyzes.length} {analyzes.length === 1 ? 'analysis' : 'analyzes'}
           </Text>
           <Text style={[s.compactDot, { color: colors.muted }]}> · </Text>
           <Text style={[s.compactText, { color: colors.muted }]} numberOfLines={1}>
-            Last: {analyses[0]?.mealLabel ?? '—'}
+            Last: {analyzes[0]?.mealLabel ?? '—'}
           </Text>
-          {analyses[0]?.impactScore != null && (
-            <ImpactBadge score={analyses[0].impactScore} />
+          {analyzes[0]?.impactScore != null && (
+            <ImpactBadge score={analyzes[0].impactScore} />
           )}
         </View>
       )}
       {expanded && <FlatList
-        data={analyses}
+        data={analyzes}
         keyExtractor={(item) => item.id}
         scrollEnabled={false}
         ItemSeparatorComponent={() => <View style={[s.separator, { backgroundColor: colors.border }]} />}

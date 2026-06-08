@@ -81,7 +81,7 @@ const CHART_W_FALLBACK = SCREEN_W - 32 - 28;
 // CHART_W is now measured at runtime via onLayout — see chartWidth state below.
 // This fallback is used only before the first layout event fires.
 
-function normalise(arr: number[]): number[] {
+function normalize(arr: number[]): number[] {
   if (!arr.length) return [];
   const min = Math.min(...arr);
   const max = Math.max(...arr);
@@ -133,7 +133,7 @@ function sliceSpark(arr: number[], days: number): number[] {
 
 // ─── Mini sparkline ────────────────────────────────────────────────────────────
 function MiniSparkline({ data, color, w = 60, h = 24 }: { data: number[]; color: string; w?: number; h?: number }) {
-  const norm = normalise(data);
+  const norm = normalize(data);
   if (norm.length < 2) return <View style={{ width: w, height: h }} />;
   const path = buildPath(norm, w, h, 4, 4);
   return (
@@ -386,9 +386,9 @@ export function NeoVitalVitalsCard({
   }, [range, hrvSparkline, hrvSparkline24h, hrvSparkline30d]);
 
   // ── Normalise sparklines (with moving-average smoothing applied first) ──────
-  const hrNorm   = useMemo(() => normalise(smoothSparkline(resolvedHR.length   >= 2 ? resolvedHR   : [60, 65, 70, 68, 72, 70, 72], range, strength)), [resolvedHR, range, strength]);
-  const bpNorm   = useMemo(() => normalise(smoothSparkline(resolvedBP.length   >= 2 ? resolvedBP   : [115, 118, 120, 116, 118, 119, 118], range, strength)), [resolvedBP, range, strength]);
-  const spo2Norm = useMemo(() => normalise(smoothSparkline(resolvedSpO2.length >= 2 ? resolvedSpO2 : [97, 98, 97, 98, 99, 98, 98], range, strength)), [resolvedSpO2, range, strength]);
+  const hrNorm   = useMemo(() => normalize(smoothSparkline(resolvedHR.length   >= 2 ? resolvedHR   : [60, 65, 70, 68, 72, 70, 72], range, strength)), [resolvedHR, range, strength]);
+  const bpNorm   = useMemo(() => normalize(smoothSparkline(resolvedBP.length   >= 2 ? resolvedBP   : [115, 118, 120, 116, 118, 119, 118], range, strength)), [resolvedBP, range, strength]);
+  const spo2Norm = useMemo(() => normalize(smoothSparkline(resolvedSpO2.length >= 2 ? resolvedSpO2 : [97, 98, 97, 98, 99, 98, 98], range, strength)), [resolvedSpO2, range, strength]);
 
   // ── Pulsating wave animation ──────────────────────────────────────────────
   const wavePhase = useRef(new Animated.Value(0)).current;

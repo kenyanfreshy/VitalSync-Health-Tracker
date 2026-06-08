@@ -84,7 +84,7 @@ import {
   PharmacyAutocomplete,
   type PharmacyAutocompleteHandle,
 } from '@/components/pharmacy-autocomplete';
-import { upsertPharmacy, getPreferredPharmacy, getOpenTodayHours, getAllPharmacies, normalisePharmacyName, parseAllDayHours, searchPharmacies } from '@/lib/medications/pharmacy-store';
+import { upsertPharmacy, getPreferredPharmacy, getOpenTodayHours, getAllPharmacies, normalizePharmacyName, parseAllDayHours, searchPharmacies } from '@/lib/medications/pharmacy-store';
 import { recordTransferRequest, getLastTransferDate, formatTransferDate } from '@/lib/medications/transfer-guard';
 // KeyboardDictationBanner removed — dictation uses live text box
 import { parsePrescriptionScanText } from '@/lib/medications/prescription-scan-parser';
@@ -1496,7 +1496,7 @@ function MyMedsTab({
       );
     }
   }, [newMedId, flashAnim]);
-  // Map of normalised pharmacy name → today's hours string (or 'Closed')
+  // Map of normalized pharmacy name → today's hours string (or 'Closed')
   const [pharmacyHoursMap, setPharmacyHoursMap] = useState<Record<string, string | undefined>>({});
   // Full week hours per pharmacy name key
   const [pharmacyFullHoursMap, setPharmacyFullHoursMap] = useState<Record<string, (string | undefined)[] | undefined>>({});
@@ -1520,7 +1520,7 @@ function MyMedsTab({
       const todayMap: Record<string, string | undefined> = {};
       const fullMap: Record<string, (string | undefined)[] | undefined> = {};
       for (const entry of entries) {
-        const key = normalisePharmacyName(entry.name);
+        const key = normalizePharmacyName(entry.name);
         todayMap[key] = getOpenTodayHours(entry.hours);
         fullMap[key] = parseAllDayHours(entry.hours);
       }
@@ -1562,7 +1562,7 @@ function MyMedsTab({
         const adherence = getAdherenceRate(med);
         const isLowStock = med.quantity !== null && med.quantity <= med.refillAt;
         // Closed-today detection: look up today's hours for this med's pharmacy
-        const pharmKey = med.pharmacyName ? normalisePharmacyName(med.pharmacyName) : null;
+        const pharmKey = med.pharmacyName ? normalizePharmacyName(med.pharmacyName) : null;
         const todayHours = pharmKey ? pharmacyHoursMap[pharmKey] : undefined;
         const isClosedToday = todayHours?.toLowerCase() === 'closed';
         const fullWeekHours = pharmKey ? pharmacyFullHoursMap[pharmKey] : undefined;
@@ -1937,7 +1937,7 @@ function MyMedsTab({
                             const todayMap: Record<string, string | undefined> = {};
                             const fullMap: Record<string, (string | undefined)[] | undefined> = {};
                             for (const entry of entries) {
-                              const key = normalisePharmacyName(entry.name);
+                              const key = normalizePharmacyName(entry.name);
                               todayMap[key] = getOpenTodayHours(entry.hours);
                               fullMap[key] = parseAllDayHours(entry.hours);
                             }

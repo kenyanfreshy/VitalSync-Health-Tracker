@@ -429,7 +429,7 @@ export const DEFAULT_REPORT_LABELS: ReportLabels = {
   procedureSurgeon: 'Surgeon',
   mealIQInsights: 'Meal IQ Insights',
   mealIQDisclaimer: 'Smart nutritional analysis. Not a substitute for professional dietary advice.',
-  mealIQNoData: 'No Meal IQ analyses recorded for this period.',
+  mealIQNoData: 'No Meal IQ analyzes recorded for this period.',
   noDataForPeriod: 'No data for this period',
   noDataForPeriodSub: 'No health records were found for the selected date range.',
   medicationAdherence: 'Medication Adherence',
@@ -517,7 +517,7 @@ export const DEFAULT_REPORT_LABELS: ReportLabels = {
   glucoseSignificantlyElevated: 'Significantly Elevated',
   glucoseSpikeCount: '{n} post-meal reading(s) exceeded 20% above average glucose during this period.',
   glucoseSpikePeak: 'Peak reading: <strong>{mgdl} mg/dL</strong> ({mmol} mmol/L).',
-  glucoseSpikeRecommendation: 'DASH/ADA recommendation: replace refined carbohydrates with high-fibre whole grains, legumes, and non-starchy vegetables to blunt post-meal glucose peaks.',
+  glucoseSpikeRecommendation: 'DASH/ADA recommendation: replace refined carbohydrates with high-fiber whole grains, legumes, and non-starchy vegetables to blunt post-meal glucose peaks.',
   glucoseSpikeReference: 'ADA Standards of Care 2024 §5.2; Sacks FM et al. NEJM 2001',
   // Resting HR section
   restingHeartRate: 'Resting Heart Rate',
@@ -2776,7 +2776,7 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
   ${(() => {
     // ── Meal IQ Insights Section ───────────────────────────────────────────
     if (config.includeMealIQ === false) return '';
-    const mealIQRecords = (data.mealIQAnalyses ?? []).filter(r => {
+    const mealIQRecords = (data.mealIQAnalyzes ?? []).filter(r => {
       const d = new Date(r.analyzedAt);
       return d >= dateRange.start && d <= dateRange.end;
     }).sort((a, b) => (b.impactScore ?? 0) - (a.impactScore ?? 0));
@@ -3274,11 +3274,31 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
         ${ref.url ? `<br><a href="${ref.url}" style="font-size:9px;color:#6366F1;">PubMed: ${ref.pmid || 'N/A'}</a>` : ''}
       </div>
     `).join('');
+
+    // NeoVital graph and NeoSleep methodology references
+    const neoVitalRef = config.includeNeoVitalGraph !== false ? `
+      <div style="margin-bottom:10px;padding-left:24px;position:relative;margin-top:16px;">
+        <span style="position:absolute;left:0;top:0;font-weight:700;color:#4A9ECC;">[NV]</span>
+        <span style="font-size:10px;color:#1E293B;line-height:1.5;"><strong>NeoVital Monitor — Oscillating Vital Signs Graph</strong></span><br>
+        <span style="font-size:9px;color:#64748B;font-style:italic;">Multi-axis normalized trend visualization displaying HR, BP, SpO\u2082, blood glucose, and weight over 30/90-day windows. Each metric is independently normalized to its own physiological scale. Methodology grounded in: Clifton DA et al. (2012) Predictive monitoring of mobile patients by combining clinical observations with data from wearable sensors. IEEE J Biomed Health Inform. PMID: 23008264. Tarassenko L et al. (2014) Integrated monitoring and analysis for early warning of patient deterioration. Br J Anaesth. PMID: 24907243.</span>
+      </div>
+    ` : '';
+
+    const neoSleepRef = `
+      <div style="margin-bottom:10px;padding-left:24px;position:relative;">
+        <span style="position:absolute;left:0;top:0;font-weight:700;color:#7C3AED;">[NS]</span>
+        <span style="font-size:10px;color:#1E293B;line-height:1.5;"><strong>NeoSleep — Sleep Architecture Analysis</strong></span><br>
+        <span style="font-size:9px;color:#64748B;font-style:italic;">Sleep stage duration, efficiency, and circadian alignment metrics displayed in this report follow AASM (American Academy of Sleep Medicine) scoring criteria. References: Berry RB et al. (2012) AASM Manual for the Scoring of Sleep and Associated Events v2.0. Buysse DJ et al. (1989) The Pittsburgh Sleep Quality Index. Psychiatry Res. PMID: 2748771. Ohayon MM et al. (2004) Meta-analysis of quantitative sleep parameters from childhood to old age. Sleep. PMID: 15164913.</span>
+      </div>
+    `;
+
     return `
     <div style="page-break-inside:avoid;margin:24px 0 16px;padding:20px 24px;background:#F8FAFC;border-radius:12px;border:1px solid #E2E8F0;">
       <div style="font-size:13px;font-weight:800;color:#6366F1;letter-spacing:0.8px;margin-bottom:14px;text-transform:uppercase;">Medical References</div>
-      <div style="font-size:9px;color:#94A3B8;font-style:italic;margin-bottom:12px;">All health metrics, correlation insights, and nutritional analyses in this report are grounded in peer-reviewed literature. Citations are indexed in PubMed (NCBI) and follow Vancouver/ICMJE format.</div>
+      <div style="font-size:9px;color:#94A3B8;font-style:italic;margin-bottom:12px;">All health metrics, correlation insights, and nutritional analyzes in this report are grounded in peer-reviewed literature. Citations are indexed in PubMed (NCBI) and follow Vancouver/ICMJE format.</div>
       ${refRows}
+      ${neoVitalRef}
+      ${neoSleepRef}
     </div>`;
   })()}
 

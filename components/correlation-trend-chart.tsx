@@ -25,6 +25,7 @@ import {
   Animated,
   Pressable,
   Share,
+  Linking,
 } from 'react-native';
 import Reanimated, {
   useSharedValue,
@@ -48,6 +49,7 @@ import * as Sharing from 'expo-sharing';
 import Svg, { Circle } from 'react-native-svg';
 import { useColors, useCorrelationStrings } from '@/hooks';
 import type { HealthData } from '@/lib/health/types';
+import { CORRELATION_REFS } from '@/lib/health/peer-review-refs';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CHART_WIDTH = SCREEN_WIDTH - 32;
@@ -1100,6 +1102,26 @@ export function CorrelationTrendChart({ data, days = 30 }: CorrelationTrendChart
         </View>
       )}
 
+      {/* ── Peer-review reference badges ─────────────────────────────────────── */}
+      {(() => {
+        const refKeys = ['bp-activity', 'sleep-hrv', 'glucose-activity', 'bp-sleep'];
+        const allRefs = refKeys.flatMap(k => CORRELATION_REFS[k] ?? []).filter((r, i, a) => a.findIndex(x => x.id === r.id) === i).slice(0, 4);
+        if (allRefs.length === 0) return null;
+        return (
+          <View style={{ paddingHorizontal: 16, paddingBottom: 8, flexDirection: 'row', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+            <Text style={{ fontSize: 10, color: textMuted, fontWeight: '600', letterSpacing: 0.3 }}>EBP REFS:</Text>
+            {allRefs.map((ref, idx) => (
+              <Pressable
+                key={ref.id}
+                onPress={() => ref.url ? Linking.openURL(ref.url) : undefined}
+                style={{ paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8, borderWidth: 1, borderColor: 'rgba(56,189,248,0.35)', backgroundColor: 'rgba(56,189,248,0.08)' }}
+              >
+                <Text style={{ fontSize: 10, color: '#38BDF8', fontWeight: '600' }}>[{idx + 1}] {ref.shortRef}</Text>
+              </Pressable>
+            ))}
+          </View>
+        );
+      })()}
       {/* ── Compliance footer ────────────────────────────────────────────────── */}
       <View style={[ctStyles.footer, { borderTopColor: border }]}>
         <Text style={[ctStyles.footerText, { color: textMuted }]}>

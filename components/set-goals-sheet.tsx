@@ -529,7 +529,7 @@ export function SetGoalsSheet({ visible, onClose }: Props) {
 
             <Text style={[styles.disclaimer, { color: colors.muted }]}>
               Targets are used as reference values in the Today&apos;s Macros card on your Dashboard.
-              Consult a dietitian for personalised medical nutrition therapy.
+              Consult a dietitian for personalized medical nutrition therapy.
             </Text>
           </ScrollView>
         </Animated.View>

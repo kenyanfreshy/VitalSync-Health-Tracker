@@ -195,7 +195,7 @@ function analyzeVagalWithdrawal(data: HealthData): InsightResult {
       ? 'Log sleep stages and HRV readings to enable this analysis'
       : 'Deep sleep architecture and HRV within expected range',
     aiAnalysis: detected
-      ? 'Deep sleep below 15% of total sleep time is associated with reduced parasympathetic (vagal) tone, reflected as a >10% drop in nocturnal HRV below your 7-day baseline. This pattern — vagal withdrawal — indicates impaired autonomic recovery during sleep. Prioritise sleep consistency, reduce evening stimulants, and consider a wind-down routine 60 minutes before bed.'
+      ? 'Deep sleep below 15% of total sleep time is associated with reduced parasympathetic (vagal) tone, reflected as a >10% drop in nocturnal HRV below your 7-day baseline. This pattern — vagal withdrawal — indicates impaired autonomic recovery during sleep. Prioritize sleep consistency, reduce evening stimulants, and consider a wind-down routine 60 minutes before bed.'
       : 'Deep sleep architecture is supporting adequate parasympathetic HRV recovery. Continue maintaining consistent sleep timing and duration.',
     citation: 'Nature Digital Medicine (2025) — Deep sleep architecture as a primary driver of parasympathetic HRV recovery',
     citationUrl: 'https://www.nature.com/npjdigitalmed',
@@ -360,7 +360,7 @@ function analyzeGlycemicSleepFragmentation(data: HealthData): InsightResult {
       : 'Dietary fiber intake is supporting stable nocturnal glucose and sleep continuity',
     aiAnalysis: detected
       ? 'A high carbohydrate-to-fiber ratio (>12:1) in your daily diet is associated with increased wake-after-sleep-onset (WASO), a marker of sleep fragmentation. Inadequate dietary fiber leads to nocturnal glucose instability, which disrupts sleep architecture through micro-arousals. Increasing fiber-rich foods (legumes, vegetables, whole grains) to achieve a carb:fiber ratio below 10:1 is the most evidence-based dietary intervention for improving sleep continuity.'
-      : 'Your dietary fiber intake is supporting stable nocturnal glucose regulation and sleep continuity. Continue prioritising fiber-rich whole foods.',
+      : 'Your dietary fiber intake is supporting stable nocturnal glucose regulation and sleep continuity. Continue prioritizing fiber-rich whole foods.',
     citation: "WHO Systematic Review (2024) — Fiber's role in stabilizing nocturnal glucose and improving sleep depth",
     citationUrl: 'https://www.who.int/publications',
     accentColor: ACCENTS.emerald,
@@ -1002,9 +1002,9 @@ export function InsightEngine({ data }: InsightEngineProps) {
                 </Text>
               </View>
 
-              {/* What it analyses */}
+              {/* What it analyzes */}
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)' }]}>
-                <Text style={[styles.infoSectionTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{cs.infoModalWhatItAnalyses}</Text>
+                <Text style={[styles.infoSectionTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{cs.infoModalWhatItAnalyzes}</Text>
                 <Text style={[styles.infoSectionBody, { color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.60)' }]}>
                   The Insight Engine runs 6 evidence-based correlations across your vitals, sleep, nutrition, and activity data — each grounded in a 2024–2026 peer-reviewed publication. It looks for patterns such as fluid-pressure coupling, vagal withdrawal, insulin sensitivity shifts, circadian cardiac strain, glycaemic sleep fragmentation, and resilience index changes.
                 </Text>

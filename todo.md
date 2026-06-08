@@ -10263,3 +10263,31 @@
 - [x] Push to GitHub (749104b)
 - [x] EAS build 939e52e7 — FINISHED
 - [x] Submit v2.10.8 to TestFlight — SUBMITTED
+
+## v1.0.34 — Paywall Rebrand + EBP Citation Fixes
+
+- [x] Regenerate paywall background with VitalSync brand palette (emerald ECG, electric-blue rings, navy base)
+- [x] Update paywall-screen.tsx color tokens: BRAND_GREEN #22C55E, BRAND_BLUE #38BDF8, GLASS_BORDER emerald-green, CTA button green with dark text
+- [x] Remove sleep-cv from CATEGORY_ICONS and filter from otherInsights in analytics.tsx
+- [x] Move EBP citation block outside expanded state in InsightCard (always visible)
+- [x] Add nutrition/caloric/correlate peer-review refs to CORRELATION_REFS in peer-review-refs.ts
+- [x] Add peer-review citation badges to correlate, diabetic, and caloric nutrition tabs in analytics.tsx
+- [x] Expand Evidence-Based References section in report-generator.ts with metric refs and nutrition refs
+- [x] Add carousel slide i18n keys to paywallExtStrings in i18n.ts
+- [x] Add whatsNewV1034Strings export and wire into _layout.tsx allEnglishStrings
+- [x] Update LATEST_WHATS_NEW_VERSION to 2.9.35 in whats-new-version.ts
+- [x] Commit v1.0.34 changes (6ef4185)
+- [x] Push v1.0.34 to GitHub (d204d1a → 6ef4185)
+- [x] EAS iOS production build FINISHED (2e052069-ff21-485c-8cad-f667bfa47e82)
+- [x] Submit v1.0.34 to TestFlight — SUBMITTED (App Store Connect app 6774855397)
+
+## v1.0.35 — Paywall Unification + AI Removal + Correlate Cleanup + Report Refs
+
+- [ ] Unify onboarding paywall to use the same full-bleed immersive PaywallScreen component
+- [ ] Remove all "AI" references from onboarding screens, paywall, and app-wide UI
+- [ ] Remove Health Insights section from Correlate tab in analytics.tsx
+- [ ] Add peer-review citation refs to Observed Historical Patterns section in analytics.tsx
+- [ ] Add NeoVital graph and NeoSleep references to health report (report-generator.ts)
+- [ ] Bump version to 1.0.35, commit, push to GitHub, EAS build, submit to TestFlight
+- [ ] Find and redesign "Rooted in Love, Culture and Purpose" screen with scrollable top tabs, more appealing layout
+- [ ] Convert all British English spellings to American English (personalise→personalize, colour→color, behaviour→behavior, etc.) across all user-facing strings, i18n files, and UI components

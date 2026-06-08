@@ -50,7 +50,7 @@ import {
 // A static import causes the AppleHealthKit TurboModule to be registered
 // synchronously on the com.meta.react.turbomodulemanager.queue at bundle load
 // time. On iOS 26.5 Beta, if the HealthKit entitlement is absent or the module
-// initialises before the app is fully ready, it throws an NSException. React
+// initializes before the app is fully ready, it throws an NSException. React
 // Native's convertNSExceptionToJSError then crashes with a null-pointer
 // dereference (KERN_INVALID_ADDRESS at 0x11 / SIGSEGV). Fix: lazy require()
 // inside each method that needs it, guarded by isRNHAvailable().

@@ -74,7 +74,7 @@ export const NUTRITION_WINDOWS: NutritionWindowMeta[] = [
     days: 90,
     purposeShort: 'Highest-confidence trend',
     purposeLong:
-      'True longitudinal nutrition signal — best window for evaluating sustained adherence. Aligns with multi-week to multi-month intervention lengths used in clinical nutrition meta-analyses. Highest-confidence score for nutrition quality and likely metabolic benefit.',
+      'True longitudinal nutrition signal — best window for evaluating sustained adherence. Aligns with multi-week to multi-month intervention lengths used in clinical nutrition meta-analyzes. Highest-confidence score for nutrition quality and likely metabolic benefit.',
   },
 ];
 

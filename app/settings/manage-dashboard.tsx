@@ -88,7 +88,7 @@ const SECTION_META: SectionMeta[] = [
   {
     id: 'nutrition_section',
     label: 'Nutrition Details',
-    subtitle: 'Fibre, sodium, micronutrient breakdown',
+    subtitle: 'Fiber, sodium, micronutrient breakdown',
     emoji: '🥦',
     accentColor: '#10B981',
   },

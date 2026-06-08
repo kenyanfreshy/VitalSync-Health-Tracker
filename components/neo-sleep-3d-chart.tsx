@@ -52,7 +52,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const SCREEN_W = Dimensions.get('window').width;
 const CHART_W = SCREEN_W;
-const EDGE_INSET = 28;  // pulsating bubble centre inset from right edge
+const EDGE_INSET = 28;  // pulsating bubble center inset from right edge
 const CHART_H = 340;
 const STAGE_AREA_TOP = 60;
 const STAGE_AREA_H = 160;

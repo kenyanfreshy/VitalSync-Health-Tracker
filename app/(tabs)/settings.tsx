@@ -945,11 +945,11 @@ export default function SettingsScreen() {
         const recent = sleepRecords
           .filter((r) => r.bedtime && new Date(r.bedtime).getTime() >= sevenDaysAgo);
         if (recent.length >= 2) {
-          // Average bedtime in minutes from midnight (post-midnight normalised)
+          // Average bedtime in minutes from midnight (post-midnight normalized)
           const bedtimeMins = recent.map((r) => {
             const d = new Date(r.bedtime!);
             let m = d.getHours() * 60 + d.getMinutes();
-            if (m <= 4 * 60) m += 24 * 60; // post-midnight normalise
+            if (m <= 4 * 60) m += 24 * 60; // post-midnight normalize
             return m;
           });
           const avgMins = Math.round(bedtimeMins.reduce((a, b) => a + b, 0) / bedtimeMins.length);
@@ -4560,7 +4560,7 @@ export default function SettingsScreen() {
                 onPress={async () => {
                   const needsRestart = await applyRTLForLang(opt.code);
                   await setLangOverride(opt.code as Lang);
-                  // Auto-apply regional unit defaults (only if user hasn't customised units yet)
+                  // Auto-apply regional unit defaults (only if user hasn't customized units yet)
                   await applyLangUnitDefaults(opt.code);
                   setLangPickerVisible(false);
                   if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -4613,7 +4613,7 @@ export default function SettingsScreen() {
                 onPress={async () => {
                   const needsRestart = await applyRTLForLang(opt.code);
                   await setLangOverride(opt.code as Lang);
-                  // Auto-apply regional unit defaults (only if user hasn't customised units yet)
+                  // Auto-apply regional unit defaults (only if user hasn't customized units yet)
                   await applyLangUnitDefaults(opt.code);
                   setLangPickerVisible(false);
                   if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

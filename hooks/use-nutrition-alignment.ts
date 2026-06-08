@@ -152,8 +152,8 @@ export function useNutritionAlignment(): NutritionAlignmentSummary {
         ? Math.min(100, Math.round(((todayNutrients?.protein_g ?? 0) / goals.protein) * 100)) : 0,
       fat:     (goals?.fat ?? 0) > 0
         ? Math.min(100, Math.round(((todayNutrients?.fats_g ?? 0) / goals.fat) * 100)) : 0,
-      fiber:   ((goals as any)?.fibre ?? 25) > 0
-        ? Math.min(100, Math.round(((todayNutrients?.fiber_g ?? 0) / ((goals as any)?.fibre ?? 25)) * 100)) : 0,
+      fiber:   ((goals as any)?.fiber ?? 25) > 0
+        ? Math.min(100, Math.round(((todayNutrients?.fiber_g ?? 0) / ((goals as any)?.fiber ?? 25)) * 100)) : 0,
     };
 
     // Source breakdown for today

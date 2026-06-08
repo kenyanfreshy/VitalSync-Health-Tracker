@@ -35,6 +35,7 @@ import { Image } from 'expo-image';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
+import { PaywallScreen } from '@/components/paywall-screen';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { MicrophoneIcon } from '@/components/ui/microphone-icon';
 import { useColors, useLang, useRawLang, useAboutStrings } from '@/hooks';
@@ -695,129 +696,223 @@ export default function OnboardingScreen() {
           </View>
         </View>
 
-        {/* ── Slide 1: Welcome ─────────────────────────────────────────────────── */}
-        <View style={[styles.slide, { width: SCREEN_WIDTH, justifyContent: 'flex-start', paddingTop: 8, paddingHorizontal: 0 }]}>
-          {/* Scrollable feature pills row with right-fade hint */}
-          <View style={{ flexShrink: 0, position: 'relative' }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 4, gap: 8 }}
-            style={{ flexShrink: 0 }}
-          >
-            {[
-              { label: o.featureBP,         color: '#3B82F6', icon: '🩺' },
-              { label: o.featurePulse,      color: '#EF4444', icon: '❤️' },
-              { label: o.featureSleep,      color: '#8B5CF6', icon: '🌙' },
-              { label: o.featureBody,       color: '#06B6D4', icon: '⚖️' },
-              { label: o.featureBloodSugar, color: '#DC2626', icon: '🩸' },
-              { label: o.featureNutrition,  color: '#22C55E', icon: '📷' },
-              { label: o.featureMeds,       color: '#A78BFA', icon: '💊' },
-              { label: o.featureAppts,      color: '#34D399', icon: '📅' },
-              { label: o.featureVaccines,   color: '#FB923C', icon: '💉' },
-              { label: o.featureLabs,       color: '#60A5FA', icon: '🔬' },
-              { label: o.featureCorrelation,color: '#F472B6', icon: '📊' },
-              { label: o.featureVitals,     color: '#F59E0B', icon: '📋' },
-            ].map(({ label, color, icon }: { label: string; color: string; icon: string }) => (
-              <View
-                key={label}
-                style={[styles.pill, { backgroundColor: color + '22', borderColor: color + '55', flexDirection: 'row', alignItems: 'center', gap: 4 }]}
-              >
-                <Text style={{ fontSize: 12 }}>{icon}</Text>
-                <Text style={[styles.pillText, { color }]}>{label}</Text>
-              </View>
-            ))}
-          </ScrollView>
-          {/* Right-fade gradient hint */}
-          <View
-            style={{
-              position: 'absolute', right: 0, top: 0, bottom: 0, width: 40,
-              backgroundColor: 'transparent',
-            }}
-            pointerEvents="none"
-          />
-          </View>
-
-          {/* App tagline — live i18n via SLIDE_HEADLINES[1] + aboutStrings */}
-          <RAnimated.View style={[styles.headlineWrap, headlineAnimStyle, { paddingHorizontal: 20, paddingTop: 6, paddingBottom: 2 }]}>
-            <Text style={styles.headlineTop}>{SLIDE_HEADLINES[1].top}</Text>
-            <Text style={styles.headlineBottom}>{SLIDE_HEADLINES[1].bottom}</Text>
-            <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', marginTop: 4, lineHeight: 18 }}>
+        {/* ── Slide 1: Welcome — Rooted in Love, Culture & Purpose ─────────── */}
+        {(() => {
+          const [welcomeTab, setWelcomeTab] = React.useState(0);
+          const WELCOME_TABS = [
+            { label: 'Mission', icon: '❤️', accent: '#22C55E' },
+            { label: 'Features', icon: '⚡', accent: '#60A5FA' },
+            { label: 'Privacy', icon: '🔒', accent: '#34D399' },
+            { label: 'Evidence', icon: '🔬', accent: '#F472B6' },
+          ];
+          return (
+        <View style={[styles.slide, { width: SCREEN_WIDTH, justifyContent: 'flex-start', paddingTop: 0, paddingHorizontal: 0, gap: 0 }]}>
+          {/* ── Hero headline ──────────────────────────────────────────────────── */}
+          <RAnimated.View style={[headlineAnimStyle, { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 8 }]}>
+            <Text style={[styles.headlineTop, { fontSize: 26, lineHeight: 32 }]}>{SLIDE_HEADLINES[1].top}</Text>
+            <Text style={[styles.headlineBottom, { fontSize: 30, lineHeight: 36, marginBottom: 4 }]}>{SLIDE_HEADLINES[1].bottom}</Text>
+            <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.50)', lineHeight: 17, fontStyle: 'italic' }}>
               {ab.tagline}
             </Text>
           </RAnimated.View>
 
-          {/* ── About mission message ──────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 8 }}>
-            <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)', lineHeight: 17, textAlign: 'center', fontStyle: 'italic' }}>
-              {ab.missionBody1}
-            </Text>
-          </View>
-
-          {/* ── Feature highlight reel ─────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: 16, paddingBottom: 4 }}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 10, paddingRight: 4 }}
-            >
-              {[
-                {
-                  icon: '🔒',
-                  title: o.reelPrivacyTitle,
-                  body: o.reelPrivacyBody,
-                  accent: '#22C55E',
-                },
-                {
-                  icon: '🔬',
-                  title: o.reelLabScanTitle,
-                  body: o.reelLabScanBody,
-                  accent: '#60A5FA',
-                },
-                {
-                  icon: '📊',
-                  title: o.reelCorrelationTitle,
-                  body: o.reelCorrelationBody,
-                  accent: '#F472B6',
-                },
-                {
-                  icon: '🩺',
-                  title: o.reelPersonalHealthTitle,
-                  body: o.reelPersonalHealthBody,
-                  accent: '#FB923C',
-                },
-              ].map(({ icon, title, body, accent }) => (
-                <View
-                  key={title}
-                  style={{
-                    width: 200,
-                    backgroundColor: accent + '14',
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: accent + '35',
-                    padding: 14,
-                    gap: 6,
+          {/* ── Scrollable top tabs ─────────────────────────────────────────────── */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 2 }}
+            style={{ flexShrink: 0, marginBottom: 10 }}
+          >
+            {WELCOME_TABS.map((tab, idx) => {
+              const isActive = welcomeTab === idx;
+              return (
+                <Pressable
+                  key={tab.label}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setWelcomeTab(idx);
                   }}
+                  style={({ pressed }) => [{
+                    flexDirection: 'row', alignItems: 'center', gap: 6,
+                    paddingHorizontal: 16, paddingVertical: 9,
+                    borderRadius: 22,
+                    backgroundColor: isActive ? tab.accent + '28' : 'rgba(255,255,255,0.06)',
+                    borderWidth: 1.5,
+                    borderColor: isActive ? tab.accent + '80' : 'rgba(255,255,255,0.10)',
+                    opacity: pressed ? 0.75 : 1,
+                    minWidth: 90,
+                    justifyContent: 'center',
+                  }]}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isActive }}
                 >
-                  <Text style={{ fontSize: 22 }}>{icon}</Text>
-                  <Text style={{ fontSize: 13, fontWeight: '700', color: '#FFFFFF', lineHeight: 18 }}>{title}</Text>
-                  <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 16 }}>{body}</Text>
+                  <Text style={{ fontSize: 14 }}>{tab.icon}</Text>
+                  <Text style={{
+                    fontSize: 13, fontWeight: isActive ? '700' : '500',
+                    color: isActive ? tab.accent : 'rgba(255,255,255,0.60)',
+                    letterSpacing: 0.2,
+                  }}>{tab.label}</Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          {/* ── Tab content panels ──────────────────────────────────────────────── */}
+          <View style={{ flex: 1, paddingHorizontal: 16 }}>
+
+            {/* Mission tab */}
+            {welcomeTab === 0 && (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 8 }}>
+                {/* Founder quote card */}
+                <View style={{
+                  backgroundColor: 'rgba(34,197,94,0.10)', borderRadius: 18,
+                  borderWidth: 1, borderColor: 'rgba(34,197,94,0.25)', padding: 18,
+                }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#22C55E', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Our Mission
+                  </Text>
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 20, fontStyle: 'italic' }}>
+                    "{ab.missionBody1}"
+                  </Text>
                 </View>
-              ))}
-            </ScrollView>
+                {/* Creator badge */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 12,
+                  backgroundColor: 'rgba(255,255,255,0.06)', borderRadius: 14,
+                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)', padding: 14,
+                }}>
+                  <View style={{
+                    width: 44, height: 44, borderRadius: 22,
+                    backgroundColor: '#22C55E22', borderWidth: 1.5, borderColor: '#22C55E55',
+                    alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Text style={{ fontSize: 22 }}>🩺</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: '700', color: '#FFFFFF', lineHeight: 18 }}>akorir</Text>
+                    <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', lineHeight: 16 }}>MSN, RN, CCRN-CMC · Critical Care Nurse</Text>
+                    <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', lineHeight: 15, marginTop: 2 }}>University of Alabama · Class of 2008</Text>
+                  </View>
+                </View>
+                {/* Dedication snippet */}
+                <View style={{
+                  backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
+                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', padding: 14,
+                }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.45)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
+                    Dedicated To
+                  </Text>
+                  <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)', lineHeight: 18 }}>
+                    Family, the Poror Diaspora community, and every patient and family who deserves better health tools.
+                  </Text>
+                </View>
+              </ScrollView>
+            )}
+
+            {/* Features tab */}
+            {welcomeTab === 1 && (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
+                {[
+                  { icon: '🩺', label: o.featureBP,         color: '#3B82F6', desc: 'Blood pressure, heart rate & SpO₂ trends' },
+                  { icon: '🌙', label: o.featureSleep,      color: '#8B5CF6', desc: 'Sleep stages, efficiency & circadian patterns' },
+                  { icon: '🩸', label: o.featureBloodSugar, color: '#DC2626', desc: 'Glucose logs with diabetic range alerts' },
+                  { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: 'Vision food scan — macros in seconds' },
+                  { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: 'Medication reminders & adherence tracking' },
+                  { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: 'Lab record storage & trend visualization' },
+                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: 'Evidence-based cross-metric correlation engine' },
+                  { icon: '💉', label: o.featureVaccines,   color: '#FB923C', desc: 'Vaccine schedule with CDC/WHO reference' },
+                ].map(({ icon, label, color, desc }) => (
+                  <View key={label} style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12,
+                    backgroundColor: color + '12', borderRadius: 14,
+                    borderWidth: 1, borderColor: color + '30', padding: 12,
+                  }}>
+                    <View style={{
+                      width: 40, height: 40, borderRadius: 12,
+                      backgroundColor: color + '22', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Text style={{ fontSize: 20 }}>{icon}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: '#FFFFFF', lineHeight: 18 }}>{label}</Text>
+                      <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.50)', lineHeight: 15 }}>{desc}</Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Privacy tab */}
+            {welcomeTab === 2 && (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 8 }}>
+                <View style={{
+                  backgroundColor: 'rgba(52,211,153,0.10)', borderRadius: 18,
+                  borderWidth: 1, borderColor: 'rgba(52,211,153,0.25)', padding: 18,
+                }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#34D399', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Privacy First
+                  </Text>
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
+                    Your health data never leaves your device. No accounts. No cloud. No third-party access.
+                  </Text>
+                </View>
+                {(ab.privacyPoints as readonly { icon: string; label: string }[]).map((pt) => (
+                  <View key={pt.label} style={{
+                    flexDirection: 'row', alignItems: 'center', gap: 12,
+                    backgroundColor: 'rgba(52,211,153,0.07)', borderRadius: 14,
+                    borderWidth: 1, borderColor: 'rgba(52,211,153,0.18)', padding: 14,
+                  }}>
+                    <Text style={{ fontSize: 22 }}>{pt.icon}</Text>
+                    <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 18, flex: 1 }}>{pt.label}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Evidence tab */}
+            {welcomeTab === 3 && (
+              <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12, paddingBottom: 8 }}>
+                <View style={{
+                  backgroundColor: 'rgba(244,114,182,0.10)', borderRadius: 18,
+                  borderWidth: 1, borderColor: 'rgba(244,114,182,0.25)', padding: 18,
+                }}>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#F472B6', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
+                    Evidence-Based
+                  </Text>
+                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
+                    Every insight, correlation, and health range in VitalSync is grounded in peer-reviewed, PubMed-indexed research.
+                  </Text>
+                </View>
+                {[
+                  { icon: '📊', title: 'Correlation Engine', desc: 'Cross-metric pattern detection backed by meta-analyzed clinical data', color: '#F472B6' },
+                  { icon: '🩺', title: 'Clinical Ranges', desc: 'AHA, ADA, AASM, and WHO reference thresholds for all vital signs', color: '#60A5FA' },
+                  { icon: '🍽️', title: 'Nutrition Science', desc: 'USDA FoodData Central & peer-reviewed macronutrient databases', color: '#22C55E' },
+                  { icon: '💤', title: 'NeoSleep Analysis', desc: 'AASM sleep scoring criteria — Pittsburgh Sleep Quality Index aligned', color: '#8B5CF6' },
+                  { icon: '📈', title: 'NeoVital Monitor', desc: 'Multi-axis normalized vital trend visualization — IEEE & Br J Anaesth methodology', color: '#FB923C' },
+                ].map(({ icon, title, desc, color }) => (
+                  <View key={title} style={{
+                    flexDirection: 'row', alignItems: 'flex-start', gap: 12,
+                    backgroundColor: color + '10', borderRadius: 14,
+                    borderWidth: 1, borderColor: color + '28', padding: 14,
+                  }}>
+                    <View style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      backgroundColor: color + '20', alignItems: 'center', justifyContent: 'center', marginTop: 1,
+                    }}>
+                      <Text style={{ fontSize: 18 }}>{icon}</Text>
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: '#FFFFFF', lineHeight: 18 }}>{title}</Text>
+                      <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.50)', lineHeight: 15 }}>{desc}</Text>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
           </View>
-
-          {/* ── Attribution line ──────────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: 20, paddingBottom: 4, alignItems: 'center' }}>
-            <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.32)', letterSpacing: 0.3 }}>
-              akorir, MSN, RN, CCRN-CMC
-            </Text>
-          </View>
-
-
 
           {/* ── Language picker button ──────────────────────────────────────────── */}
-          <View style={{ paddingHorizontal: 16, paddingBottom: 16, alignItems: 'center' }}>
+          <View style={{ paddingHorizontal: 16, paddingBottom: 12, paddingTop: 8, alignItems: 'center' }}>
             <Pressable
               onPress={() => {
                 if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -858,6 +953,8 @@ export default function OnboardingScreen() {
             </Pressable>
           </Modal>
         </View>
+          );
+        })()}
 
 
         {/* ── Slide 2: Health Permissions ───────────────────────────────────── */}
@@ -1308,118 +1405,13 @@ export default function OnboardingScreen() {
             </Pressable>
           </ScrollView>
         </View>
-        {/* ── Slide 7: Paywall (before consent) ─────────────────────── */}
-        <View style={[styles.slide, { width: SCREEN_WIDTH, paddingHorizontal: 0, paddingTop: 0 }]}>
-          <ScrollView
-            style={{ flex: 1, width: SCREEN_WIDTH }}
-            contentContainerStyle={{ paddingBottom: 24 }}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header */}
-            <View style={{ alignItems: 'center', paddingTop: 24, paddingHorizontal: 20, marginBottom: 12 }}>
-              <Image
-                source={require('@/assets/images/vitalsync-3d-logo-paywall.png')}
-                style={{ width: 80, height: 80, marginBottom: 10 }}
-                contentFit="contain"
-              />
-              <Text style={{ fontSize: 11, fontWeight: '700', letterSpacing: 1.5, color: '#F59E0B', marginBottom: 4 }}>VITALSYNC PREMIUM</Text>
-              <Text style={{ fontSize: 24, fontWeight: '800', color: '#FFFFFF', textAlign: 'center', marginBottom: 6, lineHeight: 30 }}>Unlock Premium</Text>
-              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', textAlign: 'center', lineHeight: 19, paddingHorizontal: 8 }}>Full access to all premium features. Cancel anytime.</Text>
-            </View>
-
-            {/* Plan cards */}
-            <View style={{ flexDirection: 'row', gap: 10, paddingHorizontal: 20, marginBottom: 10 }}>
-              {/* Annual */}
-              <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 16, padding: 14, borderWidth: 2, borderColor: '#3B82F6' }}>
-                <View style={{ backgroundColor: '#3B82F6', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 6 }}>
-                  <Text style={{ fontSize: 9, fontWeight: '800', color: '#fff', letterSpacing: 0.8 }}>BEST VALUE</Text>
-                </View>
-                <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.55)', letterSpacing: 0.8, marginBottom: 4 }}>ANNUAL PLAN</Text>
-                <Text style={{ fontSize: 26, fontWeight: '800', color: '#FFFFFF' }}>$69.99<Text style={{ fontSize: 13, fontWeight: '400', color: 'rgba(255,255,255,0.55)' }}>/year</Text></Text>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>Includes a 14-day free trial</Text>
-                <Text style={{ fontSize: 11, color: '#4ADE80', fontWeight: '600', marginTop: 2 }}>Save ~16% vs monthly</Text>
-              </View>
-              {/* Monthly */}
-              <View style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 14, borderWidth: 2, borderColor: 'rgba(255,255,255,0.15)' }}>
-                <Text style={{ fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.55)', letterSpacing: 0.8, marginBottom: 4 }}>MONTHLY PLAN</Text>
-                <Text style={{ fontSize: 26, fontWeight: '800', color: '#FFFFFF' }}>$6.99<Text style={{ fontSize: 13, fontWeight: '400', color: 'rgba(255,255,255,0.55)' }}>/month</Text></Text>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 2 }}>Includes a 14-day free trial</Text>
-              </View>
-            </View>
-
-            {/* Feature list */}
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 16, marginHorizontal: 20, marginBottom: 14, gap: 8 }}>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.7)', marginBottom: 4, letterSpacing: 0.3 }}>What's included</Text>
-              {[
-                { text: 'EKG waveform viewer & rhythm trends', highlight: true },
-                { text: Platform.OS === 'ios' ? 'Apple Intelligence powered nutrition analysis' : 'Gemini powered nutrition analysis', highlight: true },
-                { text: 'Unlimited vital signs & lab tracking' },
-                { text: 'Blood pressure & glucose trends' },
-                { text: 'Medication & appointment management' },
-                { text: 'Advanced health reports & PDF export' },
-                { text: 'Personal health narrative generation' },
-                { text: 'Correlation engine & pattern detection' },
-                { text: 'Lab results tracking & trend analysis' },
-                { text: 'BLE device connectivity (BP monitors, scales)' },
-              ].map(({ text, highlight }) => (
-                <View key={text} style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
-                  <MaterialIcons name="check-circle" size={16} color={highlight ? '#3B82F6' : '#4ADE80'} style={{ marginTop: 2 }} />
-                  <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', flex: 1, lineHeight: 19 }}>{text}</Text>
-                  {highlight && (
-                    <View style={{ backgroundColor: 'rgba(255,196,0,0.15)', borderRadius: 6, paddingHorizontal: 5, paddingVertical: 1, borderWidth: 1, borderColor: 'rgba(255,196,0,0.35)' }}>
-                      <Text style={{ fontSize: 10 }}>👑</Text>
-                    </View>
-                  )}
-                </View>
-              ))}
-            </View>
-
-            {/* Disclosure (Apple 3.1.2(c) — above CTA) */}
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 10, paddingVertical: 10, paddingHorizontal: 14, marginHorizontal: 20, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }}>
-              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', lineHeight: 16, textAlign: 'center' }}>
-                After the 14-day free trial, your subscription automatically renews at $69.99/year (or $6.99/month) unless canceled at least 24 hours before renewal.
-              </Text>
-            </View>
-
-            {/* CTA */}
-            <Pressable
-              style={({ pressed }) => [{
-                backgroundColor: '#3B82F6',
-                borderRadius: 14,
-                paddingVertical: 15,
-                alignItems: 'center',
-                marginHorizontal: 20,
-                marginBottom: 10,
-                opacity: pressed ? 0.88 : 1,
-                transform: [{ scale: pressed ? 0.97 : 1 }],
-              }]}
-              onPress={() => {
-                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                router.push('/paywall' as any);
-              }}
-            >
-              <Text style={{ fontSize: 17, fontWeight: '700', color: '#fff' }}>Continue with Annual Plan</Text>
-            </Pressable>
-
-            {/* Skip to consent */}
-            <Pressable
-              style={({ pressed }) => [{ alignSelf: 'center', paddingVertical: 8, opacity: pressed ? 0.5 : 1 }]}
-              onPress={() => goToSlide(8)}
-            >
-              <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', textDecorationLine: 'underline' }}>Maybe later</Text>
-            </Pressable>
-
-            {/* Privacy / Terms */}
-            <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 8, marginTop: 8 }}>
-              <Pressable onPress={() => Linking.openURL('https://vitalsyncpersonalwellnesshub.com/article/privacy-policy')}>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textDecorationLine: 'underline' }}>Privacy Policy</Text>
-              </Pressable>
-              <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>·</Text>
-              <Pressable onPress={() => Linking.openURL('https://vitalsyncpersonalwellnesshub.com/article/subscription-plans')}>
-                <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textDecorationLine: 'underline' }}>Terms of Use</Text>
-              </Pressable>
-            </View>
-          </ScrollView>
+        {/* ── Slide 7: Paywall (before consent) — uses the same full PaywallScreen component ── */}
+        <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+          <PaywallScreen
+            showFreeTier={false}
+            onDismiss={() => goToSlide(8)}
+            onSuccess={() => goToSlide(8)}
+          />
         </View>
 
         {/* ── Slide 8: Consent ────────────────────────────────────────── */}
@@ -1559,7 +1551,7 @@ export default function OnboardingScreen() {
           )}
         </Pressable>
 
-        {/* Centre: linear progress bar */}
+        {/* Center: linear progress bar */}
         <View style={styles.pillNavProgress}>
           <View style={styles.pillProgressTrack}>
             <Animated.View

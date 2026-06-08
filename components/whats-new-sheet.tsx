@@ -156,7 +156,7 @@ export const whatsNewV1034Strings = {
   n1Title: "Immersive Paywall Redesign",
   n1Desc: "The subscription screen now features a full-bleed clinical background image, an auto-advancing feature carousel with pagination dots, and a frosted-glass CTA panel — inspired by best-in-class iOS app design.",
   n2Title: "Medical References in Health Reports",
-  n2Desc: "PDF health reports now include a comprehensive Medical References section citing all peer-reviewed studies that underpin the correlation insights, metric analyses, and nutritional data in the report.",
+  n2Desc: "PDF health reports now include a comprehensive Medical References section citing all peer-reviewed studies that underpin the correlation insights, metric analyzes, and nutritional data in the report.",
   n3Title: "Nutrition Peer-Review Citations",
   n3Desc: "The Diabetic Nutrition and Caloric Trend tabs now display tappable peer-review citation badges linking directly to PubMed studies.",
   // Improved
@@ -164,6 +164,30 @@ export const whatsNewV1034Strings = {
   i1Desc: "Evidence-based citation badges in the Smart Insights section are now always visible — no longer hidden behind the expand toggle.",
   i2Title: "Sleep Coefficient of Variation Removed",
   i2Desc: "The sleep-cv insight card has been removed from the Smart Insights section to reduce noise and improve signal quality.",
+} as const;
+
+/** Release note content — v1.0.35 */
+export const whatsNewV1035Strings = {
+  version: "1.0.35",
+  date: "June 2026",
+  headline: "Onboarding Redesign & Clarity Update",
+  // New
+  n1Title: "Redesigned Welcome Slide",
+  n1Desc: "The onboarding welcome screen now features scrollable top tabs — Mission, Features, Privacy, and Evidence — with rich content panels and glass-card styling.",
+  n2Title: "Unified Paywall Experience",
+  n2Desc: "The onboarding paywall now uses the same full-bleed immersive layout as the main subscription screen for a consistent premium experience.",
+  n3Title: "NeoVital & NeoSleep Report References",
+  n3Desc: "Health reports now include dedicated citations for the NeoVital multi-axis vital trend graph and NeoSleep AASM-aligned sleep analysis.",
+  // Improved
+  i1Title: "American English Throughout",
+  i1Desc: "All British English spellings (personalise, analyse, colour, behaviour, etc.) have been replaced with American English across all 88 localized files.",
+  i2Title: "Observed Historical Patterns Citations",
+  i2Desc: "The Correlation tab's Observed Historical Patterns chart now shows peer-review citation badges grounded in published research.",
+  i3Title: "Health Insights Section Removed",
+  i3Desc: "The redundant Health Insights section has been removed from the Correlate tab to reduce noise and improve focus on the correlation engine.",
+  // Fixed
+  f1Title: "AI References Removed",
+  f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
 /** Release note content — v1.5 */
@@ -289,6 +313,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1035 = useT(whatsNewV1035Strings);
   const v1034 = useT(whatsNewV1034Strings);
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
@@ -498,6 +523,25 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.35 ── */}
+          <OlderVersionHeader version={v1035.version} date={v1035.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🎨" title={v1035.n1Title} desc={v1035.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔓" title={v1035.n2Title} desc={v1035.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📈" title={v1035.n3Title} desc={v1035.n3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🇺🇸" title={v1035.i1Title} desc={v1035.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📊" title={v1035.i2Title} desc={v1035.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🧹" title={v1035.i3Title} desc={v1035.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="🤖" title={v1035.f1Title} desc={v1035.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.34 ── */}

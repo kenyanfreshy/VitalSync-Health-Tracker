@@ -8,7 +8,7 @@
  * out of space.  This module adds three layers of protection:
  *
  *   1. Total storage guard (50 MB)
- *      Scans all @vsht:* keys, sums their serialised byte sizes, and
+ *      Scans all @vsht:* keys, sums their serialized byte sizes, and
  *      triggers a pruning pass when the total exceeds STORAGE_SOFT_LIMIT_BYTES.
  *      A hard eviction fires at STORAGE_HARD_LIMIT_BYTES.
  *
@@ -106,7 +106,7 @@ export interface PruneResult {
 // ─── Measurement ──────────────────────────────────────────────────────────────
 
 /**
- * Measure the total serialised size of all @vsht:* keys.
+ * Measure the total serialized size of all @vsht:* keys.
  * Returns a StorageSnapshot with per-key breakdown.
  */
 export async function measureTotalStorageBytes(): Promise<StorageSnapshot> {
@@ -366,7 +366,7 @@ export async function runCircularBufferPrune(force = false): Promise<PruneResult
  * Convenience: run a prune pass and return a human-readable summary string.
  * Suitable for logging to the crash log or displaying in the Storage Health screen.
  */
-export async function pruneAndSummarise(): Promise<string> {
+export async function pruneAndSummarize(): Promise<string> {
   const result = await runCircularBufferPrune();
   if (result.bytesFreed === 0) {
     return `[CircularBuffer] No pruning needed. Total: ${result.snapshotBefore.totalMB} MB`;

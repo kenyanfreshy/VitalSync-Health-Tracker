@@ -216,7 +216,7 @@ export function VO2MaxCard({
                   />
                 );
               })}
-              {/* Centre value */}
+              {/* Center value */}
               <SvgText
                 x={CX} y={CY + 8}
                 textAnchor="middle"

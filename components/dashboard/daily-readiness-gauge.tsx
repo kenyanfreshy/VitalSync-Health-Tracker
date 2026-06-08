@@ -143,7 +143,7 @@ export function DailyReadinessGauge({ score, isLoading = false, onPress }: Daily
         {/* Left: label */}
         <Text style={[styles.headerLabel, { color: mutedText }]}>Daily Readiness</Text>
 
-        {/* Centre: compact score badge */}
+        {/* Center: compact score badge */}
         <View style={[styles.scoreBadge, { backgroundColor: accentColor + '22', borderColor: accentColor + '55' }]}>
           {isLoading ? (
             <Text style={[styles.scoreBadgeText, { color: mutedText2 }]}>—</Text>

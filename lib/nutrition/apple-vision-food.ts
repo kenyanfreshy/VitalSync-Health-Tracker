@@ -183,14 +183,14 @@ async function callGeminiVision(
 }
 
 /**
- * Analyse a food image using Gemini Vision — returns direct nutrition data.
+ * Analyze a food image using Gemini Vision — returns direct nutrition data.
  *
  * Tries in order:
  *   1. gemini-2.5-flash with detailed prompt (primary — paid, latest)
  *   2. gemini-2.0-flash-lite with detailed prompt (faster fallback)
  *   3. gemini-2.0-flash-001 with simple prompt (stable versioned last resort)
  */
-export async function analyseImageWithGemini(
+export async function analyzeImageWithGemini(
   base64Image: string,
 ): Promise<DirectNutritionResult | null> {
   // Attempt 1: gemini-2.5-flash, detailed prompt
@@ -210,7 +210,7 @@ export async function analyseImageWithGemini(
 
 // ─── Clarifai fallback ────────────────────────────────────────────────────────
 
-async function recogniseViaClarifai(
+async function recognizeViaClarifai(
   base64Image: string,
 ): Promise<FoodLabel[]> {
   try {
@@ -228,12 +228,12 @@ async function recogniseViaClarifai(
 
 // ─── Legacy recognition (for USDA lookup path) ───────────────────────────────
 
-export async function recogniseFoodInImage(
+export async function recognizeFoodInImage(
   base64Image: string,
   _minConfidence = 0.35,
 ): Promise<FoodRecognitionResult> {
   // Try Clarifai for label-based recognition (used as fallback path)
-  const labels = await recogniseViaClarifai(base64Image);
+  const labels = await recognizeViaClarifai(base64Image);
 
   if (labels.length === 0) {
     return {
@@ -259,15 +259,15 @@ export async function recogniseFoodInImage(
 }
 
 /**
- * Main entry point: analyse food image and return nutrition data.
+ * Main entry point: analyze food image and return nutrition data.
  *
  * Step 1: Gemini Vision → direct nutrition JSON (single call, no USDA needed)
  *   - Tries gemini-2.0-flash, then gemini-1.5-flash, then simple prompt
  * Step 2: If all Gemini attempts fail → Clarifai labels → USDA lookup
  */
-export async function recogniseAndLookup(base64Image: string) {
+export async function recognizeAndLookup(base64Image: string) {
   // Primary: Gemini single-step analysis (with automatic model fallback)
-  const geminiResult = await analyseImageWithGemini(base64Image);
+  const geminiResult = await analyzeImageWithGemini(base64Image);
 
   if (geminiResult && geminiResult.food_identified.length > 0) {
     const primaryName = geminiResult.food_identified.join(', ');
@@ -308,7 +308,7 @@ export async function recogniseAndLookup(base64Image: string) {
   }
 
   // Fallback: Clarifai → USDA
-  const recognition = await recogniseFoodInImage(base64Image);
+  const recognition = await recognizeFoodInImage(base64Image);
   if (!recognition.primaryFood) {
     return { recognition, usdaItem: null };
   }

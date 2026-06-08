@@ -216,7 +216,7 @@ export const ALL_CATEGORIES: CategoryMeta[] = [
     key: 'nutrition',
     group: 'nutrition',
     label: 'Nutrition',
-    description: 'Macros, fibre, micronutrients, and meal log',
+    description: 'Macros, fiber, micronutrients, and meal log',
     icon: 'fork.knife',
     color: '#84CC16',
     storageKeys: ['@vsht:health_data'],
@@ -475,7 +475,7 @@ export async function computeRecommendations(
  * Estimate the number of bytes stored for a given category by reading
  * the raw JSON string length of each associated AsyncStorage key.
  *
- * This is a best-effort estimate — it measures the serialised JSON size,
+ * This is a best-effort estimate — it measures the serialized JSON size,
  * not the actual on-disk footprint (which varies by OS and encryption).
  */
 export async function estimateCategoryStorageBytes(key: CategoryKey): Promise<number> {

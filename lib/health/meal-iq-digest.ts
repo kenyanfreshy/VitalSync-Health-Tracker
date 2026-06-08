@@ -1,6 +1,6 @@
 /**
  * Meal IQ Weekly Digest Notification
- * Schedules a repeating Sunday evening push notification that summarises:
+ * Schedules a repeating Sunday evening push notification that summarizes:
  *   - The week's average Meal IQ impact score
  *   - The single highest-impact meal of the week
  *
@@ -35,10 +35,10 @@ async function ensurePermission(): Promise<boolean> {
 /**
  * Schedules (or re-schedules) the weekly Meal IQ digest notification.
  * Fires every Sunday at 19:00 local time.
- * Pass `analyses` to personalise the notification body with last week's data.
+ * Pass `analyzes` to personalize the notification body with last week's data.
  */
 export async function scheduleMealIQDigest(
-  analyses: MealIQAnalysisRecord[]
+  analyzes: MealIQAnalysisRecord[]
 ): Promise<void> {
   if (Platform.OS === 'web') return;
 
@@ -51,21 +51,21 @@ export async function scheduleMealIQDigest(
   const N = await getNotificationsAsync();
   if (!N) return;
 
-  // Build personalised body from the last 7 days of analyses
+  // Build personalized body from the last 7 days of analyzes
   const now = Date.now();
   const sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
-  const weekAnalyses = analyses.filter(a => new Date(a.analyzedAt).getTime() >= sevenDaysAgo);
+  const weekAnalyzes = analyzes.filter(a => new Date(a.analyzedAt).getTime() >= sevenDaysAgo);
 
   let body: string;
 
-  if (weekAnalyses.length === 0) {
+  if (weekAnalyzes.length === 0) {
     body = 'Log your meals this week to see your Meal IQ score next Sunday.';
   } else {
     const avgScore =
-      weekAnalyses.reduce((sum, a) => sum + (a.impactScore ?? 0), 0) / weekAnalyses.length;
+      weekAnalyzes.reduce((sum, a) => sum + (a.impactScore ?? 0), 0) / weekAnalyzes.length;
 
     // Find the highest-impact meal
-    const topMeal = weekAnalyses.reduce((best, a) =>
+    const topMeal = weekAnalyzes.reduce((best, a) =>
       (a.impactScore ?? 0) > (best.impactScore ?? 0) ? a : best
     );
 

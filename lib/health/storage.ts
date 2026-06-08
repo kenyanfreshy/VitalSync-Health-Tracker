@@ -93,15 +93,15 @@ const MIGRATIONS: Record<number, MigrationFn> = {
     if (!Array.isArray(data['surgicalHistory'])) data['surgicalHistory'] = [];
   },
   /**
-   * v5 → v6: Added mealIQAnalyses array.
+   * v5 → v6: Added mealIQAnalyzes array.
    */
   6: (data) => {
-    if (!Array.isArray(data['mealIQAnalyses'])) data['mealIQAnalyses'] = [];
+    if (!Array.isArray(data['mealIQAnalyzes'])) data['mealIQAnalyzes'] = [];
   },
   /**
    * v7 → v8: Added immunizations and appointments arrays.
    * These fields existed in the HealthData type but were missing from emptyHealthData
-   * and from all previous migrations, so existing users never had them initialised.
+   * and from all previous migrations, so existing users never had them initialized.
    */
   8: (data) => {
     if (!Array.isArray(data['immunizations'])) data['immunizations'] = [];
@@ -189,7 +189,7 @@ export function emptyHealthData(): HealthData {
     labResults: [],
     medicalHistory: [],
     surgicalHistory: [],
-    mealIQAnalyses: [],
+    mealIQAnalyzes: [],
     appointments: [],
     immunizations: [],
     allergies: [],
@@ -233,7 +233,7 @@ export async function loadHealthData(): Promise<HealthData> {
  *
  * Arrays pruned (high-volume, time-stamped):
  *   bloodPressure, pulse, bodyComposition, weight, vitalSigns, bloodSugar,
- *   activity, sodiumIntake, sleep, mealIQAnalyses
+ *   activity, sodiumIntake, sleep, mealIQAnalyzes
  *
  * Arrays preserved (permanent clinical records):
  *   labResults, medicalHistory, surgicalHistory, immunizations, allergies,
@@ -271,7 +271,7 @@ export function pruneHealthData(data: HealthData, retentionMonths = 12): HealthD
     activity:        trimByTimestamp(data.activity),
     sodiumIntake:    trimByTimestamp(data.sodiumIntake),
     sleep:           trimByDate(data.sleep),
-    mealIQAnalyses:  trimByAnalyzedAt(data.mealIQAnalyses),
+    mealIQAnalyzes:  trimByAnalyzedAt(data.mealIQAnalyzes),
     // Resting HR: keep the freshest 30 days (Apple Watch writes one per day)
     restingHRSamples: trimByTimestamp(data.restingHRSamples as any),
     // Preserved arrays (not pruned)
@@ -475,7 +475,7 @@ export async function mergeHealthData(incoming: Partial<HealthData>): Promise<He
     labResults: mergeById(existing.labResults ?? [], incoming.labResults),
     medicalHistory: incoming.medicalHistory ?? existing.medicalHistory ?? [],
     surgicalHistory: incoming.surgicalHistory ?? existing.surgicalHistory ?? [],
-    mealIQAnalyses: mergeById(existing.mealIQAnalyses ?? [], incoming.mealIQAnalyses),
+    mealIQAnalyzes: mergeById(existing.mealIQAnalyzes ?? [], incoming.mealIQAnalyzes),
     appointments: mergeById(existing.appointments ?? [], incoming.appointments),
     immunizations: mergeById(existing.immunizations ?? [], incoming.immunizations),
     allergies: mergeById(existing.allergies ?? [], incoming.allergies),

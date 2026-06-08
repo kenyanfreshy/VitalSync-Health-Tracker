@@ -20,7 +20,7 @@
  *  - Calories / macros / sugar: summed from today's SodiumRecord entries
  *  - Blood glucose: from BloodSugarRecord entries
  *  - Health Insights: trpc.nutritionAI.smartNutritionInsights mutation
- *  - Meal photo scan: trpc.nutrition.analysePhoto mutation (same as Nutrition Log scan plate)
+ *  - Meal photo scan: trpc.nutrition.analyzePhoto mutation (same as Nutrition Log scan plate)
  *  - Barcode scan: trpc.nutrition.lookupBarcode mutation (same as Nutrition Log barcode scan)
  */
 import React, {
@@ -593,7 +593,7 @@ export function SmartNutritionCard({
 
   // ── Health Insights ──────────────────────────────────────────────────────────
   const insightsMutation = trpc.nutritionAI.smartNutritionInsights.useMutation();
-  const analysePhotoMutation = trpc.nutrition.analysePhoto.useMutation();
+  const analyzePhotoMutation = trpc.nutrition.analyzePhoto.useMutation();
   const _lookupBarcodeMutation = trpc.nutrition.lookupBarcode.useMutation();
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const [insights, setInsights] = useState<{
@@ -643,8 +643,8 @@ export function SmartNutritionCard({
       setScanning(true);
 
       // Primary path: Gemini Vision (single-step image → nutrition JSON, no USDA needed)
-      const { recogniseAndLookup } = await import('@/lib/nutrition/apple-vision-food');
-      const { recognition, usdaItem } = await recogniseAndLookup(result.assets[0].base64);
+      const { recognizeAndLookup } = await import('@/lib/nutrition/apple-vision-food');
+      const { recognition, usdaItem } = await recognizeAndLookup(result.assets[0].base64);
 
       let scan: {
         sodiumMg: number; potassiumMg?: number | null; foodDescription: string;
@@ -700,7 +700,7 @@ export function SmartNutritionCard({
       lastFetchRef.current = '';
       fetchInsights();
     } catch (err: any) {
-      Alert.alert('Scan Failed', err?.message ?? 'Could not analyse the photo. Please try again.');
+      Alert.alert('Scan Failed', err?.message ?? 'Could not analyze the photo. Please try again.');
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
     } finally {
       setScanning(false);
@@ -1062,7 +1062,7 @@ export function SmartNutritionCard({
             <View style={styles.loadingRow}>
               <ActivityIndicator size="small" color={EMERALD} />
               <Text style={[styles.loadingText, { color: colors.muted }]}>
-                {intelligenceName} {ds.insightAnalysing ?? 'is analysing your nutrition data…'}
+                {intelligenceName} {ds.insightAnalyzing ?? 'is analyzing your nutrition data…'}
               </Text>
             </View>
           ) : insights ? (
@@ -1121,7 +1121,7 @@ export function SmartNutritionCard({
                 onPress={fetchInsights}
                 style={({ pressed }) => [styles.refreshBtn, { borderColor: isDark ? EMERALD + '40' : colors.border }, pressed && { opacity: 0.7 }]}
               >
-                <Text style={[styles.refreshText, { color: EMERALD }]}>{ds.insightAnalyseWith ?? '↻ Analyse with'} {intelligenceName}</Text>
+                <Text style={[styles.refreshText, { color: EMERALD }]}>{ds.insightAnalyzeWith ?? '↻ Analyze with'} {intelligenceName}</Text>
               </Pressable>
             </View>
           )}

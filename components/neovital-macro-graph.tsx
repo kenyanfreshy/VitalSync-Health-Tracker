@@ -335,8 +335,8 @@ function WaveformBar({
       const breathElapsed = ampElapsed - fillDuration;
       const breathPhase = (breathElapsed % (PULSE_DUR * 2)) / (PULSE_DUR * 2);
       const sineVal = Math.sin(breathPhase * Math.PI * 2 - Math.PI / 2);
-      const normalised = (sineVal + 1) / 2;
-      ampRef.current = WAVE_AMP_MIN + normalised * (WAVE_AMP_MAX - WAVE_AMP_MIN);
+      const normalized = (sineVal + 1) / 2;
+      ampRef.current = WAVE_AMP_MIN + normalized * (WAVE_AMP_MAX - WAVE_AMP_MIN);
     }
 
     // ── 3. Scrolling phase ──
@@ -1246,7 +1246,7 @@ export function NeoVitalMacroGraph({ todayData, weekData, data14d, data30d, best
 const CQI_META_URL = 'https://pubmed.ncbi.nlm.nih.gov/38009678/';
 
 function ADACarQualityPanel({ carbsG, fiberG, isDark = true, ds }: { carbsG: number; fiberG: number; isDark?: boolean; ds: typeof dashboardStrings.en }) {
-  // Fiber-to-carb ratio: ADA recommends fibre-rich, minimally-processed carbs.
+  // Fiber-to-carb ratio: ADA recommends fiber-rich, minimally-processed carbs.
   // ≥ 10 g fiber per 100 g carbs = "Whole / High Quality"
   // 5–10 g fiber per 100 g carbs = fc.minimallyProcessed
   // < 5 g fiber per 100 g carbs  = "Refined / Low Quality"

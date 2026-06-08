@@ -8,7 +8,7 @@
  * Production: register at https://fdc.nal.usda.gov/api-key-signup.html
  * for 1,000 req/hour. Set EXPO_PUBLIC_USDA_API_KEY in your .env or eas.json.
  *
- * Data types prioritised (most accurate first):
+ * Data types prioritized (most accurate first):
  *   Foundation → SR Legacy → Survey (FNDDS) → Branded
  */
 
@@ -147,7 +147,7 @@ function normalizeFood(raw: Record<string, any>): UsdaFoodItem {
 
 /**
  * Search USDA FoodData Central for a food by name.
- * Returns up to `limit` results, prioritising Foundation and SR Legacy data.
+ * Returns up to `limit` results, prioritizing Foundation and SR Legacy data.
  */
 export async function searchUsdaFoods(
   query: string,
@@ -156,7 +156,7 @@ export async function searchUsdaFoods(
   const params = new URLSearchParams({
     query,
     pageSize: String(limit),
-    // Prioritise lab-verified data; include Branded as last resort
+    // Prioritize lab-verified data; include Branded as last resort
     dataType: 'Foundation,SR Legacy,Survey (FNDDS),Branded',
     api_key: USDA_API_KEY,
   });

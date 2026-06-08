@@ -791,7 +791,7 @@ export default function SleepLogScreen() {
           const tip = isSurplus
             ? (t.greatWorkSleepGoal ?? 'Great work — you\'re meeting your sleep goal.')
             : severity === 'high'
-              ? (t.highDebtTip ?? 'High debt. Prioritise an early bedtime tonight.')
+              ? (t.highDebtTip ?? 'High debt. Prioritize an early bedtime tonight.')
               : severity === 'med'
                 ? (t.moderateDebtTip ?? 'Moderate debt. Aim for 30 min extra tonight.')
                 : (t.minorDeficitTip ?? 'Minor deficit. A consistent schedule will help.');

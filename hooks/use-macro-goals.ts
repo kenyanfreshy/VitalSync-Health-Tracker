@@ -25,8 +25,8 @@ export interface MacroGoals {
   carbs: number;
   fat: number;
   protein: number;
-  /** Daily fibre target in grams (WHO recommends 25 g) */
-  fibre?: number;
+  /** Daily fiber target in grams (WHO recommends 25 g) */
+  fiber?: number;
   activityLevel?: ActivityLevel;
   /** Custom g/kg protein Gold Zone range (vegan athlete default: 1.6–2.2) */
   proteinMinGPerKg?: number;
@@ -38,7 +38,7 @@ export const DEFAULT_MACRO_GOALS: MacroGoals = {
   carbs: 250,
   fat: 65,
   protein: 50,
-  fibre: 25,
+  fiber: 25,
   activityLevel: 'sedentary',
 };
 
@@ -141,7 +141,7 @@ export function useMacroGoals() {
             carbs: parsed.carbs ?? DEFAULT_MACRO_GOALS.carbs,
             fat: parsed.fat ?? DEFAULT_MACRO_GOALS.fat,
             protein: parsed.protein ?? DEFAULT_MACRO_GOALS.protein,
-            fibre: parsed.fibre ?? DEFAULT_MACRO_GOALS.fibre,
+            fiber: parsed.fiber ?? DEFAULT_MACRO_GOALS.fiber,
             activityLevel: parsed.activityLevel ?? DEFAULT_MACRO_GOALS.activityLevel,
             proteinMinGPerKg: parsed.proteinMinGPerKg,
             proteinMaxGPerKg: parsed.proteinMaxGPerKg,

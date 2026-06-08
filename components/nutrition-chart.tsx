@@ -9,12 +9,12 @@
  *  - Particle layer background
  *  - GlowPulse animated dot on latest data point
  *
- * Metrics: Calories · Carbs · Protein · Fat · Blood Sugar · Fibre
+ * Metrics: Calories · Carbs · Protein · Fat · Blood Sugar · Fiber
  * Windows: Today (hourly) · 7d · 14d · 30d
  *
  * Features:
  *  - Nutritional Alignment Score (0–100) with circular ring
- *  - Fibre goal progress ring (25g WHO goal, shown when Fibre chip active)
+ *  - Fiber goal progress ring (25g WHO goal, shown when Fiber chip active)
  *  - Horizontal macro ratio bar (Carbs/Protein/Fat) with Gold Zone glow overlay
  *  - "Best day" emerald annotation marker
  *  - Interactive metric legend toggle row
@@ -74,7 +74,7 @@ const METRICS: MetricDef[] = [
   { key: 'protein',    label: 'PROTEIN',     unit: 'g',     color: nutritionColors.protein,    glowColor: nutritionColorsGlow.protein    },
   { key: 'fat',        label: 'FAT',         unit: 'g',     color: nutritionColors.fat,        glowColor: nutritionColorsGlow.fat        },
   { key: 'bloodSugar', label: 'BLOOD SUGAR', unit: 'mg/dL', color: bloodSugarColor, glowColor: bloodSugarColorGlow },
-  { key: 'fibre',      label: 'FIBRE',       unit: 'g',     color: nutritionColors.fiber,      glowColor: nutritionColorsGlow.fiber      },
+  { key: 'fiber',      label: 'FIBRE',       unit: 'g',     color: nutritionColors.fiber,      glowColor: nutritionColorsGlow.fiber      },
 ];
 
 const WINDOWS = [
@@ -91,7 +91,7 @@ const MACRO_TARGETS = {
   fat:     { min: 0.20, max: 0.35 },
 };
 
-const FIBRE_GOAL_G = 25; // WHO daily fibre goal
+const FIBRE_GOAL_G = 25; // WHO daily fiber goal
 
 // ─── Chart layout ─────────────────────────────────────────────────────────────
 const PAD_L  = 36;
@@ -264,7 +264,7 @@ interface NutritionPoint {
   protein: number | null;
   fat: number | null;
   bloodSugar: number | null;
-  fibre: number | null;
+  fiber: number | null;
 }
 
 function computeDayAlignmentScore(pt: NutritionPoint): number | null {
@@ -543,7 +543,7 @@ function CalorieRing({ points, goalKcal = 2000 }: CalorieRingProps) {
   const color = pct >= 0.9 && pct <= 1.1 ? EMERALD : pct > 1.1 ? '#FF2D78' : '#7B61FF';
 
   return (
-    <View style={fibreRingStyles.wrapper}>
+    <View style={fiberRingStyles.wrapper}>
       <Svg width={52} height={52}>
         <Circle cx={26} cy={26} r={20} fill="none" stroke={GRID_COLOR} strokeWidth={4} />
         <Circle
@@ -556,11 +556,11 @@ function CalorieRing({ points, goalKcal = 2000 }: CalorieRingProps) {
           transform="rotate(-90 26 26)"
         />
       </Svg>
-      <View style={fibreRingStyles.inner}>
-        <Text style={[fibreRingStyles.value, { color }]}>{Math.round(avgCal / 100) * 100 >= 1000 ? `${(avgCal / 1000).toFixed(1)}k` : Math.round(avgCal).toString()}</Text>
+      <View style={fiberRingStyles.inner}>
+        <Text style={[fiberRingStyles.value, { color }]}>{Math.round(avgCal / 100) * 100 >= 1000 ? `${(avgCal / 1000).toFixed(1)}k` : Math.round(avgCal).toString()}</Text>
       </View>
-      <Text style={fibreRingStyles.label}>CAL</Text>
-      <Text style={fibreRingStyles.goal}>/ {goalKcal >= 1000 ? `${goalKcal / 1000}k` : goalKcal} kcal</Text>
+      <Text style={fiberRingStyles.label}>CAL</Text>
+      <Text style={fiberRingStyles.goal}>/ {goalKcal >= 1000 ? `${goalKcal / 1000}k` : goalKcal} kcal</Text>
     </View>
   );
 }
@@ -723,26 +723,26 @@ const sparkStyles = StyleSheet.create({
   },
 });
 
-// ─── Fibre goal ring ──────────────────────────────────────────────────────────
-interface FibreRingProps {
+// ─── Fiber goal ring ──────────────────────────────────────────────────────────
+interface FiberRingProps {
   points: NutritionPoint[];
 }
 
-function FibreRing({ points }: FibreRingProps) {
-  const avgFibre = useMemo(() => {
-    const vals = points.map(p => p.fibre).filter((v): v is number => v !== null && v > 0);
+function FiberRing({ points }: FiberRingProps) {
+  const avgFiber = useMemo(() => {
+    const vals = points.map(p => p.fiber).filter((v): v is number => v !== null && v > 0);
     if (!vals.length) return null;
     return vals.reduce((a, b) => a + b, 0) / vals.length;
   }, [points]);
 
-  if (avgFibre === null) return null;
+  if (avgFiber === null) return null;
 
-  const pct = Math.min(avgFibre / FIBRE_GOAL_G, 1);
+  const pct = Math.min(avgFiber / FIBRE_GOAL_G, 1);
   const circumference = 2 * Math.PI * 20; // r=20
   const color = pct >= 1 ? EMERALD : pct >= 0.7 ? '#FFB800' : CYAN;
 
   return (
-    <View style={fibreRingStyles.wrapper}>
+    <View style={fiberRingStyles.wrapper}>
       <Svg width={52} height={52}>
         <Circle cx={26} cy={26} r={20} fill="none" stroke={GRID_COLOR} strokeWidth={4} />
         <Circle
@@ -755,17 +755,17 @@ function FibreRing({ points }: FibreRingProps) {
           transform="rotate(-90 26 26)"
         />
       </Svg>
-      <View style={fibreRingStyles.inner}>
-        <Text style={[fibreRingStyles.value, { color }]}>{Math.round(avgFibre)}</Text>
-        <Text style={fibreRingStyles.unit}>g</Text>
+      <View style={fiberRingStyles.inner}>
+        <Text style={[fiberRingStyles.value, { color }]}>{Math.round(avgFiber)}</Text>
+        <Text style={fiberRingStyles.unit}>g</Text>
       </View>
-      <Text style={fibreRingStyles.label}>FIBRE</Text>
-      <Text style={fibreRingStyles.goal}>/ {FIBRE_GOAL_G}g WHO</Text>
+      <Text style={fiberRingStyles.label}>FIBRE</Text>
+      <Text style={fiberRingStyles.goal}>/ {FIBRE_GOAL_G}g WHO</Text>
     </View>
   );
 }
 
-const fibreRingStyles = StyleSheet.create({
+const fiberRingStyles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
     marginLeft: 12,
@@ -843,7 +843,7 @@ function WeeklyHeatmap({ sodiumRecords, onLogMeal }: { sodiumRecords: any[]; onL
       const fat     = day.fats_g || null;
       const calories = day.total_calories_kcal || day.calculated_calories_kcal || null;
       if (!total) return { score: null, dayLetter, isToday, dateKey: key, calories, carbs, protein, fat };
-      const pt: NutritionPoint = { label: key, ts: d.getTime(), calories, carbs, protein, fat, bloodSugar: null, fibre: null };
+      const pt: NutritionPoint = { label: key, ts: d.getTime(), calories, carbs, protein, fat, bloodSugar: null, fiber: null };
       const score = computeDayAlignmentScore(pt);
       return { score, dayLetter, isToday, dateKey: key, calories, carbs, protein, fat };
     });
@@ -1298,7 +1298,7 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
         hours.push({
           label: `${h}h`, ts: new Date().setHours(h, 0, 0, 0),
           calories: cal || null, carbs: carb || null, protein: prot || null,
-          fat: fat || null, bloodSugar: bs, fibre: fib || null,
+          fat: fat || null, bloodSugar: bs, fiber: fib || null,
         });
       }
       return hours;
@@ -1327,13 +1327,13 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
         protein:  dayNut ? (dayNut.protein_g || null) : null,
         fat:      dayNut ? (dayNut.fats_g || null) : null,
         bloodSugar: bs,
-        fibre:    dayNut ? (dayNut.fiber_g ?? null) : null,
+        fiber:    dayNut ? (dayNut.fiber_g ?? null) : null,
       });
     }
     return result;
   }, [windowIdx, sodiumRecords, bloodSugarRecords]);
 
-  const hasData = points.some(p => p.calories || p.carbs || p.protein || p.fat || p.bloodSugar || p.fibre);
+  const hasData = points.some(p => p.calories || p.carbs || p.protein || p.fat || p.bloodSugar || p.fiber);
 
   // ─── Alignment score ──────────────────────────────────────────────────
   const alignmentScore = useMemo(() => computeWindowAlignmentScore(points), [points]);
@@ -1438,8 +1438,8 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
   const _dismissTooltip = useCallback(() => setTooltip(null), []);
   const tooltipPt = tooltip ? points[tooltip.ptIdx] : null;
 
-  // Fibre chip active?
-  const fibreActive = activeMetrics.has('fibre');
+  // Fiber chip active?
+  const fiberActive = activeMetrics.has('fiber');
   const caloriesActive = activeMetrics.has('calories');
 
   // ─── Streak celebration confetti ───────────────────────────────────────────
@@ -1468,7 +1468,7 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
         carbs: day.carbohydrates_g || null,
         protein: day.protein_g || null,
         fat: day.fats_g || null,
-        bloodSugar: null, fibre: null,
+        bloodSugar: null, fiber: null,
       };
       const s = computeDayAlignmentScore(pt);
       if (s !== null && s >= 80) streak++; else break;
@@ -1498,7 +1498,7 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
   return (
     <View style={styles.wrapper}>
 
-      {/* ── Nutritional Alignment Score + Fibre Ring ─────────────────────── */}
+      {/* ── Nutritional Alignment Score + Fiber Ring ─────────────────────── */}
       {alignmentScore !== null && (
         <View style={styles.scoreRow}>
           <View style={styles.scoreLeft}>
@@ -1567,7 +1567,7 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
             <Text style={styles.scoreSubtext}>AMDR macro ratio targets</Text>
           </View>
 
-          {/* Rings row: Alignment + optional Fibre */}
+          {/* Rings row: Alignment + optional Fiber */}
           <View style={styles.ringsRow}>
             {/* Alignment ring */}
             <View style={styles.scoreRingWrap}>
@@ -1593,8 +1593,8 @@ export function NutritionChart({ sodiumRecords, bloodSugarRecords, calorieGoal =
             {/* Calorie ring (only when Calories chip is active) */}
             {caloriesActive && <CalorieRing points={points} goalKcal={calorieGoal} />}
 
-            {/* Fibre ring (only when Fibre chip is active) */}
-            {fibreActive && <FibreRing points={points} />}
+            {/* Fiber ring (only when Fiber chip is active) */}
+            {fiberActive && <FiberRing points={points} />}
           </View>
         </View>
       )}

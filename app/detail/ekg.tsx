@@ -284,7 +284,7 @@ function DonutChart({ dist, ds, colors }: {
           );
         })}
       </Svg>
-      <View style={styles.donutCentre} pointerEvents="none">
+      <View style={styles.donutCenter} pointerEvents="none">
         <Text style={[styles.donutTotal, { color: colors.foreground }]}>{dist.total}</Text>
         <Text style={[styles.donutTotalLabel, { color: colors.muted }]}>{ds.ekgRecordings}</Text>
       </View>
@@ -544,7 +544,7 @@ function EKGDetailScreenInner() {
       cursorRef.current = result.nextCursor ?? undefined;
       setHasMore(result.hasMore);
       // Refresh full-cache total so the header badge stays in sync after paging.
-      // Use tally-based total so summarised records are counted even if their strips were pruned.
+      // Use tally-based total so summarized records are counted even if their strips were pruned.
       try {
         const { getEKGTally } = await import('@/lib/health/ekg-tally-store');
         const tally = await getEKGTally();
@@ -834,7 +834,7 @@ const styles = StyleSheet.create({
   chartCard: { marginHorizontal: 16, marginBottom: 12, marginTop: 8, borderRadius: 16, borderWidth: 1, padding: 14 },
   chartTitle: { fontSize: 13, fontWeight: '600', marginBottom: 12, letterSpacing: 0.2 },
   donutContainer: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  donutCentre: { position: 'absolute', left: 0, width: 108, height: 108, alignItems: 'center', justifyContent: 'center' },
+  donutCenter: { position: 'absolute', left: 0, width: 108, height: 108, alignItems: 'center', justifyContent: 'center' },
   donutTotal: { fontSize: 20, fontWeight: '700', lineHeight: 24 },
   donutTotalLabel: { fontSize: 10, fontWeight: '400', lineHeight: 13 },
   donutLegend: { flex: 1, gap: 6 },

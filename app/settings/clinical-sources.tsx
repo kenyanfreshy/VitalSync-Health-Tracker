@@ -83,7 +83,7 @@ const SECTIONS: RefSection[] = [
       {
         id: 'cv2',
         authors: 'Aburto NJ, Hanson S, Gutierrez H, et al.',
-        title: 'Effect of increased potassium intake on cardiovascular risk factors and disease: systematic review and meta-analyses.',
+        title: 'Effect of increased potassium intake on cardiovascular risk factors and disease: systematic review and meta-analyzes.',
         journal: 'BMJ',
         year: 2013,
         pmidOrDoi: 'PMID 23558164',
@@ -388,7 +388,7 @@ const SECTIONS: RefSection[] = [
       {
         id: 'sl8',
         authors: 'Chaput JP, et al.',
-        title: 'Sleeping hours: what is the ideal number? Umbrella review of 85 meta-analyses.',
+        title: 'Sleeping hours: what is the ideal number? Umbrella review of 85 meta-analyzes.',
         journal: 'Front Med',
         year: 2022,
         pmidOrDoi: 'DOI 10.3389/fmed.2021.813943',

@@ -342,7 +342,7 @@ function LabResultCard({
                     ]}
                   >
                     <Text style={[styles.correlateButtonText, { color: colors.primary }]}>
-                      {_ls.analyseAgainst ?? 'Analyse against 24h food log'}
+                      {_ls.analyzeAgainst ?? 'Analyze against 24h food log'}
                     </Text>
                   </Pressable>
                 )

@@ -2,7 +2,7 @@
  * Personal Narrative — Data Schema & Aggregation Layer
  *
  * Transforms raw HealthData into a time-sorted stream of ClinicalEvents
- * categorised into the "Golden Trio":
+ * categorized into the "Golden Trio":
  *   INPUTS      — causes: meals, medications, activity
  *   OBSERVATIONS — effects: vitals, BP, glucose, symptoms
  *   INSIGHTS    — Smart analysis: Meal IQ correlations, trend alerts
@@ -358,8 +358,8 @@ export function buildClinicalNarrative(
     } as GlucoseEvent);
   }
 
-  // ── INSIGHTS: Meal IQ Analyses ─────────────────────────────────────────────
-  for (const r of data.mealIQAnalyses ?? []) {
+  // ── INSIGHTS: Meal IQ Analyzes ─────────────────────────────────────────────
+  for (const r of data.mealIQAnalyzes ?? []) {
     events.push({
       id: `mealiq-${r.id}`,
       timestamp: r.analyzedAt,

@@ -3,7 +3,7 @@ import { loadHealthKit } from './healthkit-loader';
  * HealthKit Write-Back Service
  *
  * Saves manually entered health records back to Apple HealthKit so they appear
- * in the Health app and are available to other apps the user has authorised.
+ * in the Health app and are available to other apps the user has authorized.
  *
  * All functions:
  *   - Are no-ops on Android and web (safe to call unconditionally).

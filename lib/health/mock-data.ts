@@ -130,6 +130,6 @@ export function generateMockHealthData(): HealthData {
     activity: [],
     sodiumIntake: [], labResults: [],
     medicalHistory: [], surgicalHistory: [],
-    mealIQAnalyses: [],
+    mealIQAnalyzes: [],
   };
 }

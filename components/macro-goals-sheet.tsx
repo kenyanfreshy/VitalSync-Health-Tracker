@@ -1,7 +1,7 @@
 /**
  * MacroGoalsSheet
  *
- * Bottom sheet for customising daily macro targets.
+ * Bottom sheet for customizing daily macro targets.
  * Features:
  *  - Preset diet profiles (Balanced, High-Protein, Low-Carb, Diabetic, Weight Loss, Vegan Athlete, Endurance, Strength, Maintenance)
  *  - Manual entry in grams with live % of calories preview

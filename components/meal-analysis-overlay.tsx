@@ -59,7 +59,7 @@ export interface MealAnalysisOverlayProps {
   /** 0–100 progress value */
   progress: number;
   /** Whether analysis is still running */
-  isAnalysing: boolean;
+  isAnalyzing: boolean;
   /** Whether we are using the USDA fallback */
   usingFallback?: boolean;
   /** Elapsed seconds since analysis started */
@@ -181,7 +181,7 @@ export function MealAnalysisOverlay({
   stepStates,
   detectedFoods = [],
   progress,
-  isAnalysing,
+  isAnalyzing,
   usingFallback = false,
   elapsedSeconds,
   onRetry,
@@ -206,7 +206,7 @@ export function MealAnalysisOverlay({
 
   // Rotate status text every 2 seconds
   useEffect(() => {
-    if (!isAnalysing) return;
+    if (!isAnalyzing) return;
     const interval = setInterval(() => {
       Animated.timing(statusFade, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
         setStatusIdx(i => (i + 1) % STATUS_MESSAGES.length);
@@ -214,11 +214,11 @@ export function MealAnalysisOverlay({
       });
     }, 2000);
     return () => clearInterval(interval);
-  }, [isAnalysing]);
+  }, [isAnalyzing]);
 
   // Pulse the spinner ring
   useEffect(() => {
-    if (!isAnalysing) return;
+    if (!isAnalyzing) return;
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, { toValue: 1.12, duration: 800, useNativeDriver: true }),
@@ -227,17 +227,17 @@ export function MealAnalysisOverlay({
     );
     pulse.start();
     return () => pulse.stop();
-  }, [isAnalysing]);
+  }, [isAnalyzing]);
 
   // Spin the ring
   useEffect(() => {
-    if (!isAnalysing) return;
+    if (!isAnalyzing) return;
     const spin = Animated.loop(
       Animated.timing(spinAnim, { toValue: 1, duration: 1800, useNativeDriver: true })
     );
     spin.start();
     return () => spin.stop();
-  }, [isAnalysing]);
+  }, [isAnalyzing]);
 
   // Animate progress bar
   useEffect(() => {
@@ -254,8 +254,8 @@ export function MealAnalysisOverlay({
   });
 
   // ── Timeout state ────────────────────────────────────────────────────────────
-  const showSlowWarning  = elapsedSeconds >= 10 && elapsedSeconds < 20 && isAnalysing;
-  const showRecovery     = elapsedSeconds >= 30 && isAnalysing;
+  const showSlowWarning  = elapsedSeconds >= 10 && elapsedSeconds < 20 && isAnalyzing;
+  const showRecovery     = elapsedSeconds >= 30 && isAnalyzing;
 
   // ── Render ───────────────────────────────────────────────────────────────────
   const bg = isDark ? '#0F172A' : '#F8FAFC';
@@ -284,7 +284,7 @@ export function MealAnalysisOverlay({
         ))}
 
         {/* Spinner overlay on image */}
-        {isAnalysing && (
+        {isAnalyzing && (
           <View style={styles.spinnerOnImage}>
             <Animated.View
               style={[
@@ -327,8 +327,8 @@ export function MealAnalysisOverlay({
 
       {/* ── Analyzing title + rotating status ───────────────────────────────── */}
       <View style={styles.titleArea}>
-        <Text style={[styles.analysingTitle, { color: textColor }]}>Analyzing Your Meal</Text>
-        <Animated.Text style={[styles.analysingStatus, { color: EMERALD, opacity: statusFade }]}>
+        <Text style={[styles.analyzingTitle, { color: textColor }]}>Analyzing Your Meal</Text>
+        <Animated.Text style={[styles.analyzingStatus, { color: EMERALD, opacity: statusFade }]}>
           {STATUS_MESSAGES[statusIdx]}
         </Animated.Text>
       </View>
@@ -523,12 +523,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     gap: 3,
   },
-  analysingTitle: {
+  analyzingTitle: {
     fontSize: 17,
     fontWeight: '700',
     letterSpacing: -0.3,
   },
-  analysingStatus: {
+  analyzingStatus: {
     fontSize: 13,
     fontWeight: '500',
   },

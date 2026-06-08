@@ -32,7 +32,7 @@ export function parseNaturalDate(input: string): string | null {
   );
   if (relMatch) {
     const n = parseInt(relMatch[1], 10);
-    const unit = relMatch[2].replace(/s$/, ''); // normalise plural
+    const unit = relMatch[2].replace(/s$/, ''); // normalize plural
     const past = !!relMatch[3];
     const sign = past ? -1 : 1;
     if (unit === 'day') return toISO(addDays(today, sign * n));

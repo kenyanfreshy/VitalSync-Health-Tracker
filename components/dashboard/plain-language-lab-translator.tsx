@@ -203,7 +203,7 @@ function buildGlucoseCard(bs: BloodSugarRecord[]): HealthStatusCard | null {
   } else if (val >= 100) {
     level = 'watch';
     summary = 'Blood sugar is in the pre-diabetic range. Dietary adjustments can help.';
-    detail = 'Reducing refined carbohydrates and increasing fibre intake is evidence-based.';
+    detail = 'Reducing refined carbohydrates and increasing fiber intake is evidence-based.';
   } else if (val < 70) {
     level = 'watch';
     summary = 'Blood sugar is low. Have a small snack with fast-acting carbohydrates.';
@@ -306,7 +306,7 @@ const LAB_PLAIN_LANGUAGE: Partial<Record<LabAnalyteId, {
     optimal: 'LDL cholesterol is at an optimal level for cardiovascular health.',
     high: 'LDL cholesterol is above the optimal range. Statin therapy may be indicated.',
     low: 'LDL cholesterol is very low — generally favourable.',
-    highDetail: 'A plant-based diet rich in soluble fibre can reduce LDL by 10–15%.',
+    highDetail: 'A plant-based diet rich in soluble fiber can reduce LDL by 10–15%.',
   },
   hdl: {
     title: 'HDL Cholesterol (Good)',

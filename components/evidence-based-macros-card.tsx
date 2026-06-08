@@ -405,8 +405,8 @@ export function EvidenceBasedMacrosCard({
               Evidence-Based Protein Target
             </Text>
             <Text style={[styles.goldZoneTooltipBody, { color: colors.muted }]}>
-              For vegan athletes, 1.6–2.2 g/kg/day optimises muscle protein synthesis while accounting for lower digestibility of plant proteins (DIAAS ~0.7–0.9 vs. animal ~1.0).{'\n\n'}
-              Distributing intake across 4–5 meals (≥0.4 g/kg each) maximises leucine-triggered MPS.
+              For vegan athletes, 1.6–2.2 g/kg/day optimizes muscle protein synthesis while accounting for lower digestibility of plant proteins (DIAAS ~0.7–0.9 vs. animal ~1.0).{'\n\n'}
+              Distributing intake across 4–5 meals (≥0.4 g/kg each) maximizes leucine-triggered MPS.
             </Text>
             <Text style={[styles.goldZoneTooltipCite, { color: colors.muted }]}>
               Morton et al. (2018) Br J Sports Med · ISSN Position Stand (2017) · van Vliet et al. (2015)

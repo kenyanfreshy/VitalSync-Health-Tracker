@@ -4,7 +4,7 @@
  * Apple App Review Guideline 1.4.1 compliance component.
  *
  * All dietary and health recommendations in VitalSync are grounded in
- * peer-reviewed meta-analyses. This footer surfaces the four primary
+ * peer-reviewed meta-analyzes. This footer surfaces the four primary
  * evidence sources with direct tappable links so users can verify
  * the clinical basis of every recommendation.
  *
@@ -49,7 +49,7 @@ const EVIDENCE_SOURCES: EvidenceSource[] = [
     id: 'pubmed',
     shortName: 'PubMed',
     fullName: 'PubMed — National Library of Medicine',
-    description: 'Meta-analyses & systematic reviews (2020–2025)',
+    description: 'Meta-analyzes & systematic reviews (2020–2025)',
     url: 'https://pubmed.ncbi.nlm.nih.gov/?term=diet+meta-analysis&filter=years.2020-2025&sort=date',
     accentColor: '#3B82F6',
   },
@@ -148,7 +148,7 @@ export function ClinicalCitationsFooter({ compact = false }: ClinicalCitationsFo
             Evidence Based Sources
           </Text>
           <Text style={[styles.headerSub, { color: colors.muted }]}>
-            All recommendations are grounded in peer-reviewed meta-analyses
+            All recommendations are grounded in peer-reviewed meta-analyzes
             published within the last five years.
           </Text>
         </View>

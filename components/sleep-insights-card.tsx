@@ -74,9 +74,9 @@ function computeInsights(records: SleepRecord[], goalHrs: number): Insight[] {
       id: 'duration_long',
       emoji: '🛌',
       title: 'Consistently long sleep',
-      body: `Your average is ${avgHrs.toFixed(1)} h — noticeably above your ${goalHrs} h goal. An umbrella review of 85 meta-analyses found that both short (<7 h) and long (>9 h) sleep durations are associated with adverse health outcomes; optimal range is 7–9 h for adults.`,
+      body: `Your average is ${avgHrs.toFixed(1)} h — noticeably above your ${goalHrs} h goal. An umbrella review of 85 meta-analyzes found that both short (<7 h) and long (>9 h) sleep durations are associated with adverse health outcomes; optimal range is 7–9 h for adults.`,
       citationLabel: 'Chaput et al., Front Med 2022',
-      citationFull: 'Chaput JP, et al. Sleeping hours: what is the ideal number? Umbrella review of 85 meta-analyses. Front Med. 2022;8:813943.',
+      citationFull: 'Chaput JP, et al. Sleeping hours: what is the ideal number? Umbrella review of 85 meta-analyzes. Front Med. 2022;8:813943.',
       citationUrl: 'https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2021.813943/full',
     });
   }
@@ -266,7 +266,7 @@ export function SleepInsightsCard({ records, goalHrs, colors, isDark }: Props) {
 
           {/* Footer */}
           <Text style={[styles.footer, { color: colors.muted, borderTopColor: bdr }]}>
-            All insights are derived from peer-reviewed meta-analyses. See Settings → About → Evidence Based Sources for full references.
+            All insights are derived from peer-reviewed meta-analyzes. See Settings → About → Evidence Based Sources for full references.
           </Text>
         </View>
       )}

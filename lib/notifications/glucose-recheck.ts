@@ -22,7 +22,7 @@ const RECHECK_DELAY_MS = 2 * 60 * 60 * 1000;
 export interface GlucoseRecheckOptions {
   /** Glycemic load of the meal just logged */
   glycemicLoad: number;
-  /** Food description for a personalised notification body */
+  /** Food description for a personalized notification body */
   foodDescription?: string | null;
   /** Most recent blood glucose reading in mg/dL, used for context */
   glucoseMgDl?: number | null;

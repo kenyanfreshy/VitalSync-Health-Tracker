@@ -48,8 +48,8 @@ export type PremiumFeature =
 // Platform-specific AI branding
 const AI_INSIGHTS_DESCRIPTION =
   Platform.OS === "ios"
-    ? "Apple Intelligence powered wellness insights analysed entirely on your device — no data leaves your phone."
-    : "Gemini powered wellness insights analysed entirely on-device — no data leaves your phone.";
+    ? "Apple Intelligence powered wellness insights analyzed entirely on your device — no data leaves your phone."
+    : "Gemini powered wellness insights analyzed entirely on-device — no data leaves your phone.";
 
 export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   "Health Report Export":
@@ -61,7 +61,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   "Smart Reminders":
     "Unlock intelligent reminders for medications, hydration, vitals, and appointments.",
   "Dashboard Customisation":
-    "Rearrange, pin, and personalise every card on your dashboard.",
+    "Rearrange, pin, and personalize every card on your dashboard.",
   "Advanced Nutrition":
     "Full meal history, macro trends, and nutrition correlations with your vitals.",
   "On-Device Insights": AI_INSIGHTS_DESCRIPTION,
@@ -73,7 +73,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   "Medications Tracker": "Track medications, doses, schedules, and refills.",
   "Appointments Tracker": "Manage medical appointments and reminders.",
   "Data Sources": "Connect and manage health data sources and BLE devices.",
-  "Scan a Meal": "Instantly analyse any meal with your camera — get calories, macros, sugar, and glycaemic load in seconds.",
+  "Scan a Meal": "Instantly analyze any meal with your camera — get calories, macros, sugar, and glycaemic load in seconds.",
   "Scan Barcode": "Scan any packaged food barcode to instantly log accurate nutrition data from the USDA database.",
   "Bluetooth Devices": "Pair and sync health devices over Bluetooth — glucometers, smart scales, BP monitors, CGMs, and more.",
 };

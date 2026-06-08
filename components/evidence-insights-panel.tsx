@@ -389,7 +389,7 @@ export function EvidenceInsightsPanel({
               Evidence-Based Insights
             </Text>
             <Text style={[panelStyles.subtitle, { color: isDark ? '#64748B' : '#94A3B8' }]}>
-              Personalised from your vitals · AHA / WHO / ISSN
+              Personalized from your vitals · AHA / WHO / ISSN
             </Text>
           </View>
         </View>
