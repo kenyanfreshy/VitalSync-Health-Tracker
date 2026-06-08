@@ -27869,7 +27869,7 @@ export const paywallExtStrings = {
     slide2Title: 'Know Exactly What You Eat',
     slide2Sub: '',
     slide2Desc: 'USDA-verified macros, instantly.',
-    slide3Title: 'Reports Your Doctor Will Actually Read',
+    slide3Title: 'Generate Personal Health Report',
     slide3Sub: '',
     slide3Desc: 'Share a clear health summary.',
     slide4Title: 'Never Miss a Dose Again',

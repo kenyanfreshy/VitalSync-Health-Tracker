@@ -10307,3 +10307,16 @@
 - [x] Bump version to 1.0.37 in app.config.ts (buildNumber 10037, versionCode 37)
 - [x] Add v1.0.37 What's New entry in whats-new-sheet.tsx
 - [x] Commit, push to GitHub, EAS build + TestFlight submit
+
+## v1.0.49 — Paywall Carousel Redesign
+- [x] Paywall carousel: capital headings only (textTransform uppercase)
+- [x] Paywall carousel: 5-word tagline description under each heading (carouselDesc style, BRAND_GREEN color)
+- [x] Logo + "VITALSYNC PREMIUM" badge clearly above carousel with paddingBottom separation
+- [x] Removed long subtitle text from carousel slides (subtitle field kept for type compat, not rendered)
+- [x] Added showFeatures i18n key to English paywall strings (fixes TypeScript error)
+- [x] Added slide1Desc–slide5Desc keys to English i18n.ts paywall section
+- [x] Paywall consistent across app: onboarding slide 7, standalone /paywall route, premium gate modal all use same PaywallScreen component
+- [x] Version bumped to 1.0.49 / buildNumber 10049 / versionCode 49
+- [x] What's New v1.0.49 entry added (whats-new-sheet.tsx + _layout.tsx + whats-new-version.ts)
+- [x] Committed 0d10552, pushed to GitHub
+- [x] EAS build 5bccf056 finished, submitted to TestFlight (submission aedbb785)

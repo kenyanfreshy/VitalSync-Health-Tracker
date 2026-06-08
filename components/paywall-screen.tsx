@@ -677,7 +677,7 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
     },
     {
       icon: '📋',
-      title: pw.slide3Title ?? 'Reports Your Doctor Will Actually Read',
+      title: pw.slide3Title ?? 'Generate Personal Health Report',
       subtitle: pw.slide3Sub ?? '',
       description: pw.slide3Desc ?? 'Share a clear health summary.',
     },
