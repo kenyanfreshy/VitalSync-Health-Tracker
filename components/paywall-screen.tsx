@@ -579,12 +579,6 @@ export function PaywallScreen({
           <Text style={s.errorText}>{purchaseError}</Text>
         ) : null}
 
-        {/* Trust statement */}
-        <View style={s.trustRow}>
-          <MaterialIcons name="lock" size={13} color="#34D399" style={{ marginRight: 5, marginTop: 1 }} />
-          <Text style={s.trustText}>On device. No server. Know what your health means.</Text>
-        </View>
-
         {/* Disclosure (Apple 3.1.2(c) — MUST appear directly above CTA) */}
         <Text style={s.disclosureText}>{disclosureText}</Text>
 
@@ -662,34 +656,82 @@ export function PaywallScreen({
 function getCarouselSlides(pw: any): CarouselSlide[] {
   return [
     {
-      icon: '🔬',
-      title: pw.slide1Title ?? 'Your Vitals, Personally Tracked',
-      subtitle: pw.slide1Sub ?? '',
-      description: pw.slide1Desc ?? 'Real insights from your health.',
+      icon: '',
+      title: pw.slide1Title ?? 'YOUR VITALS, PERSONALLY TRACKED',
+      subtitle: '',
+      description: '',
     },
     {
-      icon: '🥗',
-      title: pw.slide2Title ?? 'Know Exactly What You Eat',
-      subtitle: pw.slide2Sub ?? '',
-      description: pw.slide2Desc ?? 'USDA-verified macros, instantly.',
+      icon: '',
+      title: pw.slide2Title ?? 'UNLOCK YOUR HEALTH POTENTIAL',
+      subtitle: '',
+      description: '',
     },
     {
-      icon: '📋',
-      title: pw.slide3Title ?? 'Generate Personal Health Report',
-      subtitle: pw.slide3Sub ?? '',
-      description: pw.slide3Desc ?? 'Share a clear health summary.',
+      icon: '',
+      title: pw.slide3Title ?? 'TAKE CONTROL TODAY',
+      subtitle: '',
+      description: '',
     },
     {
-      icon: '💊',
-      title: pw.slide4Title ?? 'Never Miss a Dose Again',
-      subtitle: pw.slide4Sub ?? '',
-      description: pw.slide4Desc ?? 'Smart reminders, interaction checks.',
+      icon: '',
+      title: pw.slide4Title ?? 'UPGRADE YOUR HEALTH JOURNEY',
+      subtitle: '',
+      description: '',
     },
     {
-      icon: '🔒',
-      title: pw.slide5Title ?? 'Your Data Stays Yours',
-      subtitle: pw.slide5Sub ?? '',
-      description: pw.slide5Desc ?? 'On-device only, never shared.',
+      icon: '',
+      title: pw.slide5Title ?? 'SMARTER HEALTH STARTS HERE',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide6Title ?? 'TRACK BETTER. LIVE BETTER.',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide7Title ?? 'UNLOCK POWERFUL HEALTH INSIGHTS',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide8Title ?? 'TRANSFORM DATA INTO HEALTH',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide9Title ?? 'SEE MORE. KNOW MORE.',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide10Title ?? 'GET THE COMPLETE PICTURE',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide11Title ?? 'UNLOCK PREMIUM HEALTH TOOLS',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide12Title ?? 'PERSONALIZED HEALTH STARTS HERE',
+      subtitle: '',
+      description: '',
+    },
+    {
+      icon: '',
+      title: pw.slide13Title ?? 'TURN DATA INTO ACTION',
+      subtitle: '',
+      description: '',
     },
   ];
 }
