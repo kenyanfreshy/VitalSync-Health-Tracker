@@ -47,7 +47,7 @@ export interface ReportConfig {
   includeMedications?: boolean;
   doctorName?: string;
   notes?: string;
-  /** Clinician name to display in the PDF header (e.g. "Alex Korir") */
+  /** Clinician name to display in the PDF header (e.g. "Dr. Jane Smith") */
   clinicianName?: string;
   /** Clinician credentials to display below the name (e.g. "MSN, RN, CCRN-CMC") */
   clinicianCredentials?: string;
@@ -623,7 +623,7 @@ export const DEFAULT_REPORT_LABELS: ReportLabels = {
   // Glucose sparkline
   glucoseReadingsLink: 'readings',
   // Prepared by placeholder
-  preparedByPlaceholder: 'e.g. Alex Korir, MSN, RN, CCRN-CMC',
+  preparedByPlaceholder: 'e.g. Dr. Jane Smith, MD',
   // EKG section
   ekgSectionTitle: 'Electrocardiogram (EKG) Recordings',
   ekgTotalRecordings: 'Total Recordings',

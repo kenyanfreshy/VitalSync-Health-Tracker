@@ -2565,7 +2565,7 @@ export const reportStrings = {
     hrv35msThreshold: '35 ms threshold',
     hrv40msTarget: 'Target (40 ms)',
     glucoseReadingsLink: 'readings',
-    preparedByPlaceholder: 'e.g. Alex Korir, MSN, RN, CCRN-CMC',
+    preparedByPlaceholder: 'e.g. Dr. Jane Smith, MD',
     translatedByApple: 'Translated by Apple',
     translatedByGemini: 'Translated by Gemini',
 
@@ -6176,7 +6176,7 @@ export const aboutStrings = {
     creatorRole: 'Critical Care Nurse',
     creatorBio1: "A critical care nurse who understands the needs of patients and families, and a former University of Alabama, class of 2008, athlete who learned that health is more than fitness — it's a lifelong calling.",
     creatorBio2:
-      'With years of experience in cardiac and critical care settings, and a lifetime shaped by the Kalenjin tradition of running as identity, the goal was simple: build the health tracker that individuals wished they had — one that speaks their language, respects their privacy, and helps them have better conversations with their care team.',
+      'With years of experience in cardiac and critical care settings, the goal was simple: build the health tracker that individuals wished they had — one that speaks their language, respects their privacy, and helps them have better conversations with their care team.',
     privacyTitle: "Privacy Commitment",
     privacyPoints: [
       { icon: "🔒", label: "All data stored locally on your device" },

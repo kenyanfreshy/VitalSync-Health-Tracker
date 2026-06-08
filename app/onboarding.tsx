@@ -312,37 +312,12 @@ export default function OnboardingScreen() {
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system' | 'amoled'>('dark');
   const [consentAcknowledged, setConsentAcknowledged] = useState(false);
   const [vitalsTooltipVisible, setVitalsTooltipVisible] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [bioExpanded, setBioExpanded] = useState(false);
   const [skipConfirmVisible, setSkipConfirmVisible] = useState(false);
   const [showComplete, setShowComplete] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [meetCreatorVisible, setMeetCreatorVisible] = useState(false);
-  const [booksExpanded, setBooksExpanded] = useState(false);
   const [langPickerVisible, setLangPickerVisible] = useState(false);
   const [langSearch, setLangSearch] = useState('');
   const [termsExpanded, setTermsExpanded] = useState(false);
-  // ─── Creator card entrance animation ─────────────────────────────────────────
-  const creatorCardOpacity = useSharedValue(0);
-  const creatorCardTranslateY = useSharedValue(24);
-  const _creatorCardAnimStyle = useAnimatedStyle(() => ({
-    opacity: creatorCardOpacity.value,
-    transform: [{ translateY: creatorCardTranslateY.value }],
-  }));
-  useEffect(() => {
-    if (currentSlide === 1) {
-      creatorCardOpacity.value = 0;
-      creatorCardTranslateY.value = 24;
-      creatorCardOpacity.value = withDelay(220, withTiming(1, { duration: 380, easing: REasing.out(REasing.quad) }));
-      creatorCardTranslateY.value = withDelay(220, withTiming(0, { duration: 380, easing: REasing.out(REasing.quad) }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentSlide]);
-  // Onboarding creator photo press-zoom
-  const onboardingPhotoScale = useSharedValue(1);
-  const onboardingPhotoAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: onboardingPhotoScale.value }],
-  }));
+
 
   const progressAnim = useRef(new Animated.Value(1 / SLIDE_COUNT)).current;
   // Parallax: use Reanimated shared value (avoids useNativeDriver conflict with progressAnim)
@@ -772,97 +747,7 @@ export default function OnboardingScreen() {
             </Text>
           </RAnimated.View>
 
-          {/* Developed By card: text left, photo right */}
-          <View style={{ flex: 1, paddingHorizontal: 16, paddingBottom: 8 }}>
-            <View style={[styles.createdByCard, { marginHorizontal: 0, flexDirection: 'row', alignItems: 'stretch', padding: 0, overflow: 'hidden', minHeight: 220 }]}>
-              {/* Left: text content */}
-              <View style={{ flex: 1, padding: 18, justifyContent: 'center' }}>
-                <View style={[styles.createdByHeader, { marginBottom: 12 }]}>
-                  <View style={styles.createdByHeaderIcon}>
-                    <IconSymbol name="person.fill" size={18} color="#805AD5" />
-                  </View>
-                  <Text style={styles.createdByHeaderText}>{o.developedBy}</Text>
-                </View>
-                <Text style={styles.creatorName}>Alex Korir, MSN RN</Text>
-                <Text style={styles.creatorCredentials}>MSN, RN, CCRN-CMC</Text>
-                <View style={[styles.creatorRoleBadge, { marginBottom: 14 }]}>
-                  <Text style={styles.creatorRoleText}>{o.creatorRole}</Text>
-                </View>
-                <Text style={[styles.creatorBioHeadline, { fontSize: 13, lineHeight: 19 }]}>
-                  {ab.creatorBio1}
-                </Text>
-                <Text style={[styles.creatorBioBody, { fontSize: 12, lineHeight: 18 }]}>
-                  {ab.creatorBio2}
-                </Text>
-              </View>
-              {/* Right: photo with gradient blend on left edge + press-zoom */}
-              <Pressable
-                onPressIn={() => {
-                  onboardingPhotoScale.value = withTiming(1.07, { duration: 180, easing: REasing.out(REasing.quad) });
-                  if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }}
-                onPressOut={() => {
-                  onboardingPhotoScale.value = withSpring(1, { damping: 14, stiffness: 180 });
-                }}
-                style={{ alignSelf: 'stretch' }}
-              >
-              <RAnimated.View style={[{ width: 150, alignSelf: 'stretch', borderTopRightRadius: 16, borderBottomRightRadius: 16, overflow: 'hidden', flex: 1 }, onboardingPhotoAnimStyle]}>
-                {/* Use absolute fill + top-anchor so the head is never cropped.
-                    The image natural ratio is 1:1.40 — we fill width=150 and let
-                    height be 150*1.40=210 anchored to top=0 so the face shows. */}
-                <Image
-                  source={require('@/assets/images/creator-photo.jpg')}
-                  style={{ position: 'absolute', top: 0, left: 0, width: 150, height: 210 }}
-                  contentFit="cover"
-                  transition={300}
-                />
-                {/* Left-to-right gradient to blend into card background */}
-                <LinearGradient
-                  colors={['rgba(26,29,38,0.85)', 'transparent']}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 0.35, y: 0.5 }}
-                  style={StyleSheet.absoluteFillObject}
-                  pointerEvents="none"
-                />
-                {/* Name overlay label */}
-                <Text
-                  style={{
-                    position: 'absolute',
-                    bottom: 6,
-                    left: 8,
-                    right: 6,
-                    color: '#ffffff',
-                    fontSize: 8,
-                    fontWeight: '600',
-                    letterSpacing: 0.1,
-                    lineHeight: 11,
-                  }}
-                  numberOfLines={2}
-                >
-                  Alex Korir, MSN RN
-                </Text>
-                {/* Verified credential badge */}
-                <View
-                  style={{
-                    position: 'absolute',
-                    bottom: 5,
-                    right: 5,
-                    width: 16,
-                    height: 16,
-                    borderRadius: 8,
-                    backgroundColor: '#22C55E',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderWidth: 1.5,
-                    borderColor: '#ffffff',
-                  }}
-                >
-                  <Text style={{ color: '#ffffff', fontSize: 8, fontWeight: '800', lineHeight: 10 }}>✓</Text>
-                </View>
-              </RAnimated.View>
-              </Pressable>
-            </View>
-          </View>
+
 
           {/* ── Language picker button ──────────────────────────────────────────── */}
           <View style={{ paddingHorizontal: 16, paddingBottom: 16, alignItems: 'center' }}>
@@ -1930,96 +1815,6 @@ const styles = StyleSheet.create({
   heroLeftFade: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 0 },
   heroTextCol: { position: 'absolute', top: 0, bottom: 0, left: 0, width: 0 },
 
-  // ── Created By card (slide 1) ─────────────────────────────────────────────
-  createdByCard: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.10)',
-    padding: 20,
-  },
-  createdByHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 16,
-  },
-  createdByHeaderIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    backgroundColor: '#805AD522',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  createdByHeaderText: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  creatorRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 14,
-    marginBottom: 18,
-  },
-  creatorPhoto: {
-    width: 110,
-    height: 140,
-    borderRadius: 14,
-    backgroundColor: '#1A2540',
-    borderWidth: 1.5,
-    borderColor: '#38BDF8',
-  },
-  creatorInfo: {
-    flex: 1,
-    paddingTop: 4,
-  },
-  creatorName: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.5,
-    marginBottom: 4,
-  },
-  creatorCredentials: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#38A169',
-    letterSpacing: 0.2,
-    marginBottom: 8,
-  },
-  creatorRoleBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    backgroundColor: '#38A16922',
-    borderWidth: 1,
-    borderColor: '#38A16944',
-  },
-  creatorRoleText: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: '#68D391',
-    letterSpacing: 0.3,
-  },
-  creatorBioHeadline: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    lineHeight: 22,
-    marginBottom: 10,
-  },
-  creatorBioBody: {
-    fontSize: 14,
-    fontWeight: '400',
-    color: 'rgba(255,255,255,0.60)',
-    lineHeight: 22,
-  },
   // ── Headlines ─────────────────────────────────────────────────────────────────────────────────
   headlineWrap: {
     paddingBottom: 6,

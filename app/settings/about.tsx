@@ -19,7 +19,6 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Image } from 'expo-image';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -28,10 +27,6 @@ import { useColors, useLang } from '@/hooks';
 import Constants from 'expo-constants';
 import { whatsNewStrings, aboutStrings } from '@/lib/i18n';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, Easing } from 'react-native-reanimated';
-
-// Passport-size creator photo (transparent background) — bundled locally so it
-// works offline and in native builds without requiring network access or a CDN URL.
-const CREATOR_PHOTO = require('@/assets/images/creator-photo-nobg.png');
 
 export default function AboutScreen() {
   const colors = useColors();
@@ -43,11 +38,6 @@ export default function AboutScreen() {
       ? String(Constants.expoConfig?.android?.versionCode ?? '')
       : undefined;
   const appVersionFull = appBuild ? `${appVersion} (${appBuild})` : appVersion;
-  // Passport frame press-zoom animation
-  const passportScale = useSharedValue(1);
-  const passportAnimStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: passportScale.value }],
-  }));
   // Dedication expand/collapse — uses onLayout-measured natural height so
   // the full text is never clipped regardless of locale or screen size.
   const [dedicationExpanded, setDedicationExpanded] = useState(false);
@@ -205,253 +195,6 @@ export default function AboutScreen() {
           )}
         />
 
-        {/* ─── Creator ───────────────────────────────────────────────────────── */}
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBadge, { backgroundColor: '#8B5CF618' }]}>
-              <IconSymbol name="person.fill" size={16} color="#8B5CF6" />
-            </View>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>{a.developedBy}</Text>
-          </View>
-
-          {/* Passport photo + name row */}
-          <View style={[styles.creatorRow, { borderColor: colors.border }]}>
-            {/* Passport frame: press-zoom + gradient overlay for glass feel */}
-            <Pressable
-              onPressIn={() => {
-                passportScale.value = withTiming(1.08, { duration: 180, easing: Easing.out(Easing.quad) });
-                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              }}
-              onPressOut={() => {
-                passportScale.value = withSpring(1, { damping: 14, stiffness: 180 });
-              }}
-              style={{ alignSelf: 'flex-start' }}
-            >
-            <Animated.View style={[
-              styles.passportFrame,
-              passportAnimStyle,
-              {
-                borderColor: colors.primary + '55',
-                borderWidth: 1.5,
-                borderRadius: 16,
-                backgroundColor: colors.surface,
-                shadowColor: colors.primary,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.18,
-                shadowRadius: 8,
-                elevation: 6,
-              }
-            ]}>
-              <Image
-                source={CREATOR_PHOTO}
-                style={styles.passportPhoto}
-                contentFit="contain"
-                transition={300}
-              />
-              {/* Subtle bottom gradient overlay — taller to accommodate name label */}
-              <LinearGradient
-                colors={['transparent', 'rgba(0,0,0,0.55)']}
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 44,
-                  borderBottomLeftRadius: 14,
-                  borderBottomRightRadius: 14,
-                }}
-                pointerEvents="none"
-              />
-              {/* Name overlay label */}
-              <Text
-                style={{
-                  position: 'absolute',
-                  bottom: 6,
-                  left: 6,
-                  right: 22,
-                  color: '#ffffff',
-                  fontSize: 8,
-                  fontWeight: '600',
-                  letterSpacing: 0.1,
-                  lineHeight: 11,
-                }}
-                numberOfLines={2}
-              >
-                Alex Korir, MSN RN
-              </Text>
-              {/* Verified credential badge — bottom-right corner */}
-              <View
-                style={{
-                  position: 'absolute',
-                  bottom: 5,
-                  right: 5,
-                  width: 16,
-                  height: 16,
-                  borderRadius: 8,
-                  backgroundColor: '#22C55E',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1.5,
-                  borderColor: '#ffffff',
-                }}
-              >
-                <Text style={{ color: '#ffffff', fontSize: 8, fontWeight: '800', lineHeight: 10 }}>✓</Text>
-              </View>
-            </Animated.View>
-            </Pressable>
-            <View style={styles.creatorInfo}>
-              <Text style={[styles.creatorName, { color: colors.foreground }]}>Alex Korir, MSN RN</Text>
-              <Text style={[styles.creatorCredentials, { color: colors.primary }]}>
-                {a.creatorCredentials}
-              </Text>
-              <View style={[styles.roleBadge, { backgroundColor: colors.primary + '18' }]}>
-                <Text style={[styles.roleText, { color: colors.primary }]}>{a.creatorRole}</Text>
-              </View>
-            </View>
-          </View>
-
-          <Text style={[styles.cardBody, { color: colors.foreground }]}>{a.creatorBio1}</Text>
-          <Text style={[styles.cardBody, { color: colors.muted, marginTop: 8 }]}>{a.creatorBio2}</Text>
-        </View>
-
-        {/* ─── Also by the Author ────────────────────────────────── */}
-        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.cardHeader}>
-            <View style={[styles.iconBadge, { backgroundColor: '#F59E0B18' }]}>
-              <Text style={{ fontSize: 16 }}>📖</Text>
-            </View>
-            <Text style={[styles.cardTitle, { color: colors.foreground }]}>{a.alsoByDeveloper}</Text>
-          </View>
-          <Text style={[styles.cardBody, { color: colors.muted, marginBottom: 2 }]}>
-            Published works by Alex K. Korir, MSN, RN, CCRN-CMC includes:
-          </Text>
-
-          {/* Horizontal scrolling book covers */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 10, paddingRight: 4 }}
-          >
-            {([
-              {
-                title: 'Rapid Nursing Review',
-                subtitle: 'All Body Systems at a Glance',
-                url: 'https://a.co/d/05O8RfA3',
-                image: require('@/assets/images/book-rapid-nursing-review.jpg'),
-                accent: '#F59E0B',
-              },
-              {
-                title: 'Living Well with Diabetes',
-                subtitle: "A Patient's Guide",
-                url: 'https://a.co/d/0d4a88Ky',
-                image: require('@/assets/images/book-living-well-diabetes.jpg'),
-                accent: '#22C55E',
-              },
-              {
-                title: 'Critical Care Certified',
-                subtitle: 'Crush the CCRN-Adult with Confidence',
-                url: 'https://a.co/d/01qSD9vQ',
-                image: require('@/assets/images/book-critical-care-certified.jpg'),
-                accent: '#EF4444',
-              },
-              {
-                title: 'The Confident Nurse',
-                subtitle: 'From Classroom To Code Blue',
-                url: 'https://a.co/d/0brVclLW',
-                image: require('@/assets/images/book-confident-nurse.jpg'),
-                accent: '#38BDF8',
-              },
-              {
-                title: 'The Magical Forest',
-                subtitle: "A Children's Adventure",
-                url: 'https://a.co/d/0dxT4JeR',
-                image: require('@/assets/images/book-magical-forest.jpg'),
-                accent: '#10B981',
-              },
-              {
-                title: 'Thomas and the Dinosaurs',
-                subtitle: 'Alex Korir & Loice Marindany',
-                url: 'https://a.co/d/0egSGmav',
-                image: require('@/assets/images/book-thomas-dinosaurs.jpg'),
-                accent: '#F97316',
-              },
-              {
-                title: 'Exercise & Physical Activity',
-                subtitle: 'Keep Moving!',
-                url: 'https://a.co/d/01lPxQ4t',
-                image: require('@/assets/images/book-exercise-physical-activity.jpg'),
-                accent: '#EF4444',
-              },
-            ] as { title: string; subtitle: string; url: string; image: any; accent: string }[]).map((book) => (
-              <Pressable
-                key={book.title}
-                onPress={() => {
-                  if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  Linking.openURL(book.url);
-                }}
-                onLongPress={() => {
-                  if (Platform.OS !== 'web') {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    // eslint-disable-next-line @typescript-eslint/no-require-imports
-                    const { Share } = require('react-native');
-                    Share.share({ message: `${book.title} by Alex K. Korir — ${book.url}`, url: book.url }).catch(() => {});
-                  } else {
-                    Linking.openURL(book.url).catch(() => {});
-                  }
-                }}
-                style={({ pressed }) => ([
-                  {
-                    width: 120,
-                    borderRadius: 12,
-                    overflow: 'hidden',
-                    backgroundColor: colors.background,
-                    borderWidth: 1,
-                    borderColor: book.accent + '40',
-                    shadowColor: book.accent,
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.12,
-                    shadowRadius: 6,
-                    elevation: 3,
-                  },
-                  pressed && { opacity: 0.72, transform: [{ scale: 0.97 }] },
-                ])}
-                accessibilityRole="link"
-                accessibilityLabel={`View ${book.title} on Amazon`}
-              >
-                {/* Cover image */}
-                {book.image ? (
-                  <Image
-                    source={book.image}
-                    style={{ width: 120, height: 180 }}
-                    contentFit="cover"
-                  />
-                ) : (
-                  <View style={{
-                    width: 120,
-                    height: 180,
-                    backgroundColor: book.accent + '18',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    padding: 10,
-                  }}>
-                    <Text style={{ fontSize: 32 }}>🏥</Text>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: book.accent, textAlign: 'center', marginTop: 8, lineHeight: 15 }}>{book.title}</Text>
-                  </View>
-                )}
-                {/* Title strip */}
-                <View style={{ padding: 8, gap: 3, backgroundColor: colors.surface }}>
-                  <Text style={{ fontSize: 10, fontWeight: '700', color: colors.foreground, lineHeight: 13 }} numberOfLines={2}>{book.title}</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                    <View style={{ backgroundColor: book.accent + '22', paddingHorizontal: 5, paddingVertical: 2, borderRadius: 4 }}>
-                      <Text style={{ fontSize: 8, fontWeight: '800', color: book.accent }}>Amazon</Text>
-                    </View>
-                    <Text style={{ fontSize: 9, color: book.accent }}>↗</Text>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
-          </ScrollView>
-        </View>
 
         {/* ─── Knowledge Empowered By ──────────────────────────────────── */}
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -898,34 +641,7 @@ const styles = StyleSheet.create({
   },
   versionBadgeText: { fontSize: 11, fontWeight: '700' },
   cardBody: { fontSize: 14, lineHeight: 22 },
-  creatorRow: {
-    flexDirection: 'row',
-    gap: 14,
-    paddingBottom: 14,
-    marginBottom: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    alignItems: 'flex-start',
-  },
-  passportFrame: {
-    width: 90,
-    height: 126,   // 90 × 1.40 matches the photo's natural aspect ratio exactly
-    borderRadius: 16,
-    borderWidth: 1.5,
-    overflow: 'hidden',
-    flexShrink: 0,
-  },
-  passportPhoto: { width: '100%', height: '100%' },
-  creatorInfo: { flex: 1, gap: 4, justifyContent: 'center' },
-  creatorName: { fontSize: 17, fontWeight: '700' },
-  creatorCredentials: { fontSize: 13, fontWeight: '600' },
-  roleBadge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
-    marginTop: 2,
-  },
-  roleText: { fontSize: 11, fontWeight: '600' },
+
   privacyRow: {
     flexDirection: 'row',
     alignItems: 'center',
