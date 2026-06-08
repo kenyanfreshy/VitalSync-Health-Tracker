@@ -190,6 +190,17 @@ export const whatsNewV1035Strings = {
   f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
+/** Release note content — v1.0.46 */
+export const whatsNewV1046Strings = {
+  version: "1.0.46",
+  date: "June 2026",
+  headline: "Onboarding Polish",
+  i1Title: "Consent Slide Scrollable",
+  i1Desc: "The Terms of Use section on the consent slide is no longer obscured by the navigation bar — the entire consent card is now scrollable.",
+  i2Title: "Dedication Section Removed",
+  i2Desc: "The \"Dedicated To\" card has been removed from the Welcome slide for a cleaner, more focused onboarding experience.",
+} as const;
+
 /** Release note content — v1.0.45 */
 export const whatsNewV1045Strings = {
   version: "1.0.45",
@@ -367,6 +378,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1046 = useT(whatsNewV1046Strings);
   const v1045 = useT(whatsNewV1045Strings);
   const v1044 = useT(whatsNewV1044Strings);
   const v1043 = useT(whatsNewV1043Strings);
@@ -582,6 +594,14 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.46 ── */}
+          <OlderVersionHeader version={v1046.version} date={v1046.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="📜" title={v1046.i1Title} desc={v1046.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="✨" title={v1046.i2Title} desc={v1046.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.45 ── */}

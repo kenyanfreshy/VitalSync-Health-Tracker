@@ -794,18 +794,7 @@ export default function OnboardingScreen() {
                     <Text style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', lineHeight: 15, marginTop: 2 }}>University of Alabama · Class of 2008</Text>
                   </View>
                 </View>
-                {/* Dedication snippet */}
-                <View style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14,
-                  borderWidth: 1, borderColor: 'rgba(255,255,255,0.10)', padding: 14,
-                }}>
-                  <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.45)', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 6 }}>
-                    Dedicated To
-                  </Text>
-                    <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.60)', lineHeight: 18 }}>
-                    Dedicated to family, the Poror Diaspora community, and every patient who deserves better tools to understand their own health.
-                  </Text>
-                </View>
+
               </ScrollView>
             )}
 
@@ -1426,7 +1415,11 @@ export default function OnboardingScreen() {
             <Text style={styles.headlineBottom}>{SLIDE_HEADLINES[6].bottom}</Text>
             <Text style={styles.headlineSub}>{o.consentSub}</Text>
           </RAnimated.View>
-          <View style={styles.privacyChecklistCard}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[styles.privacyChecklistCard, { paddingBottom: 24 }]}
+            style={{ flex: 1, width: '100%' }}
+          >
             {consentStrings[lang as keyof typeof consentStrings]?.points.map((point, i) => (
               <View key={i} style={[styles.privacyChecklistRow, { borderColor: SLIDE_META[7].iconColor + '30', backgroundColor: SLIDE_META[7].iconColor + '10' }]}>
                 <View style={[styles.privacyCheckCircle, { backgroundColor: SLIDE_META[7].iconColor + '20', borderColor: SLIDE_META[7].iconColor + '40' }]}>
@@ -1532,7 +1525,7 @@ export default function OnboardingScreen() {
                 </Pressable>
               </View>
             )}
-          </View>
+          </ScrollView>
         </View>
 
       </ScrollView>
