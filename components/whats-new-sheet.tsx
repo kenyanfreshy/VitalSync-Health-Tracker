@@ -190,6 +190,17 @@ export const whatsNewV1035Strings = {
   f1Desc: "All user-facing 'AI' labels have been replaced with neutral, clinically accurate descriptions across the app, onboarding, and paywall.",
 } as const;
 
+/** Release note content — v1.0.47 */
+export const whatsNewV1047Strings = {
+  version: "1.0.47",
+  date: "June 2026",
+  headline: "Onboarding Overflow Fixes",
+  i1Title: "Settings Reordered",
+  i1Desc: "Subscription and Health Data sections now appear immediately after Appearance for faster access. Subscription prices updated to $4.99/mo and $49.99/yr.",
+  i2Title: "Onboarding Slides Scrollable",
+  i2Desc: "Health Permissions (slide 3) and Threshold Setup (slide 5) are now scrollable on all screen sizes including iPhone SE and iPhone 13 mini.",
+} as const;
+
 /** Release note content — v1.0.46 */
 export const whatsNewV1046Strings = {
   version: "1.0.46",
@@ -378,6 +389,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   // If the translated title still equals the English source, translation is pending
   const isTranslating = isAiLang && ui.title === whatsNewUiStrings.title && lang !== "en";
 
+  const v1047 = useT(whatsNewV1047Strings);
   const v1046 = useT(whatsNewV1046Strings);
   const v1045 = useT(whatsNewV1045Strings);
   const v1044 = useT(whatsNewV1044Strings);
@@ -594,6 +606,14 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📊" title={v2365.i1Title} desc={v2365.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🔗" title={v2365.i2Title} desc={v2365.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.47 ── */}
+          <OlderVersionHeader version={v1047.version} date={v1047.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="⚙️" title={v1047.i1Title} desc={v1047.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📱" title={v1047.i2Title} desc={v1047.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
 
           {/* ── v1.0.46 ── */}

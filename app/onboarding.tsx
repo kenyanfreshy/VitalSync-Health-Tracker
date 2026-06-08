@@ -959,9 +959,10 @@ export default function OnboardingScreen() {
             <Text style={styles.headlineBottom}>{SLIDE_HEADLINES[2].bottom}</Text>
             <Text style={styles.headlineSub}>{o.dataSourcesTitle}</Text>
           </RAnimated.View>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.contentCard}>
 
-            {/* ── Apple Health (iOS) ── */}
+            {/* ── Apple Health (iOS) ── */
             <View style={[styles.permPlatformCard, {
               backgroundColor: 'rgba(229,83,62,0.10)',
               borderColor: '#E53E3E50',
@@ -1051,6 +1052,7 @@ export default function OnboardingScreen() {
               <Text style={styles.permPrivacyText}>{o.dataNeverLeavesDevice}</Text>
             </View>
           </View>
+          </ScrollView>
         </View>
 
         {/* ── Slide 4: Threshold Setup ──────────────────────────────────────── */}
@@ -1065,6 +1067,7 @@ export default function OnboardingScreen() {
             <Text style={styles.headlineBottom}>{SLIDE_HEADLINES[3].bottom}</Text>
             <Text style={styles.headlineSub}>{o.thresholdsSub}</Text>
           </RAnimated.View>
+          <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ flexGrow: 1 }}>
           <View style={styles.contentCard}>
             <ThresholdRow
               label={o.systolicBpHigh}
@@ -1123,6 +1126,7 @@ export default function OnboardingScreen() {
               onCommit={(v) => setThresholds((t) => ({ ...t, temperature: { ...(t.temperature ?? { high: 38.0, low: 35.0 }), low: v } }))}
             />
           </View>
+          </ScrollView>
         </View>
 
         {/* ── Slide 5: Settings, Help & Support ─────────────────────────────── */}
@@ -1858,7 +1862,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 8,
     gap: 14,
-    overflow: 'hidden',
   },
   // ── Hero photo (slide 1) — kept as no-op for parallax style reference ──────
   heroPhotoWrap: { position: 'absolute', top: 0, right: 0, width: 0, height: 0 },

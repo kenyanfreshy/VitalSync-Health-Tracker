@@ -314,8 +314,8 @@ export default function SettingsScreen() {
   // Stable fallback prices — shown when StoreKit/Play hasn't loaded yet
   const monthlyProduct = subProducts.find((p) => p.id === 'vitalsync.healthtracker.premium_monthly');
   const yearlyProduct  = subProducts.find((p) => p.id === 'vitalsync.healthtracker.premium_annual');
-  const monthlyPrice = (monthlyProduct as (typeof monthlyProduct & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$6.99';
-  const yearlyPrice  = (yearlyProduct  as (typeof yearlyProduct  & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$69.99';
+  const monthlyPrice = (monthlyProduct as (typeof monthlyProduct & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$4.99';
+  const yearlyPrice  = (yearlyProduct  as (typeof yearlyProduct  & { localizedPrice?: string }) | undefined)?.localizedPrice ?? '$49.99';
 
   // ── Search ──────────────────────────────────────────────────────────────
   const [searchQuery, setSearchQuery] = useState('');
@@ -350,7 +350,7 @@ export default function SettingsScreen() {
   }, []);
 
   // All section keys in display order
-  const ALL_SECTION_KEYS = ['appearance', 'my_profile', 'health_data', 'stored_data', 'privacy', 'notifications', 'about', 'diagnostics', 'subscription'] as const;
+  const ALL_SECTION_KEYS = ['appearance', 'subscription', 'health_data', 'my_profile', 'stored_data', 'privacy', 'notifications', 'about', 'diagnostics'] as const;
 
   const allExpanded = ALL_SECTION_KEYS.every((k) => sectionExpanded[k] !== false);
 
@@ -1866,9 +1866,238 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
-        </View>
 
-         {/* ─── My Profilee ────────────────────────────────────────────────── */}
+        <CollapsibleSection title={se.manageSubscription} sectionKey="subscription" accentColor="#6366F1" keywords={['subscription', 'trial', 'premium', 'billing', 'plan', 'upgrade', 'restore']}>
+          <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16 }}>
+            {/* Status row */}
+            <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontSize: 13, color: colors.muted, marginBottom: 4 }}>{se.subscriptionPlan}</Text>
+              {isPremium ? (
+                <>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#6366F1' }}>
+                    {accessState === 'trial_active'
+                      ? (se.freeTrialDays ?? 'Free Trial — {n} day{s} remaining').replace('{n}', String(trialDaysRemaining)).replace('{s}', trialDaysRemaining === 1 ? '' : 's')
+                      : 'VitalSync Premium Active'}
+                  </Text>
+                  {accessState === 'trial_active' && trialStartMs != null && (
+                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
+                      Trial started {new Date(trialStartMs).toLocaleDateString()}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>Free Version</Text>
+                  {accessState === 'expired' ? (
+                    <Text style={{ fontSize: 12, color: colors.error, marginTop: 2 }}>
+                      Trial expired — subscribe to restore premium access
+                    </Text>
+                  ) : (
+                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
+                      {subProductsLoading
+                        ? 'Loading plans…'
+                        : `Monthly ${monthlyPrice}/mo · Yearly ${yearlyPrice}/yr — includes 14-day free trial`}
+                    </Text>
+                  )}
+                </>
+              )}
+            </View>
+            {/* Upgrade / Start Trial row — hidden when already subscribed */}
+            {!isPremium && (
+              <TouchableOpacity
+                style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                onPress={() => paywallGuard.tryPush(() => { router.push('/paywall' as Parameters<typeof router.push>[0]); })}
+                activeOpacity={0.7}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '600', color: '#6366F1' }}>
+                  {accessState === 'expired' ? 'Subscribe Now' : 'Start 14-Day Free Trial'}
+                </Text>
+                <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
+              </TouchableOpacity>
+            )}
+            {/* Manage subscription — with confirmation alert */}
+            <TouchableOpacity
+              style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={() => {
+                const openManage = () => {
+                  if (Platform.OS === 'ios') {
+                    Linking.openURL('itms-apps://apps.apple.com/account/subscriptions').catch(() =>
+                      Linking.openURL('https://apps.apple.com/account/subscriptions')
+                    );
+                  } else {
+                    Linking.openURL('https://play.google.com/store/account/subscriptions');
+                  }
+                };
+                Alert.alert(
+                  'Manage Subscription',
+                  `You'll be taken to your ${Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account to manage or cancel your subscription.`,
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Continue', onPress: openManage },
+                  ]
+                );
+              }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.manageSubscription}</Text>
+              <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
+            </TouchableOpacity>
+            {/* Active plan + renewal date — shown when subscribed */}
+            {accessState === 'subscribed' && (activePlanName || renewalDateStr) && (
+              <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 13, color: colors.muted }}>
+                  {[activePlanName, renewalDateStr ? `Renews ${renewalDateStr}` : null].filter(Boolean).join(' · ')}
+                </Text>
+              </View>
+            )}
+            {/* Restore purchases */}
+            <TouchableOpacity
+              style={{ paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+              onPress={async () => { await restoreIAPPurchases(); }}
+              activeOpacity={0.7}
+            >
+              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.restorePurchases}</Text>
+              <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
+            </TouchableOpacity>
+          </GlassCard>
+        </CollapsibleSection>
+
+        <CollapsibleSection title={t.sectionHealthData} sectionKey="health_data" accentColor="#EF4444" keywords={['health', 'apple health', 'healthkit', 'health connect', 'sync', 'permissions', 'data sources', 'bluetooth', 'device', 'glucose', 'weight', 'blood pressure', 'wearable']}>
+        <GlassCard
+          accentColor="#EF4444"
+          noPadding
+          style={{ marginHorizontal: 16 }}
+        >
+
+
+
+          <SettingsRow
+            icon="checkmark.shield.fill"
+            iconColor={colors.primary}
+            label={se.healthPermissionDetails}
+            subtitle={se.healthPermissionDetailsSub}
+            onPress={() => router.push('/settings/healthkit-permissions')}
+            rightElement={
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {state.permissionsGranted ? (
+                  <View style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 8,
+                    backgroundColor: colors.success + '20',
+                    borderWidth: 1,
+                    borderColor: colors.success + '40',
+                  }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.success }}>Connected</Text>
+                  </View>
+                ) : state.hkPermDenied ? (
+                  <View style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 8,
+                    backgroundColor: colors.error + '20',
+                    borderWidth: 1,
+                    borderColor: colors.error + '40',
+                  }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.error }}>Denied</Text>
+                  </View>
+                ) : (
+                  <View style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 3,
+                    borderRadius: 8,
+                    backgroundColor: colors.warning + '20',
+                    borderWidth: 1,
+                    borderColor: colors.warning + '40',
+                  }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.warning }}>Not Set Up</Text>
+                  </View>
+                )}
+                <IconSymbol name="chevron.right" size={14} color={colors.muted} />
+              </View>
+            }
+          />
+          {/* Data Sources row removed — use Health Permission Details for HealthKit access */}
+          <SettingsRow
+            icon="arrow.clockwise"
+            iconColor={colors.primary}
+            label={t.autoSync}
+            subtitle={t.autoSyncSub}
+            rightElement={
+              <Switch
+                value={autoSync}
+                onValueChange={(v) => toggleAutoSync(v)}
+                trackColor={{ false: colors.border, true: colors.primary + '60' }}
+                thumbColor={autoSync ? colors.primary : colors.muted}
+              />
+            }
+          />
+          {/* Stale-data threshold selector */}
+          <SettingsRow
+            icon="clock.fill"
+            iconColor="#F59E0B"
+            label={se.syncReminderThreshold}
+            subtitle={`${se.syncReminderThresholdSub ?? "Show ⋯ Sync now badge after"} ${staleThresholdHours}h`}
+            rightElement={
+              <View style={{ flexDirection: 'row', gap: 4 }}>
+                {STALE_THRESHOLD_OPTIONS.map((opt) => (
+                  <TouchableOpacity
+                    key={opt}
+                    onPress={() => updateStaleThreshold(opt as StaleThresholdHours)}
+                    style={{
+                      paddingHorizontal: 9,
+                      paddingVertical: 4,
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: staleThresholdHours === opt ? '#F59E0B' : colors.border,
+                      backgroundColor: staleThresholdHours === opt ? '#F59E0B20' : 'transparent',
+                    }}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: staleThresholdHours === opt ? '#F59E0B' : colors.muted }}>
+                      {opt}h
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            }
+          />
+
+          <SettingsRow
+            icon="building.2.fill"
+            iconColor="#22C55E"
+            label={se.savedPharmacies}
+            subtitle={se.savedPharmaciesSub}
+            onPress={() => router.push('/settings/pharmacies' as any)}
+            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
+          />
+          <SettingsRow
+            icon="antenna.radiowaves.left.and.right"
+            iconColor="#0EA5E9"
+            label={se.bluetoothDevices}
+            subtitle={pairedBleCount > 0 ? `${pairedBleCount} paired device${pairedBleCount !== 1 ? 's' : ''} · tap to manage` : (se.bluetoothDevicesSub ?? 'Scan & pair health devices for auto-sync')}
+            onPress={requireBlePremium(() => setShowBleSettingsSheet(true), { feature: 'Bluetooth Devices' })}
+            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
+          />
+          {pairedBleCount > 0 && (
+            <PairedDevicesList
+              onReconnect={() => setShowBleSettingsSheet(true)}
+              refreshToken={bleRefreshToken}
+              onDeviceForgotten={(count) => setPairedBleCount(count)}
+            />
+          )}
+
+        </GlassCard>
+        <EvidenceRefBanner
+          accentColor="#EF4444"
+          heading={se.wearableAccuracyHealthKit ?? "Wearable Accuracy & HealthKit"}
+          refs={[
+            { label: 'AHA Wearable Device Accuracy 2019', url: 'https://pubmed.ncbi.nlm.nih.gov/31154804/', badge: 'AHA' },
+            { label: 'Apple HealthKit Privacy Docs', url: 'https://developer.apple.com/documentation/healthkit/protecting_user_privacy', badge: 'Apple' },
+            { label: 'ADA Blood Glucose Monitoring 2024', url: 'https://diabetesjournals.org/care/article/47/Supplement_1/S85/153945/', badge: 'ADA' },
+          ]}
+        />
+        </CollapsibleSection>
+
         <CollapsibleSection title={se.myProfileSection ?? 'My Profile'} sectionKey="my_profile" accentColor="#0EA5E9" keywords={['profile', 'age', 'sex', 'gender', 'goals', 'macros', 'calories', 'diet', 'protocol', 'nutrition']}>
         <GlassCard
           accentColor="#0EA5E9"
@@ -2887,143 +3116,7 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
-        {/* ─── Health Permissions ────────────────────────────────────── */}
-        <CollapsibleSection title={t.sectionHealthData} sectionKey="health_data" accentColor="#EF4444" keywords={['health', 'apple health', 'healthkit', 'health connect', 'sync', 'permissions', 'data sources', 'bluetooth', 'device', 'glucose', 'weight', 'blood pressure', 'wearable']}>
-        <GlassCard
-          accentColor="#EF4444"
-          noPadding
-          style={{ marginHorizontal: 16 }}
-        >
 
-
-
-          <SettingsRow
-            icon="checkmark.shield.fill"
-            iconColor={colors.primary}
-            label={se.healthPermissionDetails}
-            subtitle={se.healthPermissionDetailsSub}
-            onPress={() => router.push('/settings/healthkit-permissions')}
-            rightElement={
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {state.permissionsGranted ? (
-                  <View style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 8,
-                    backgroundColor: colors.success + '20',
-                    borderWidth: 1,
-                    borderColor: colors.success + '40',
-                  }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.success }}>Connected</Text>
-                  </View>
-                ) : state.hkPermDenied ? (
-                  <View style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 8,
-                    backgroundColor: colors.error + '20',
-                    borderWidth: 1,
-                    borderColor: colors.error + '40',
-                  }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.error }}>Denied</Text>
-                  </View>
-                ) : (
-                  <View style={{
-                    paddingHorizontal: 8,
-                    paddingVertical: 3,
-                    borderRadius: 8,
-                    backgroundColor: colors.warning + '20',
-                    borderWidth: 1,
-                    borderColor: colors.warning + '40',
-                  }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: colors.warning }}>Not Set Up</Text>
-                  </View>
-                )}
-                <IconSymbol name="chevron.right" size={14} color={colors.muted} />
-              </View>
-            }
-          />
-          {/* Data Sources row removed — use Health Permission Details for HealthKit access */}
-          <SettingsRow
-            icon="arrow.clockwise"
-            iconColor={colors.primary}
-            label={t.autoSync}
-            subtitle={t.autoSyncSub}
-            rightElement={
-              <Switch
-                value={autoSync}
-                onValueChange={(v) => toggleAutoSync(v)}
-                trackColor={{ false: colors.border, true: colors.primary + '60' }}
-                thumbColor={autoSync ? colors.primary : colors.muted}
-              />
-            }
-          />
-          {/* Stale-data threshold selector */}
-          <SettingsRow
-            icon="clock.fill"
-            iconColor="#F59E0B"
-            label={se.syncReminderThreshold}
-            subtitle={`${se.syncReminderThresholdSub ?? "Show ⋯ Sync now badge after"} ${staleThresholdHours}h`}
-            rightElement={
-              <View style={{ flexDirection: 'row', gap: 4 }}>
-                {STALE_THRESHOLD_OPTIONS.map((opt) => (
-                  <TouchableOpacity
-                    key={opt}
-                    onPress={() => updateStaleThreshold(opt as StaleThresholdHours)}
-                    style={{
-                      paddingHorizontal: 9,
-                      paddingVertical: 4,
-                      borderRadius: 8,
-                      borderWidth: 1,
-                      borderColor: staleThresholdHours === opt ? '#F59E0B' : colors.border,
-                      backgroundColor: staleThresholdHours === opt ? '#F59E0B20' : 'transparent',
-                    }}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: staleThresholdHours === opt ? '#F59E0B' : colors.muted }}>
-                      {opt}h
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            }
-          />
-
-          <SettingsRow
-            icon="building.2.fill"
-            iconColor="#22C55E"
-            label={se.savedPharmacies}
-            subtitle={se.savedPharmaciesSub}
-            onPress={() => router.push('/settings/pharmacies' as any)}
-            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
-          />
-          <SettingsRow
-            icon="antenna.radiowaves.left.and.right"
-            iconColor="#0EA5E9"
-            label={se.bluetoothDevices}
-            subtitle={pairedBleCount > 0 ? `${pairedBleCount} paired device${pairedBleCount !== 1 ? 's' : ''} · tap to manage` : (se.bluetoothDevicesSub ?? 'Scan & pair health devices for auto-sync')}
-            onPress={requireBlePremium(() => setShowBleSettingsSheet(true), { feature: 'Bluetooth Devices' })}
-            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
-          />
-          {pairedBleCount > 0 && (
-            <PairedDevicesList
-              onReconnect={() => setShowBleSettingsSheet(true)}
-              refreshToken={bleRefreshToken}
-              onDeviceForgotten={(count) => setPairedBleCount(count)}
-            />
-          )}
-
-        </GlassCard>
-        <EvidenceRefBanner
-          accentColor="#EF4444"
-          heading={se.wearableAccuracyHealthKit ?? "Wearable Accuracy & HealthKit"}
-          refs={[
-            { label: 'AHA Wearable Device Accuracy 2019', url: 'https://pubmed.ncbi.nlm.nih.gov/31154804/', badge: 'AHA' },
-            { label: 'Apple HealthKit Privacy Docs', url: 'https://developer.apple.com/documentation/healthkit/protecting_user_privacy', badge: 'Apple' },
-            { label: 'ADA Blood Glucose Monitoring 2024', url: 'https://diabetesjournals.org/care/article/47/Supplement_1/S85/153945/', badge: 'ADA' },
-          ]}
-        />
-        </CollapsibleSection>
-        {/* ─── Data Summaryy ────────────────────────────────────────────────── */}
         <CollapsibleSection title={t.sectionStoredData} sectionKey="stored_data" accentColor="#22C55E" defaultExpanded={false} badge={totalRecords > 0 ? `${totalRecords} records` : undefined} keywords={['stored', 'records', 'clear', 'delete', 'export', 'csv', 'data']}>
         <GlassCard
           accentColor="#22C55E"
@@ -3092,8 +3185,7 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
-        {/* ─── Privacy ─────────────────────────────────────────────────────── */}
-        <View ref={privacyRef}>
+
         <CollapsibleSection title={t.sectionPrivacy} sectionKey="privacy" accentColor="#22C55E" keywords={['privacy', 'lock', 'biometric', 'face id', 'pin', 'timeout', 'emergency', 'medical id', 'local', 'consent', 'security', 'passcode']}>
         <GlassCard
           accentColor="#22C55E"
@@ -3486,8 +3578,7 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
-        </View>
-        {/* ─── Notifications ───────────────────────────────────────────────── */}
+
         <CollapsibleSection title={t.sectionNotifications} sectionKey="notifications" accentColor="#F59E0B" keywords={['notifications', 'alerts', 'threshold', 'reminders', 'lab', 'push', 'readiness', 'whats new']}>
         {notifPermDenied && (
           <Pressable
@@ -3960,121 +4051,7 @@ export default function SettingsScreen() {
           ]}
         />
         </CollapsibleSection>
-        {/* ─── Data Ownership Notice ────────────────────────────────────────── */}
-        <View style={[styles.ownershipCard, { backgroundColor: isDark ? '#052E16' : '#F0FDF4', borderColor: isDark ? '#166534' : '#86EFAC' }]}>
-          <View style={styles.ownershipHeader}>
-            <Text style={styles.ownershipIcon}>🛡️</Text>
-            <Text style={[styles.ownershipTitle, { color: isDark ? '#4ADE80' : '#166534' }]}>{t.ownershipTitle}</Text>
-          </View>
-          <Text style={[styles.ownershipBody, { color: isDark ? '#BBF7D0' : '#14532D' }]}>
-            {se.ownershipBody ?? 'Everything you track in VitalSync — blood pressure, heart rate, sleep, medications, and more — is stored only on this device. It is never uploaded, synced, or shared with any server or third party. You own your health data completely.'}
-          </Text>
-          <View style={styles.ownershipPills}>
-            {(t.pills as readonly string[]).map((label) => (
-              <View key={label} style={[styles.ownershipPill, { backgroundColor: isDark ? '#14532D' : '#DCFCE7', borderColor: isDark ? '#166534' : '#86EFAC' }]}>
-                <Text style={[styles.ownershipPillText, { color: isDark ? '#4ADE80' : '#166534' }]}>{label}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
 
-        {/* ─── Subscription ──────────────────────────────────────────────── */}
-        <CollapsibleSection title={se.manageSubscription} sectionKey="subscription" accentColor="#6366F1" keywords={['subscription', 'trial', 'premium', 'billing', 'plan', 'upgrade', 'restore']}>
-          <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16 }}>
-            {/* Status row */}
-            <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontSize: 13, color: colors.muted, marginBottom: 4 }}>{se.subscriptionPlan}</Text>
-              {isPremium ? (
-                <>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#6366F1' }}>
-                    {accessState === 'trial_active'
-                      ? (se.freeTrialDays ?? 'Free Trial — {n} day{s} remaining').replace('{n}', String(trialDaysRemaining)).replace('{s}', trialDaysRemaining === 1 ? '' : 's')
-                      : 'VitalSync Premium Active'}
-                  </Text>
-                  {accessState === 'trial_active' && trialStartMs != null && (
-                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                      Trial started {new Date(trialStartMs).toLocaleDateString()}
-                    </Text>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>Free Version</Text>
-                  {accessState === 'expired' ? (
-                    <Text style={{ fontSize: 12, color: colors.error, marginTop: 2 }}>
-                      Trial expired — subscribe to restore premium access
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                      {subProductsLoading
-                        ? 'Loading plans…'
-                        : `Monthly ${monthlyPrice}/mo · Yearly ${yearlyPrice}/yr — includes 14-day free trial`}
-                    </Text>
-                  )}
-                </>
-              )}
-            </View>
-            {/* Upgrade / Start Trial row — hidden when already subscribed */}
-            {!isPremium && (
-              <TouchableOpacity
-                style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-                onPress={() => paywallGuard.tryPush(() => { router.push('/paywall' as Parameters<typeof router.push>[0]); })}
-                activeOpacity={0.7}
-              >
-                <Text style={{ fontSize: 15, fontWeight: '600', color: '#6366F1' }}>
-                  {accessState === 'expired' ? 'Subscribe Now' : 'Start 14-Day Free Trial'}
-                </Text>
-                <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
-              </TouchableOpacity>
-            )}
-            {/* Manage subscription — with confirmation alert */}
-            <TouchableOpacity
-              style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-              onPress={() => {
-                const openManage = () => {
-                  if (Platform.OS === 'ios') {
-                    Linking.openURL('itms-apps://apps.apple.com/account/subscriptions').catch(() =>
-                      Linking.openURL('https://apps.apple.com/account/subscriptions')
-                    );
-                  } else {
-                    Linking.openURL('https://play.google.com/store/account/subscriptions');
-                  }
-                };
-                Alert.alert(
-                  'Manage Subscription',
-                  `You'll be taken to your ${Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account to manage or cancel your subscription.`,
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Continue', onPress: openManage },
-                  ]
-                );
-              }}
-              activeOpacity={0.7}
-            >
-              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.manageSubscription}</Text>
-              <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
-            </TouchableOpacity>
-            {/* Active plan + renewal date — shown when subscribed */}
-            {accessState === 'subscribed' && (activePlanName || renewalDateStr) && (
-              <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 13, color: colors.muted }}>
-                  {[activePlanName, renewalDateStr ? `Renews ${renewalDateStr}` : null].filter(Boolean).join(' · ')}
-                </Text>
-              </View>
-            )}
-            {/* Restore purchases */}
-            <TouchableOpacity
-              style={{ paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-              onPress={async () => { await restoreIAPPurchases(); }}
-              activeOpacity={0.7}
-            >
-              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.restorePurchases}</Text>
-              <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
-            </TouchableOpacity>
-          </GlassCard>
-        </CollapsibleSection>
-
-        {/* ─── About ───────────────────────────────────────────────────────── */}
         <CollapsibleSection title={t.sectionAbout} sectionKey="about" accentColor="#0EA5E9" keywords={['about', 'version', 'support', 'privacy policy', 'onboarding', 'reset', 'help', 'feedback']}>
         <GlassCard
           accentColor="#0EA5E9"
@@ -4290,7 +4267,7 @@ export default function SettingsScreen() {
           style={{ marginBottom: 8 }}
         />
         </CollapsibleSection>
-        {/* ─── Diagnostics ─────────────────────────────────────────────────── */}
+
         <CollapsibleSection title={se.diagnostics} sectionKey="diagnostics" accentColor="#64748B" defaultExpanded={false} keywords={['diagnostics', 'crash', 'logs', 'error', 'debug', 'report', 'developer']}>
         <GlassCard
           accentColor="#64748B"
