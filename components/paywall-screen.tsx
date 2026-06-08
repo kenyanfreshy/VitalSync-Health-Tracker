@@ -366,7 +366,21 @@ export function PaywallScreen({
   // ── Main purchase UI ──────────────────────────────────────────────────────
   return (
     <View style={s.root}>
-      {/* Dismiss button (top-right) */}
+      {/* Full-bleed background image */}
+      <Image
+        source={require('@/assets/images/paywall-bg.jpg')}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+      />
+
+      {/* Dark overlay gradient — heavier at bottom for CTA legibility */}
+      <LinearGradient
+        colors={['rgba(13,17,23,0.15)', 'rgba(13,17,23,0.52)', 'rgba(13,17,23,0.90)']}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+
+      {/* Dismiss button (top-right) */
       {onDismiss && (
         <Pressable
           style={[s.dismissBtn, { top: insets.top + 12 }]}
@@ -400,7 +414,6 @@ export function PaywallScreen({
           viewabilityConfig={viewabilityConfig}
           renderItem={({ item }) => (
             <View style={s.carouselSlide}>
-              <Text style={s.carouselIcon}>{item.icon}</Text>
               <Text style={s.carouselTitle}>{item.title}</Text>
             </View>
           )}
