@@ -757,21 +757,27 @@ export default function OnboardingScreen() {
               {[
                 {
                   icon: '🔒',
-                  title: 'On-Device Privacy',
-                  body: 'All data stays on your device. No cloud, no accounts required.',
+                  title: o.reelPrivacyTitle,
+                  body: o.reelPrivacyBody,
                   accent: '#22C55E',
                 },
                 {
                   icon: '🔬',
-                  title: 'AI Lab Scan',
-                  body: 'Scan lab reports with AI — results auto-populate in seconds.',
+                  title: o.reelLabScanTitle,
+                  body: o.reelLabScanBody,
                   accent: '#60A5FA',
                 },
                 {
                   icon: '📊',
-                  title: 'Correlation Engine',
-                  body: 'Evidence-based patterns across vitals, labs, sleep & more.',
+                  title: o.reelCorrelationTitle,
+                  body: o.reelCorrelationBody,
                   accent: '#F472B6',
+                },
+                {
+                  icon: '🩺',
+                  title: o.reelPersonalHealthTitle,
+                  body: o.reelPersonalHealthBody,
+                  accent: '#FB923C',
                 },
               ].map(({ icon, title, body, accent }) => (
                 <View
