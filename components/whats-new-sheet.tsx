@@ -72,6 +72,17 @@ export const whatsNewV2365Strings = {
   i2Desc: "Added react-native-nitro-modules as an explicit package dependency so EAS builds always include the correct native pod for HealthKit's JSI bridge.",
 } as const;
 
+/** Release note content — v1.0.56 */
+export const whatsNewV1056Strings = {
+  version: "1.0.56",
+  date: "Jun 2026",
+  headline: "Guideline 2.5.4 Fix & Stability",
+
+  // Fixed
+  f1Title: "Background Audio Removed (Guideline 2.5.4)",
+  f1Desc: "Removed 'audio' from UIBackgroundModes in Info.plist. VitalSync does not use background audio — the entry was injected by expo-video's PiP setting. Fixed by disabling PiP and explicitly declaring only the required background modes.",
+} as const;
+
 /** Release note content — v1.0.55 */
 export const whatsNewV1055Strings = {
   version: "1.0.55",
@@ -525,6 +536,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1056 = useT(whatsNewV1056Strings);
   const v1055 = useT(whatsNewV1055Strings);
   const v1054 = useT(whatsNewV1054Strings);
   const v1053 = useT(whatsNewV1053Strings);
@@ -536,7 +548,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1055;
+  const latestVersion = v1056;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -666,7 +678,12 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.55 (latest) ── */}
+          {/* ── v1.0.56 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="🔒" title={v1056.f1Title} desc={v1056.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.55 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="✨" title={v1055.i1Title} desc={v1055.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
