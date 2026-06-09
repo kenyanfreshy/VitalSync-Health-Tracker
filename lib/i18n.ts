@@ -28597,7 +28597,7 @@ export const paywallExtStrings = {
     continueWithFree: 'Continuer avec le plan gratuit',
     orContinueFree: 'ou continuer avec la version gratuite limitée',
     freePlanDisclosure: 'Le plan gratuit inclut un enregistrement de base avec un historique limité.',
-    trialDisclosure: 'Après l'essai gratuit de 14 jours, votre abonnement se renouvelle automatiquement à {price} sauf annulation au moins 24 heures avant le renouvellement. Gérez dans les paramètres de l'App Store.',
+    trialDisclosure: "Après l'essai gratuit de 14 jours, votre abonnement se renouvelle automatiquement à {price} sauf annulation au moins 24 heures avant le renouvellement. Gérez dans les paramètres de l'App Store.",
   },
   de: {
     freeTrial: "14-Tage-Gratis-Testversion",
