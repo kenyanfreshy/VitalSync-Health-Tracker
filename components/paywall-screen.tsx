@@ -167,8 +167,8 @@ export function PaywallScreen({
   const ctaLabel = selectedPlan === FREE_PLAN_ID
     ? ((pw as any).continueWithFree ?? 'Continue with Free Plan')
     : selectedPlan === PRODUCT_IDS.yearly
-      ? ((pw as any).continueWithAnnual ?? 'Start My Free Trial — Annual')
-      : ((pw as any).continueWithMonthly ?? 'Unlock Personal Insights');
+      ? ((pw as any).continueWithAnnual ?? 'Start 14-Day Free Trial')
+      : ((pw as any).continueWithMonthly ?? 'Unlock Premium Features');
 
   // ── Handle primary CTA ────────────────────────────────────────────────────
   const handleStartTrial = useCallback(async () => {
@@ -602,8 +602,8 @@ export function PaywallScreen({
               {selectedPlan !== FREE_PLAN_ID && (
                 <Text style={s.ctaPriceLabel}>
                   {selectedPlan === PRODUCT_IDS.yearly
-                    ? `${yearlyPrice}/yr · 14-day free trial`
-                    : `${monthlyPrice}/mo · cancel anytime`}
+                    ? `${yearlyPrice}/year after trial. Cancel anytime.`
+                    : `${monthlyPrice}/month. Cancel anytime.`}
                 </Text>
               )}
             </>
