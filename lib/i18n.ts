@@ -8192,10 +8192,10 @@ export const onboardingStrings = {
     tapTabToExplore: 'Appuyez sur un onglet pour explorer ↑',
     // Slide 2 Mission tab
     ourMission: 'Notre Mission',
-    missionQuote: '"Créé par une infirmière en soins intensifs pour donner à chaque personne la même visibilité de santé de niveau hospitalier que seuls les moniteurs d'hôpital fournissent — en privé, sur votre propre appareil."',
+    missionQuote: '"Créé par une infirmière en soins intensifs pour donner à chaque personne la même visibilité de santé de niveau hospitalier que seuls les moniteurs d\'hôpital fournissent — en privé, sur votre propre appareil."',
     // Slide 2 Privacy tab
     privacyFirstLabel: 'Confidentialité Avant Tout',
-    privacyFirstBody: 'Vos données de santé vous appartiennent. Tout est stocké sur l'appareil — aucun compte requis, aucun téléchargement cloud, aucune donnée vendue ou partagée.',
+    privacyFirstBody: 'Vos données de santé vous appartiennent. Tout est stocké sur l\'appareil — aucun compte requis, aucun téléchargement cloud, aucune donnée vendue ou partagée.',
     // Slide 2 Evidence tab
     evidenceBasedLabel: 'Fondé sur les Preuves',
     evidenceBasedBody: 'Chaque plage de santé, insight et corrélation dans VitalSync est fondé sur des recherches cliniques évaluées par des pairs et indexées dans PubMed — pas sur des opinions.',
@@ -8206,15 +8206,15 @@ export const onboardingStrings = {
     evidenceCard3Title: 'Base de Données Nutritionnelle USDA',
     evidenceCard3Desc: 'Macros et micronutriments issus de USDA FoodData Central — vérifiés en laboratoire, non issus de la foule',
     evidenceCard4Title: 'Analyse NeoSleep',
-    evidenceCard4Desc: 'Sommeil évalué selon les critères AASM et la méthodologie de l'Indice de Qualité du Sommeil de Pittsburgh',
+    evidenceCard4Desc: 'Sommeil évalué selon les critères AASM et la méthodologie de l\'Indice de Qualité du Sommeil de Pittsburgh',
     evidenceCard5Title: 'Moniteur NeoVital',
     evidenceCard5Desc: 'Visualisation des tendances vitales normalisées multi-axes validée selon les normes IEEE et du British Journal of Anaesthesia',
     // Slide 2 Features tab descriptions
-    featureBPDesc: 'Suivez la PA, la fréquence cardiaque et SpO₂ avec des plages de référence alignées sur l'AHA',
+    featureBPDesc: 'Suivez la PA, la fréquence cardiaque et SpO₂ avec des plages de référence alignées sur l\'AHA',
     featureSleepDesc: 'Phases de sommeil évaluées par AASM, efficacité et analyse du rythme circadien',
-    featureBloodSugarDesc: 'Enregistrement du glucose avec seuils d'alerte diabétique et pré-diabétique de l'ADA',
+    featureBloodSugarDesc: 'Enregistrement du glucose avec seuils d\'alerte diabétique et pré-diabétique de l\'ADA',
     featureNutritionDesc: 'Scan alimentaire par caméra — macros vérifiés USDA en quelques secondes',
-    featureMedsDesc: 'Rappels de médicaments, suivi des renouvellements et vérificateur d'interactions',
+    featureMedsDesc: 'Rappels de médicaments, suivi des renouvellements et vérificateur d\'interactions',
     featureLabsDesc: 'Stockage des résultats de laboratoire avec visualisation des tendances dans le temps',
     featureCorrelationDesc: 'Moteur de corrélation inter-métriques fondé sur des recherches méta-analysées',
   },
