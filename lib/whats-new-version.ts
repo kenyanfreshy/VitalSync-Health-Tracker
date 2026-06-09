@@ -13,4 +13,4 @@ export const WHATS_NEW_SEEN_KEY = "@vsht:whatsNewSeenVersion";
  * The latest release version string — must match `whatsNewV2935Strings.version`
  * in components/whats-new-sheet.tsx.
  */
-export const LATEST_WHATS_NEW_VERSION = "1.0.54";
+export const LATEST_WHATS_NEW_VERSION = "1.0.55";
