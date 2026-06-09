@@ -5,6 +5,21 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.59 (Build 10059) — 2026-06-09
+
+### Correlate Tab Redesign
+- **Vibrant glassmorphism insight cards** — fully redesigned with colorful 3D glossy glass cards, emoji icons, impact badges (High / Moderate / Low), citation dots, metric tags, and a mixed full/half-width card layout.
+- **Evidence Library grid** — new Evidence Library section displays all 6 evidence-based correlations in a scannable grid with source citations and expandable detail cards.
+- **Weekly & Monthly Wellness Summary** — new collapsible Wellness Summary section shows 7-day and 30-day historical averages for all tracked vitals (blood pressure, heart rate, sleep, glucose, weight, steps, sodium, HRV).
+
+### Translations & i18n
+- **Full i18n coverage** — all new Correlate tab strings (insight cards, Evidence Library, Wellness Summary) fully translated into all 10 languages (en, es, fr, de, zh, ar, pt, ja, sw, hi).
+
+### Bug Fixes
+- **TypeScript null-filter narrowing** — fixed 4 TS errors in `wellness-summary.tsx` where `.filter(v => v > 0)` did not narrow `null` values; replaced with type-guard filters.
+
+---
+
 ## v1.0.58 (Build 10058) — 2026-06-09
 
 ### Translations & i18n

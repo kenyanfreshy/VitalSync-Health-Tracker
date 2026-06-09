@@ -10320,3 +10320,19 @@
 - [x] What's New v1.0.49 entry added (whats-new-sheet.tsx + _layout.tsx + whats-new-version.ts)
 - [x] Committed 0d10552, pushed to GitHub
 - [x] EAS build 5bccf056 finished, submitted to TestFlight (submission aedbb785)
+
+## v1.0.59 — Correlate Tab Full Redesign (RTM-Driven)
+- [x] Correlation Explorer v4: vibrant InsightCard redesign with emoji icons, impact badges, mixed full/half-width layouts, citation dots, metric tags
+- [x] Evidence Based Sources grid at bottom of InsightEngine (PubMed, AHA, Cochrane, WHO, ISSN, AND-EAL)
+- [ ] Pattern Explorer: 16 relationship scatter plots with 30/90/180/365-day views, correlation/confidence/completeness scores inside analytics.tsx
+- [x] Weekly Wellness Summary collapsible section inside analytics.tsx
+- [x] Monthly Wellness Summary collapsible section inside analytics.tsx
+- [ ] Research Insights section (renamed from Evidence-Based Insights) inside analytics.tsx
+- [x] Evidence Library grid section inside analytics.tsx
+- [ ] Historical Relationships section in Health Report (report.tsx)
+- [ ] Scoring system: Data Completeness, Trend Stability, Relationship Strength, Research Confidence
+- [ ] Premium feature gating for extended analysis and Pattern Explorer
+- [ ] Compliance review: no diagnostic/disease/treatment/risk language
+- [x] Translate all new correlate strings into all 10 languages in i18n.ts
+- [ ] Generate RTM with 100% coverage, compliance checklist, gap analysis
+- [x] Bump version to v1.0.59, push to GitHub, submit to TestFlight

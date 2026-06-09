@@ -72,6 +72,25 @@ export const whatsNewV2365Strings = {
   i2Desc: "Added react-native-nitro-modules as an explicit package dependency so EAS builds always include the correct native pod for HealthKit's JSI bridge.",
 } as const;
 
+/** Release note content — v1.0.59 */
+export const whatsNewV1059Strings = {
+  version: "1.0.59",
+  date: "Jun 2026",
+  headline: "Correlate Tab Redesign — Vibrant Glassmorphism",
+
+  // New
+  n1Title: "Vibrant Glassmorphism Insight Cards",
+  n1Desc: "The Correlate tab is fully redesigned with colorful 3D glossy glass cards, emoji icons, impact badges (High / Moderate / Low), citation dots, metric tags, and a mixed full/half-width card layout.",
+  n2Title: "Evidence Library Grid",
+  n2Desc: "A new Evidence Library section displays all 6 evidence-based correlations in a scannable grid with source citations and expandable detail cards.",
+  n3Title: "Weekly & Monthly Wellness Summary",
+  n3Desc: "New collapsible Wellness Summary section shows 7-day and 30-day historical averages for all tracked vitals — blood pressure, heart rate, sleep, glucose, weight, steps, sodium, and HRV.",
+
+  // Improved
+  i1Title: "Full i18n — All 10 Languages",
+  i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
+} as const;
+
 /** Release note content — v1.0.57 */
 export const whatsNewV1057Strings = {
   version: "1.0.57",
@@ -547,6 +566,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1059 = useT(whatsNewV1059Strings);
   const v1057 = useT(whatsNewV1057Strings);
   const v1056 = useT(whatsNewV1056Strings);
   const v1055 = useT(whatsNewV1055Strings);
@@ -560,7 +580,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1057;
+  const latestVersion = v1059;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -690,7 +710,19 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.57 (latest) ── */}
+          {/* ── v1.0.59 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="✨" title={v1059.n1Title} desc={v1059.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📚" title={v1059.n2Title} desc={v1059.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📊" title={v1059.n3Title} desc={v1059.n3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🌐" title={v1059.i1Title} desc={v1059.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.57 ── */}
+          <OlderVersionHeader version={v1057.version} date={v1057.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="🌐" title={v1057.i1Title} desc={v1057.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

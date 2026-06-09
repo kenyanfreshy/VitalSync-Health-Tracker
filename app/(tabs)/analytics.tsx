@@ -59,6 +59,7 @@ import { useMacroGoals } from '@/hooks/use-macro-goals';
 import { CaloricTrendInsightCard } from '@/components/caloric-trend-insight-card';
 import { ReadinessHistoryChart } from '@/components/readiness-history-chart';
 import { InsightEngine } from '@/components/dashboard/insight-engine';
+import { WellnessSummarySection } from '@/components/dashboard/wellness-summary';
 import { CorrelationTrendChart } from '@/components/correlation-trend-chart';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
@@ -810,6 +811,10 @@ export default function AnalyticsScreen() {
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
         <View style={{ height: 14 }} />
         {state.data && <InsightEngine data={state.data} />}
+
+        {/* ─── Wellness Summary ────────────────────────────────────────── */}
+        <View style={{ height: 10 }} />
+        {state.data && <WellnessSummarySection data={state.data} />}
 
         {/* ─── REMOVED: Custom Correlation Explorer (replaced by InsightEngine) ─── */}
         {false && (

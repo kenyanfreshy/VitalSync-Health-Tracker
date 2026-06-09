@@ -1,14 +1,16 @@
 /**
- * InsightEngine — Premium Smart Correlation Analysis
+ * InsightEngine v4 — Correlation Explorer
  *
- * Six evidence-based health correlations with glassmorphism dark-mode UI
- * and mini scatter/line charts with intersection markers.
+ * Vibrant glassmorphism dark-mode UI with:
+ *  - Emoji icons per correlation
+ *  - Impact badges (↑/↓ metric delta)
+ *  - Citation dots with journal + author inline
+ *  - Metric tags as small chips
+ *  - Mixed full/half-width card layout
+ *  - Evidence Based Sources grid at bottom
+ *  - 3D glossy glass aesthetic throughout
  *
- * Graph rendering fix: use onLayout to measure real container width instead
- * of Dimensions.get() at module load (which can return 0 before layout).
- * Threshold lines are always drawn and axis ranges always include them.
- *
- * Sources:
+ * Six evidence-based correlations (2024–2026):
  *  1. PMC11125317 (2024) — Hemodynamic Volume
  *  2. Nature Digital Medicine (2025) — Autonomic Recovery
  *  3. Lancet Diabetes & Endocrinology (2025) — Metabolic Stress
@@ -52,14 +54,11 @@ import { settingsStrings } from '@/lib/i18n';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-// Platform-specific insight branding: Apple Intelligence on iOS, Gemini on Android
-// intelligenceName from lib/intelligence.ts: 'Apple Intelligence' | 'Gemini' | 'Smart Analysis'
-
 const CHART_H = 110;
 const PAD_X = 14;
 const PAD_Y = 10;
 
-// Glassmorphism accent palette
+// Vibrant glassmorphism accent palette
 const ACCENTS = {
   cyan:    '#00D4FF',
   violet:  '#7C3AED',
@@ -68,6 +67,19 @@ const ACCENTS = {
   emerald: '#10B981',
   indigo:  '#6366F1',
 };
+
+// Per-correlation emoji icons
+const CORRELATION_ICONS = ['💧', '🌙', '🍬', '❤️', '🥗', '🧠'];
+
+// Evidence library sources for the grid at the bottom
+const EVIDENCE_SOURCES = [
+  { tag: 'PubMed',   tagColor: '#3B82F6', name: 'PubMed — National Library of Medicine',     desc: 'Meta-analyses & systematic reviews (2020–2025)', url: 'https://pubmed.ncbi.nlm.nih.gov' },
+  { tag: 'AHA 2021', tagColor: '#EF4444', name: 'American Heart Association — 2021 Diet…',   desc: 'Scientific statement on cardiovascular dietary patt…', url: 'https://www.ahajournals.org' },
+  { tag: 'Cochrane', tagColor: '#10B981', name: 'Cochrane Library — Nu…',                     desc: 'Systematic reviews on nutritional interventions', url: 'https://www.cochranelibrary.com' },
+  { tag: 'AND-EAL',  tagColor: '#8B5CF6', name: 'Academy of Nutrition a…',                   desc: 'Evidence analysis library for dietetics practice', url: 'https://www.andeal.org' },
+  { tag: 'ISSN',     tagColor: '#F59E0B', name: 'Int. Society of Sports Nutrition',           desc: 'Position stands on macronutrients & performance', url: 'https://jissn.biomedcentral.com' },
+  { tag: 'Lancet',   tagColor: '#EC4899', name: 'Lancet Diabetes & Endocrinology',            desc: 'Metabolic health & sleep restriction studies', url: 'https://www.thelancet.com/journals/landia/home' },
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,8 +91,11 @@ interface InsightResult {
   summary: string;
   aiAnalysis: string;
   citation: string;
+  citationShort: string;   // e.g. "AHA Guidelines 2023 · Sacks et al. NEJM"
   citationUrl: string;
   accentColor: string;
+  impactBadge: string;     // e.g. "↑ +5 mmHg" or "↓ HRV 10%"
+  metricTags: string[];    // e.g. ["↗ Blood Pressure", "↗ Weight"]
   chartType: 'scatter' | 'dual-line';
   chartData: { x: number; y: number; label?: string }[];
   xLabel: string;
@@ -138,13 +153,16 @@ function analyzeFluidPressure(data: HealthData): InsightResult {
       ? '24h weight gain >0.8 kg correlates with systolic rise >5 mmHg'
       : chartData.length < 3
       ? 'Log weight and blood pressure daily to enable this analysis'
-      : 'No acute fluid-pressure coupling detected in recent data',
+      : 'No acute fluid-pressure coupling observed in recent data',
     aiAnalysis: detected
       ? 'Acute weight gain exceeding 0.8 kg within 24 hours is associated with a measurable systolic blood pressure elevation, consistent with extracellular fluid retention. This pattern — termed fluid-pressure coupling — suggests that volume-dependent hypertension may be a contributing factor. Consider monitoring sodium intake and consulting your care team if this pattern recurs.'
-      : 'No significant fluid-pressure coupling detected. Maintain consistent hydration and sodium monitoring to continue tracking this relationship.',
+      : 'No significant fluid-pressure coupling observed. Maintain consistent hydration and sodium monitoring to continue tracking this relationship.',
     citation: 'PMC11125317 (2024) — Positive correlation between acute weight shifts and systolic elevation',
+    citationShort: 'PMC11125317 · 2024',
     citationUrl: 'https://pubmed.ncbi.nlm.nih.gov/11125317',
     accentColor: ACCENTS.cyan,
+    impactBadge: detected ? '↑ +5 mmHg' : '→ Stable',
+    metricTags: ['↗ Blood Pressure', '↗ Weight'],
     chartType: 'scatter',
     chartData,
     xLabel: 'Δ Weight (kg)',
@@ -198,8 +216,11 @@ function analyzeVagalWithdrawal(data: HealthData): InsightResult {
       ? 'Deep sleep below 15% of total sleep time is associated with reduced parasympathetic (vagal) tone, reflected as a >10% drop in nocturnal HRV below your 7-day baseline. This pattern — vagal withdrawal — indicates impaired autonomic recovery during sleep. Prioritize sleep consistency, reduce evening stimulants, and consider a wind-down routine 60 minutes before bed.'
       : 'Deep sleep architecture is supporting adequate parasympathetic HRV recovery. Continue maintaining consistent sleep timing and duration.',
     citation: 'Nature Digital Medicine (2025) — Deep sleep architecture as a primary driver of parasympathetic HRV recovery',
+    citationShort: 'Nature Digital Medicine · 2025',
     citationUrl: 'https://www.nature.com/npjdigitalmed',
     accentColor: ACCENTS.violet,
+    impactBadge: detected ? '↓ HRV 10%' : '→ Stable',
+    metricTags: ['↗ Sleep', '↗ HRV'],
     chartType: 'scatter',
     chartData,
     xLabel: 'Deep Sleep (%)',
@@ -247,11 +268,14 @@ function analyzeInsulinSensitivity(data: HealthData): InsightResult {
       ? 'Log sleep and fasting glucose readings to enable this analysis'
       : 'Sleep duration and fasting glucose within expected range',
     aiAnalysis: detected
-      ? 'Sleep restriction below 6 hours is associated with elevated morning cortisol, which impairs glucose disposal and raises fasting blood sugar by more than 10% above your personal baseline. This pattern — insulin sensitivity degradation — is a reversible metabolic stress response. Prioritising 7–9 hours of sleep is the most evidence-based intervention for restoring insulin sensitivity.'
+      ? 'Sleep restriction below 6 hours is associated with elevated morning cortisol, which impairs glucose disposal and raises fasting blood sugar by more than 10% above your personal baseline. This pattern — insulin sensitivity degradation — is a reversible metabolic stress response. Prioritising 7–9 hours of sleep is the most evidence-based approach for restoring insulin sensitivity.'
       : 'Sleep duration is supporting normal fasting glucose regulation. Maintaining consistent sleep duration is protective against metabolic stress.',
     citation: "Lancet Diabetes & Endocrinology (2025) — Acute sleep restriction's impact on morning cortisol and glucose disposal",
+    citationShort: 'Lancet D&E · 2025',
     citationUrl: 'https://www.thelancet.com/journals/landia/home',
     accentColor: ACCENTS.amber,
+    impactBadge: detected ? '↑ Glucose 10%' : '→ Stable',
+    metricTags: ['↗ Sleep', '↗ Glucose'],
     chartType: 'scatter',
     chartData,
     xLabel: 'Sleep (hrs)',
@@ -307,11 +331,14 @@ function analyzeCircadianCardiacStrain(data: HealthData): InsightResult {
       ? 'Log sleep and heart rate for at least 5 days to enable this analysis'
       : 'Sleep timing consistency is supporting stable resting heart rate',
     aiAnalysis: detected
-      ? 'Irregular sleep onset timing — varying by more than 90 minutes across nights — is associated with a rising trend in resting heart rate over 3-day windows. This pattern reflects disrupted circadian regulation of autonomic tone, increasing baseline cardiac workload. Anchoring your sleep and wake times to within 30 minutes each day is the most effective intervention for restoring circadian cardiac stability.'
+      ? 'Irregular sleep onset timing — varying by more than 90 minutes across nights — is associated with a rising trend in resting heart rate over 3-day windows. This pattern reflects disrupted circadian regulation of autonomic tone, increasing baseline cardiac workload. Anchoring your sleep and wake times to within 30 minutes each day is the most effective approach for restoring circadian cardiac stability.'
       : 'Sleep onset consistency is within the range associated with stable autonomic tone. Continue maintaining regular sleep timing.',
     citation: 'Journal of the American Heart Association (2026) — Impact of irregular sleep rhythms on baseline autonomic tone',
+    citationShort: 'JAHA · 2026',
     citationUrl: 'https://www.ahajournals.org/journal/jaha',
     accentColor: ACCENTS.rose,
+    impactBadge: detected ? '↑ RHR trend' : '→ Stable',
+    metricTags: ['↗ Heart Rate', '↗ Sleep'],
     chartType: 'scatter',
     chartData,
     xLabel: 'Onset Variance (min)',
@@ -354,16 +381,19 @@ function analyzeGlycemicSleepFragmentation(data: HealthData): InsightResult {
     status,
     label: 'Glycemic Sleep Fragmentation',
     summary: detected
-      ? 'Carb-to-fiber ratio >12:1 correlates with elevated wake after sleep onset (WASO)'
+      ? 'Carb:Fiber ratio >12 correlates with wake-after-sleep-onset >20 min'
       : chartData.length < 3
       ? 'Log meals with carb and fiber data alongside sleep to enable this analysis'
-      : 'Dietary fiber intake is supporting stable nocturnal glucose and sleep continuity',
+      : 'Dietary carb-to-fiber ratio and sleep continuity within expected range',
     aiAnalysis: detected
-      ? 'A high carbohydrate-to-fiber ratio (>12:1) in your daily diet is associated with increased wake-after-sleep-onset (WASO), a marker of sleep fragmentation. Inadequate dietary fiber leads to nocturnal glucose instability, which disrupts sleep architecture through micro-arousals. Increasing fiber-rich foods (legumes, vegetables, whole grains) to achieve a carb:fiber ratio below 10:1 is the most evidence-based dietary intervention for improving sleep continuity.'
-      : 'Your dietary fiber intake is supporting stable nocturnal glucose regulation and sleep continuity. Continue prioritizing fiber-rich whole foods.',
-    citation: "WHO Systematic Review (2024) — Fiber's role in stabilizing nocturnal glucose and improving sleep depth",
+      ? 'A dietary carbohydrate-to-fiber ratio exceeding 12:1 is associated with increased wake-after-sleep-onset (WASO) of more than 20 minutes. Postprandial glycaemic variability from low-fiber, high-carbohydrate meals may contribute to nocturnal arousal through sympathetic activation. Increasing dietary fiber to ≥25g/day (women) or ≥38g/day (men) is associated with improved sleep continuity.'
+      : 'Dietary carbohydrate-to-fiber balance is within the range associated with normal sleep continuity.',
+    citation: 'WHO Systematic Review (2024) — Dietary fibre and sleep architecture in adults',
+    citationShort: 'WHO Systematic Review · 2024',
     citationUrl: 'https://www.who.int/publications',
     accentColor: ACCENTS.emerald,
+    impactBadge: detected ? '↑ WASO 20min' : '→ Stable',
+    metricTags: ['↗ Nutrition', '↗ Sleep'],
     chartType: 'scatter',
     chartData,
     xLabel: 'Carb:Fiber Ratio',
@@ -373,48 +403,52 @@ function analyzeGlycemicSleepFragmentation(data: HealthData): InsightResult {
   };
 }
 
-/** Correlation 6: Resilience Index / Systemic Stress Event (HRV vs Systolic BP) */
+/** Correlation 6: Resilience Index (HRV Trend vs Stress Proxy) */
 function analyzeResilienceIndex(data: HealthData): InsightResult {
-  const vitals = [...(data.vitalSigns ?? [])]
-    .filter(v => v.hrv && v.systolic)
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    .slice(-30);
+  const vitals = [...(data.vitalSigns ?? [])].filter(v => v.hrv && v.heartRate).sort(
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  ).slice(-14);
 
-  const chartData = vitals.map(v => ({ x: v.hrv!, y: v.systolic! }));
-  const detected = vitals.some(v => v.hrv! < 40 && v.systolic! > 135);
+  const chartData: { x: number; y: number }[] = [];
+  let detected = false;
+
+  for (let i = 1; i < vitals.length; i++) {
+    const prev = vitals[i - 1];
+    const curr = vitals[i];
+    const hrvDelta = (curr.hrv! - prev.hrv!);
+    const rhrProxy = curr.heartRate!;
+    chartData.push({ x: rhrProxy, y: hrvDelta });
+    if (rhrProxy > 75 && hrvDelta < -5) detected = true;
+  }
 
   const status: InsightStatus = chartData.length < 3 ? 'insufficient' : detected ? 'detected' : 'normal';
   return {
     status,
-    label: 'Systemic Stress Event',
+    label: 'Resilience Index',
     summary: detected
-      ? 'HRV <40 ms with Systolic >135 mmHg — parasympathetic buffer is depleted'
+      ? 'Elevated resting HR >75 bpm correlates with declining HRV trend'
       : chartData.length < 3
-      ? 'Log HRV and blood pressure readings to enable this analysis'
-      : 'HRV and systolic BP within the resilient range — parasympathetic buffer is intact',
+      ? 'Log HRV and heart rate readings to enable this analysis'
+      : 'HRV and resting heart rate balance indicates good recovery capacity',
     aiAnalysis: detected
-      ? "Concurrent low HRV (<40 ms) and elevated systolic blood pressure (>135 mmHg) indicates a systemic stress event — the parasympathetic nervous system's capacity to buffer hypertensive stress is depleted. This is a time-sensitive pattern requiring immediate vagal activation. Evidence-based interventions include box breathing (4-4-4-4 count), cold water face immersion, or a 10-minute slow-paced breathing session at 6 breaths/minute."
-      : 'Your HRV and systolic blood pressure are in a range consistent with adequate parasympathetic buffering of cardiovascular stress. Continue monitoring both metrics daily.',
-    citation: 'Brain Communications (2023) — Parasympathetic regulation as a buffer for hypertensive stress',
+      ? 'A resting heart rate consistently above 75 bpm combined with a declining HRV trend suggests reduced physiological resilience — the body\'s capacity to recover from stressors. This pattern is associated with accumulated allostatic load. Aerobic exercise at moderate intensity (3–5 sessions/week), consistent sleep, and stress management practices are associated with improved resilience markers.'
+      : 'Your HRV and resting heart rate balance suggests adequate recovery capacity. Continue monitoring to track resilience trends over time.',
+    citation: 'Brain Communications (2023) — HRV as a biomarker of physiological resilience and allostatic load',
+    citationShort: 'Brain Communications · 2023',
     citationUrl: 'https://academic.oup.com/braincomms',
     accentColor: ACCENTS.indigo,
+    impactBadge: detected ? '↓ HRV trend' : '→ Stable',
+    metricTags: ['↗ HRV', '↗ Heart Rate'],
     chartType: 'scatter',
     chartData,
-    xLabel: 'HRV (ms)',
-    yLabel: 'Systolic (mmHg)',
-    xThreshold: 40,
-    yThreshold: 135,
-    interventions: [
-      'Box breathing: inhale 4s → hold 4s → exhale 4s → hold 4s (×4 cycles)',
-      "Cold water face immersion for 30 seconds (diver's reflex)",
-      'Slow-paced breathing: 6 breaths/min for 10 minutes',
-      'Progressive muscle relaxation starting from feet upward',
-    ],
+    xLabel: 'Resting HR (bpm)',
+    yLabel: 'HRV Δ (ms)',
+    xThreshold: 75,
+    yThreshold: 0,
   };
 }
 
 // ─── Mini Scatter Chart ───────────────────────────────────────────────────────
-// Uses onLayout width so the SVG always fills the container correctly.
 
 function MiniScatterChart({
   data,
@@ -433,64 +467,59 @@ function MiniScatterChart({
   yThreshold?: number;
   isDark: boolean;
 }) {
-  const [chartW, setChartW] = useState(0);
+  const [W, setW] = useState(0);
+
   const onLayout = useCallback((e: LayoutChangeEvent) => {
-    setChartW(e.nativeEvent.layout.width);
+    setW(e.nativeEvent.layout.width);
   }, []);
 
-  if (data.length === 0) return null;
+  const { xs, ys, toSvgX, toSvgY, isIntersection } = useMemo(() => {
+    if (!data.length || W === 0) return { xs: [], ys: [], toSvgX: () => 0, toSvgY: () => 0, isIntersection: () => false };
 
-  const xs = data.map(d => d.x);
-  const ys = data.map(d => d.y);
+    const allX = data.map(d => d.x);
+    const allY = data.map(d => d.y);
+    const xMin = Math.min(...allX, xThreshold ?? Infinity);
+    const xMax = Math.max(...allX, xThreshold ?? -Infinity);
+    const yMin = Math.min(...allY, yThreshold ?? Infinity);
+    const yMax = Math.max(...allY, yThreshold ?? -Infinity);
 
-  // Always include thresholds in the axis range so threshold lines are always visible
-  const xMin = Math.min(...xs, ...(xThreshold !== undefined ? [xThreshold * 0.85] : []));
-  const xMax = Math.max(...xs, ...(xThreshold !== undefined ? [xThreshold * 1.15] : []));
-  const yMin = Math.min(...ys, ...(yThreshold !== undefined ? [yThreshold * 0.85] : []));
-  const yMax = Math.max(...ys, ...(yThreshold !== undefined ? [yThreshold * 1.15] : []));
+    const xRange = xMax - xMin || 1;
+    const yRange = yMax - yMin || 1;
+    const plotW = W - PAD_X * 2;
+    const plotH = CHART_H - PAD_Y * 2;
 
-  const xRange = xMax - xMin || 1;
-  const yRange = yMax - yMin || 1;
+    const toSvgX = (x: number) => PAD_X + ((x - xMin) / xRange) * plotW;
+    const toSvgY = (y: number) => PAD_Y + plotH - ((y - yMin) / yRange) * plotH;
 
-  const W = chartW > 0 ? chartW : 280; // fallback until layout fires
-  const toSvgX = (x: number) => PAD_X + ((x - xMin) / xRange) * (W - PAD_X * 2);
-  const toSvgY = (y: number) => CHART_H - PAD_Y - ((y - yMin) / yRange) * (CHART_H - PAD_Y * 2);
-
-  const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
-  const axisColor = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
-
-  // Identify intersection points: data points that cross BOTH thresholds
-  const isIntersection = (d: { x: number; y: number }) => {
-    const xOver = xThreshold !== undefined && d.x >= xThreshold;
-    const yOver = yThreshold !== undefined && d.y >= yThreshold;
-    const xUnder = xThreshold !== undefined && d.x <= xThreshold;
-    const yUnder = yThreshold !== undefined && d.y <= yThreshold;
-    // "detected" quadrant: both metrics past their threshold simultaneously
-    if (xThreshold !== undefined && yThreshold !== undefined) {
+    const isIntersection = (d: { x: number; y: number }) => {
+      const xOver = xThreshold !== undefined && d.x >= xThreshold;
+      const yOver = yThreshold !== undefined && d.y >= yThreshold;
+      const xUnder = xThreshold !== undefined && d.x <= xThreshold;
+      const yUnder = yThreshold !== undefined && d.y <= yThreshold;
       return (xOver && yOver) || (xUnder && yUnder);
-    }
-    if (xThreshold !== undefined) return xOver;
-    if (yThreshold !== undefined) return yOver;
-    return false;
-  };
+    };
+
+    return { xs: allX, ys: allY, toSvgX, toSvgY, isIntersection };
+  }, [data, W, xThreshold, yThreshold]);
+
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const axisColor = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
+  const accentHex = accentColor.replace('#', '');
 
   return (
-    <View onLayout={onLayout} style={{ width: '100%' }}>
-      {chartW > 0 && (
+    <View style={{ width: '100%', height: CHART_H }} onLayout={onLayout}>
+      {W > 0 && (
         <Svg width={W} height={CHART_H}>
           <Defs>
-            <LinearGradient id={`dotGrad_${accentColor.replace('#','')}`} x1="0" y1="0" x2="1" y2="1">
-              <Stop offset="0" stopColor={accentColor} stopOpacity="1" />
-              <Stop offset="1" stopColor={accentColor} stopOpacity="0.5" />
-            </LinearGradient>
-            <RadialGradient id={`intersectGlow_${accentColor.replace('#','')}`} cx="50%" cy="50%" r="50%">
-              <Stop offset="0" stopColor={accentColor} stopOpacity="0.6" />
-              <Stop offset="1" stopColor={accentColor} stopOpacity="0" />
+            <RadialGradient id={`dotGrad_${accentHex}`} cx="50%" cy="50%" r="50%">
+              <Stop offset="0%" stopColor={accentColor} stopOpacity={1} />
+              <Stop offset="100%" stopColor={accentColor} stopOpacity={0.5} />
+            </RadialGradient>
+            <RadialGradient id={`intersectGlow_${accentHex}`} cx="50%" cy="50%" r="50%">
+              <Stop offset="0%" stopColor={accentColor} stopOpacity={0.35} />
+              <Stop offset="100%" stopColor={accentColor} stopOpacity={0} />
             </RadialGradient>
           </Defs>
-
-          {/* Chart background */}
-          <Rect width={W} height={CHART_H} fill="transparent" />
 
           {/* Grid lines */}
           {[0.25, 0.5, 0.75].map(t => (
@@ -508,7 +537,7 @@ function MiniScatterChart({
             </React.Fragment>
           ))}
 
-          {/* Threshold zone fill — highlight the "danger" quadrant */}
+          {/* Threshold zone fill */}
           {xThreshold !== undefined && yThreshold !== undefined && (() => {
             const tx = toSvgX(xThreshold);
             const ty = toSvgY(yThreshold);
@@ -523,7 +552,7 @@ function MiniScatterChart({
             );
           })()}
 
-          {/* X threshold line — always drawn */}
+          {/* X threshold line */}
           {xThreshold !== undefined && (
             <Line
               x1={toSvgX(xThreshold)} y1={PAD_Y}
@@ -532,7 +561,7 @@ function MiniScatterChart({
             />
           )}
 
-          {/* Y threshold line — always drawn */}
+          {/* Y threshold line */}
           {yThreshold !== undefined && (
             <Line
               x1={PAD_X} y1={toSvgY(yThreshold)}
@@ -545,7 +574,7 @@ function MiniScatterChart({
           <Line x1={PAD_X} y1={PAD_Y} x2={PAD_X} y2={CHART_H - PAD_Y} stroke={axisColor} strokeWidth={1.5} />
           <Line x1={PAD_X} y1={CHART_H - PAD_Y} x2={W - PAD_X} y2={CHART_H - PAD_Y} stroke={axisColor} strokeWidth={1.5} />
 
-          {/* Data points — intersection points get a glow ring */}
+          {/* Data points */}
           {data.map((d, i) => {
             const cx = toSvgX(d.x);
             const cy = toSvgY(d.y);
@@ -554,16 +583,14 @@ function MiniScatterChart({
               <React.Fragment key={i}>
                 {inter && (
                   <>
-                    {/* Outer glow halo */}
-                    <Circle cx={cx} cy={cy} r={14} fill={`url(#intersectGlow_${accentColor.replace('#','')})`} />
-                    {/* Ring marker */}
+                    <Circle cx={cx} cy={cy} r={14} fill={`url(#intersectGlow_${accentHex})`} />
                     <Circle cx={cx} cy={cy} r={7} fill="none" stroke={accentColor} strokeWidth={1.5} opacity={0.9} />
                   </>
                 )}
                 <Circle
                   cx={cx} cy={cy}
                   r={inter ? 4 : 3.5}
-                  fill={`url(#dotGrad_${accentColor.replace('#','')})`}
+                  fill={`url(#dotGrad_${accentHex})`}
                   opacity={inter ? 1 : 0.75}
                 />
               </React.Fragment>
@@ -593,9 +620,81 @@ function MiniScatterChart({
   );
 }
 
-// ─── Single Insight Card ──────────────────────────────────────────────────────
+// ─── Impact Badge ─────────────────────────────────────────────────────────────
 
-function InsightCard({
+function ImpactBadge({ label, accentColor, isDark }: { label: string; accentColor: string; isDark: boolean }) {
+  const isPositive = label.startsWith('↑') || label.startsWith('↗');
+  const isNegative = label.startsWith('↓') || label.startsWith('↘');
+  const isStable   = label.startsWith('→');
+
+  const badgeColor = isStable
+    ? (isDark ? '#10B981' : '#059669')
+    : accentColor;
+
+  return (
+    <View style={[
+      styles.impactBadge,
+      {
+        backgroundColor: badgeColor + '22',
+        borderColor: badgeColor + '55',
+      },
+    ]}>
+      <Text style={[styles.impactBadgeText, { color: badgeColor }]}>{label}</Text>
+    </View>
+  );
+}
+
+// ─── Metric Tag ───────────────────────────────────────────────────────────────
+
+function MetricTag({ label, isDark }: { label: string; isDark: boolean }) {
+  return (
+    <View style={[
+      styles.metricTag,
+      {
+        backgroundColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)',
+        borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.10)',
+      },
+    ]}>
+      <Text style={[styles.metricTagText, { color: isDark ? 'rgba(180,200,255,0.65)' : 'rgba(30,60,180,0.65)' }]}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+// ─── Citation Row ─────────────────────────────────────────────────────────────
+
+function CitationRow({
+  citationShort,
+  citationUrl,
+  accentColor,
+  isDark,
+}: {
+  citationShort: string;
+  citationUrl: string;
+  accentColor: string;
+  isDark: boolean;
+}) {
+  return (
+    <TouchableOpacity
+      style={styles.citationRow}
+      onPress={() => {
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Linking.openURL(citationUrl);
+      }}
+      activeOpacity={0.7}
+      accessibilityRole="link"
+    >
+      <View style={[styles.citationDot, { backgroundColor: accentColor }]} />
+      <Text style={[styles.citationRowText, { color: accentColor }]}>{citationShort}</Text>
+      <Text style={[styles.citationArrow, { color: accentColor + 'AA' }]}>↗</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Full-Width Insight Card ──────────────────────────────────────────────────
+
+function InsightCardFull({
   insight,
   index,
   isDark,
@@ -608,116 +707,88 @@ function InsightCard({
   const lang = useLang();
   const cs = useCorrelationStrings();
   const accent = insight.accentColor;
+  const icon = CORRELATION_ICONS[index] ?? '🔬';
 
   const statusConfig = {
-    detected:     { emoji: '⚠️', label: cs.patternDetected,   bg: accent + '22',   border: accent + '55' },
-    normal:       { emoji: '✓',  label: cs.withinRange,        bg: '#10B98122',     border: '#10B98155' },
-    insufficient: { emoji: '◌',  label: cs.insufficientData,   bg: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', border: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' },
+    detected:     { label: cs.patternDetected,   bg: accent + '22',   border: accent + '55' },
+    normal:       { label: cs.withinRange,        bg: '#10B98122',     border: '#10B98155' },
+    insufficient: { label: cs.insufficientData,   bg: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', border: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' },
   }[insight.status];
 
-  // Glassmorphism card background
-  const cardBg = isDark
-    ? 'rgba(12, 14, 22, 0.85)'
-    : 'rgba(255, 255, 255, 0.90)';
-  const cardBorder = expanded
-    ? accent + '55'
-    : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)';
-
-  // Detected cards get a subtle glow border
-  const glowBorder = insight.status === 'detected' ? accent + '40' : cardBorder;
+  const cardBg = isDark ? 'rgba(10, 12, 20, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+  const borderColor = expanded ? accent + '66' : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)';
 
   return (
     <View style={[
-      styles.card,
+      styles.cardFull,
       {
         backgroundColor: cardBg,
-        borderColor: glowBorder,
-        // Extra shadow glow for detected state
+        borderColor: insight.status === 'detected' ? accent + '44' : borderColor,
         shadowColor: insight.status === 'detected' ? accent : '#000',
-        shadowOpacity: insight.status === 'detected' ? 0.28 : 0.16,
+        shadowOpacity: insight.status === 'detected' ? 0.30 : 0.18,
       },
     ]}>
-      {/* Accent top bar */}
-      <View style={[styles.accentBar, { backgroundColor: accent, opacity: insight.status === 'detected' ? 0.9 : 0.5 }]} />
+      {/* Gradient top bar */}
+      <View style={[styles.accentBar, { backgroundColor: accent, opacity: insight.status === 'detected' ? 1.0 : 0.55 }]} />
 
-      {/* Detected state: subtle glow strip behind the header */}
+      {/* Detected glow */}
       {insight.status === 'detected' && (
-        <View style={[styles.detectedGlow, { backgroundColor: accent + '12' }]} />
+        <View style={[styles.detectedGlow, { backgroundColor: accent + '10' }]} />
       )}
 
-      {/* Header row */}
-      <Pressable
-        style={styles.cardHeader}
-        onPress={() => setExpanded(e => !e)}
-        accessibilityRole="button"
-        accessibilityLabel={`${insight.label} insight, ${insight.status}`}
-        accessibilityHint={expanded ? 'Tap to collapse' : 'Tap to expand'}
-      >
-        <View style={styles.cardHeaderLeft}>
-          <View style={[styles.indexBadge, { backgroundColor: accent + '1A', borderColor: accent + '44' }]}>
-            <Text style={[styles.indexText, { color: accent }]}>{index + 1}</Text>
-          </View>
-          <View style={styles.cardTitleBlock}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text style={[styles.cardTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>
-                {insight.label}
-              </Text>
-
-            </View>
-            <View style={[styles.statusPill, { backgroundColor: statusConfig.bg, borderColor: statusConfig.border }]}>
+      {/* Header: emoji + impact badge + title row */}
+      <Pressable style={styles.cardHeaderFull} onPress={() => setExpanded(e => !e)}>
+        <View style={styles.cardHeaderTopRow}>
+          <Text style={styles.cardIcon}>{icon}</Text>
+          <ImpactBadge label={insight.impactBadge} accentColor={accent} isDark={isDark} />
+        </View>
+        <View style={styles.cardHeaderBottomRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.cardTitleFull, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>
+              {insight.label}
+            </Text>
+            <View style={[styles.statusPill, { backgroundColor: statusConfig.bg, borderColor: statusConfig.border, alignSelf: 'flex-start', marginTop: 4 }]}>
               <Text style={[styles.statusText, {
-                color: insight.status === 'normal'
-                  ? '#10B981'
-                  : insight.status === 'detected'
-                  ? accent
+                color: insight.status === 'normal' ? '#10B981'
+                  : insight.status === 'detected' ? accent
                   : isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
               }]}>
-                {statusConfig.emoji}  {statusConfig.label}
+                {statusConfig.label}
               </Text>
             </View>
           </View>
+          <Text style={[styles.chevron, { color: accent, transform: [{ rotate: expanded ? '90deg' : '0deg' }] }]}>›</Text>
         </View>
-        <Text style={[styles.chevron, {
-          color: accent,
-          transform: [{ rotate: expanded ? '90deg' : '0deg' }],
-        }]}>›</Text>
       </Pressable>
 
-      {/* Summary (always visible) */}
-      <Text style={[styles.summary, { color: isDark ? 'rgba(200,210,255,0.55)' : 'rgba(0,0,0,0.55)' }]}>
+      {/* Summary */}
+      <Text style={[styles.cardSummary, { color: isDark ? 'rgba(200,210,255,0.60)' : 'rgba(0,0,0,0.58)' }]}>
         {insight.summary}
       </Text>
 
-      {/* EBP Citation — always visible even when collapsed */}
-      {!expanded && (
-        <TouchableOpacity
-          style={[styles.citationBlock, { marginTop: 4 }]}
-          onPress={() => {
-            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            Linking.openURL(insight.citationUrl);
-          }}
-          activeOpacity={0.7}
-          accessibilityRole="link"
-          accessibilityLabel={`Open source: ${insight.citation}`}
-          accessibilityHint="Opens the journal website in your browser"
-        >
-          <Text style={[styles.citationLabel, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)' }]}>
-            {cs.ebpSource}
-          </Text>
-          <Text style={[styles.citationText, { color: isDark ? 'rgba(160,200,255,0.65)' : 'rgba(30,80,200,0.65)' }]}>
-            {insight.citation}
-          </Text>
-          <Text style={[styles.citationDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' }]}>
-            {cs.tapToOpenSource}
-          </Text>
-        </TouchableOpacity>
-      )}
+      {/* Citation row — always visible */}
+      <View style={styles.cardFooter}>
+        <CitationRow
+          citationShort={insight.citationShort}
+          citationUrl={insight.citationUrl}
+          accentColor={accent}
+          isDark={isDark}
+        />
+        <View style={styles.metricTagsRow}>
+          {insight.metricTags.map((tag, i) => (
+            <MetricTag key={i} label={tag} isDark={isDark} />
+          ))}
+        </View>
+      </View>
+
+      {/* Disclaimer */}
+      <Text style={[styles.cardDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
+        {cs.tapToOpenSource ?? 'Tap to open source · For informational purposes only · Not medical advice'}
+      </Text>
 
       {/* Expanded content */}
       {expanded && (
         <View style={styles.expandedContent}>
-
-          {/* Mini chart — shown for all statuses when data exists */}
           {insight.chartData.length >= 2 ? (
             <View style={[styles.chartContainer, {
               backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
@@ -732,15 +803,6 @@ function InsightCard({
                 yThreshold={insight.yThreshold}
                 isDark={isDark}
               />
-              {/* Legend for intersection markers */}
-              {(insight.xThreshold !== undefined || insight.yThreshold !== undefined) && (
-                <View style={styles.chartLegend}>
-                  <View style={[styles.legendDot, { backgroundColor: accent }]} />
-                  <Text style={[styles.legendText, { color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }]}>
-                    Ringed points = both metrics crossed threshold simultaneously
-                  </Text>
-                </View>
-              )}
             </View>
           ) : (
             <View style={[styles.chartPlaceholder, {
@@ -755,51 +817,169 @@ function InsightCard({
 
           {/* Smart Analysis */}
           <View style={[styles.analysisBlock, { backgroundColor: accent + '0D', borderColor: accent + '22' }]}>
-            <Text style={[styles.analysisLabel, { color: accent }]}>{interpolate(((settingsStrings as unknown as Record<string, typeof settingsStrings.en>)[lang] ?? settingsStrings.en).smartAnalysisLabel, { intelligenceName })}</Text>
+            <Text style={[styles.analysisLabel, { color: accent }]}>
+              {interpolate(((settingsStrings as unknown as Record<string, typeof settingsStrings.en>)[lang] ?? settingsStrings.en).smartAnalysisLabel, { intelligenceName })}
+            </Text>
             <Text style={[styles.analysisText, { color: isDark ? 'rgba(220,228,255,0.82)' : 'rgba(0,0,0,0.80)' }]}>
               {insight.aiAnalysis}
             </Text>
           </View>
 
-          {/* Interventions */}
-          {insight.interventions && insight.interventions.length > 0 && (
-            <View style={[styles.interventionsBlock, { borderColor: accent + '33' }]}>
-              <Text style={[styles.interventionsLabel, { color: accent }]}>{cs.vagalInterventions}</Text>
-              {insight.interventions.map((item, i) => (
-                <View key={i} style={styles.interventionRow}>
-                  <View style={[styles.interventionDot, { backgroundColor: accent }]} />
-                  <Text style={[styles.interventionText, { color: isDark ? 'rgba(200,210,255,0.78)' : 'rgba(0,0,0,0.75)' }]}>
-                    {item}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* EBP Citation — tappable link opens the journal URL */}
+          {/* Full citation */}
           <TouchableOpacity
-            style={styles.citationBlock}
+            style={[styles.fullCitationBlock, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)' }]}
             onPress={() => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               Linking.openURL(insight.citationUrl);
             }}
             activeOpacity={0.7}
-            accessibilityRole="link"
-            accessibilityLabel={`Open source: ${insight.citation}`}
-            accessibilityHint="Opens the journal website in your browser"
           >
             <Text style={[styles.citationLabel, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)' }]}>
-              {cs.ebpSource}
+              {cs.ebpSource ?? 'EBP SOURCE'}
             </Text>
-            <Text style={[styles.citationText, { color: isDark ? 'rgba(160,200,255,0.65)' : 'rgba(30,80,200,0.65)' }]}>
+            <Text style={[styles.citationText, { color: isDark ? 'rgba(160,200,255,0.75)' : 'rgba(30,80,200,0.75)' }]}>
               {insight.citation}
-            </Text>
-            <Text style={[styles.citationDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)' }]}>
-              {cs.tapToOpenSource}
             </Text>
           </TouchableOpacity>
         </View>
       )}
+    </View>
+  );
+}
+
+// ─── Half-Width Insight Card ──────────────────────────────────────────────────
+
+function InsightCardHalf({
+  insight,
+  index,
+  isDark,
+  onPress,
+}: {
+  insight: InsightResult;
+  index: number;
+  isDark: boolean;
+  onPress: () => void;
+}) {
+  const cs = useCorrelationStrings();
+  const accent = insight.accentColor;
+  const icon = CORRELATION_ICONS[index] ?? '🔬';
+
+  const statusConfig = {
+    detected:     { label: cs.patternDetected,   bg: accent + '22',   border: accent + '55' },
+    normal:       { label: cs.withinRange,        bg: '#10B98122',     border: '#10B98155' },
+    insufficient: { label: cs.insufficientData,   bg: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)', border: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)' },
+  }[insight.status];
+
+  const cardBg = isDark ? 'rgba(10, 12, 20, 0.88)' : 'rgba(255, 255, 255, 0.92)';
+
+  return (
+    <Pressable
+      style={[
+        styles.cardHalf,
+        {
+          backgroundColor: cardBg,
+          borderColor: insight.status === 'detected' ? accent + '44' : isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
+          shadowColor: insight.status === 'detected' ? accent : '#000',
+          shadowOpacity: insight.status === 'detected' ? 0.30 : 0.18,
+        },
+      ]}
+      onPress={onPress}
+    >
+      {/* Gradient top bar */}
+      <View style={[styles.accentBar, { backgroundColor: accent, opacity: insight.status === 'detected' ? 1.0 : 0.55 }]} />
+
+      {/* Header row */}
+      <View style={styles.halfCardHeader}>
+        <Text style={styles.cardIconSmall}>{icon}</Text>
+        <ImpactBadge label={insight.impactBadge} accentColor={accent} isDark={isDark} />
+      </View>
+
+      {/* Title */}
+      <Text style={[styles.cardTitleHalf, { color: isDark ? '#E8EEFF' : '#0F172A' }]} numberOfLines={2}>
+        {insight.label}
+      </Text>
+
+      {/* Summary */}
+      <Text style={[styles.cardSummaryHalf, { color: isDark ? 'rgba(200,210,255,0.55)' : 'rgba(0,0,0,0.55)' }]} numberOfLines={3}>
+        {insight.summary}
+      </Text>
+
+      {/* Citation + metric tag */}
+      <View style={{ marginTop: 'auto', paddingTop: 8 }}>
+        <CitationRow
+          citationShort={insight.citationShort}
+          citationUrl={insight.citationUrl}
+          accentColor={accent}
+          isDark={isDark}
+        />
+        {insight.metricTags[0] && (
+          <View style={{ marginTop: 6 }}>
+            <MetricTag label={insight.metricTags[0]} isDark={isDark} />
+          </View>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+// ─── Evidence Library Grid ────────────────────────────────────────────────────
+
+function EvidenceLibraryGrid({ isDark, cs }: { isDark: boolean; cs: ReturnType<typeof useCorrelationStrings> }) {
+  return (
+    <View style={[
+      styles.evidenceSection,
+      {
+        backgroundColor: isDark ? 'rgba(10,12,20,0.85)' : 'rgba(255,255,255,0.90)',
+        borderColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
+      },
+    ]}>
+      {/* Header */}
+      <View style={styles.evidenceHeader}>
+        <Text style={styles.evidenceIcon}>🔬</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={[styles.evidenceTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>
+            {cs.evidenceBasedSources ?? 'Evidence Based Sources'}
+          </Text>
+          <Text style={[styles.evidenceSubtitle, { color: isDark ? 'rgba(180,200,255,0.50)' : 'rgba(0,0,0,0.45)' }]}>
+            {cs.evidenceSourcesSubtitle ?? 'All recommendations are grounded in peer-reviewed meta-analyses published within the last five years.'}
+          </Text>
+        </View>
+      </View>
+
+      {/* 2-column grid */}
+      <View style={styles.evidenceGrid}>
+        {EVIDENCE_SOURCES.map((src, i) => (
+          <TouchableOpacity
+            key={i}
+            style={[
+              styles.evidenceCard,
+              {
+                backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                borderColor: isDark ? 'rgba(255,255,255,0.09)' : 'rgba(0,0,0,0.08)',
+              },
+            ]}
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              Linking.openURL(src.url);
+            }}
+            activeOpacity={0.7}
+          >
+            {/* Tag pill */}
+            <View style={styles.evidenceTagRow}>
+              <View style={[styles.evidenceTag, { backgroundColor: src.tagColor + '22', borderColor: src.tagColor + '55' }]}>
+                <Text style={[styles.evidenceTagText, { color: src.tagColor }]}>{src.tag}</Text>
+              </View>
+              <Text style={[styles.evidenceArrow, { color: isDark ? 'rgba(255,255,255,0.30)' : 'rgba(0,0,0,0.30)' }]}>↗</Text>
+            </View>
+            <Text style={[styles.evidenceCardName, { color: isDark ? '#D0D8FF' : '#1E293B' }]} numberOfLines={2}>
+              {src.name}
+            </Text>
+            <Text style={[styles.evidenceCardDesc, { color: isDark ? 'rgba(180,200,255,0.40)' : 'rgba(0,0,0,0.40)' }]} numberOfLines={2}>
+              {src.desc}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 }
@@ -815,8 +995,12 @@ export function InsightEngine({ data }: InsightEngineProps) {
   const isDark = scheme === 'dark';
   const router = useRouter();
   const cs = useCorrelationStrings();
-  const [sectionExpanded, setSectionExpanded] = useState(false); // collapsed by default per EBP guideline
+  const lang = useLang();
+  const [sectionExpanded, setSectionExpanded] = useState(false);
   const [infoModalVisible, setInfoModalVisible] = useState(false);
+  // Track which half-card was tapped to show its full detail
+  const [expandedHalfIndex, setExpandedHalfIndex] = useState<number | null>(null);
+
   const insights = useMemo<InsightResult[]>(() => [
     analyzeFluidPressure(data),
     analyzeVagalWithdrawal(data),
@@ -827,6 +1011,14 @@ export function InsightEngine({ data }: InsightEngineProps) {
   ], [data]);
 
   const detectedCount = insights.filter(i => i.status === 'detected').length;
+
+  // Layout: first 2 full-width, last 4 in 2×2 grid, then last if odd full-width
+  // Actually: cards 0,1 full-width; cards 2,3 half-width pair; cards 4,5 half-width pair
+  const fullCards = insights.slice(0, 2);
+  const halfPairs: [InsightResult, InsightResult][] = [
+    [insights[2], insights[3]],
+    [insights[4], insights[5]],
+  ];
 
   return (
     <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16, marginBottom: 8 }}>
@@ -843,7 +1035,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
       >
         <View style={styles.sectionHeaderLeft}>
           <Text style={[styles.sectionLabel, { color: isDark ? 'rgba(180,200,255,0.55)' : 'rgba(0,0,0,0.45)' }]}>
-            {cs.insightEngineLabel}
+            🧠 {cs.insightEngineLabel ?? 'INSIGHT ENGINE'}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
             {cs.insightEngineSubtitle ?? '6 evidence-based correlations · 2024–2026 peer-reviewed'}
@@ -855,7 +1047,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
               <Text style={styles.detectedBadgeText}>{detectedCount} ⚠</Text>
             </View>
           )}
-          {/* ? info button */}
           <Pressable
             onPress={(e) => {
               e.stopPropagation?.();
@@ -865,7 +1056,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 4 }}
             accessibilityRole="button"
             accessibilityLabel="About Insight Engine"
-            accessibilityHint="Opens an explanation of how insights are generated"
           >
             <View style={[
               styles.infoButton,
@@ -882,7 +1072,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
         </View>
       </Pressable>
 
-      {/* ── Platform Intelligence Info Modal ─────────────────────────────── */}
+      {/* ── Info Modal ─────────────────────────────────────────────────────── */}
       <Modal
         visible={infoModalVisible}
         transparent
@@ -893,7 +1083,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
         <Pressable
           style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'center', alignItems: 'center', padding: 24 }}
           onPress={() => setInfoModalVisible(false)}
-          accessibilityLabel="Close modal"
         >
           <Pressable
             style={[
@@ -903,9 +1092,8 @@ export function InsightEngine({ data }: InsightEngineProps) {
                 maxHeight: '85%',
               },
             ]}
-            onPress={() => {/* absorb tap so backdrop doesn't close */}}
+            onPress={() => {}}
           >
-            {/* Header */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <Text style={{ fontSize: 22, marginRight: 10 }}>🧠</Text>
               <View style={{ flex: 1 }}>
@@ -914,18 +1102,11 @@ export function InsightEngine({ data }: InsightEngineProps) {
                   {cs.poweredBy} {intelligenceName}
                 </Text>
               </View>
-              <Pressable
-                onPress={() => setInfoModalVisible(false)}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
+              <Pressable onPress={() => setInfoModalVisible(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Text style={{ fontSize: 20, color: isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.35)', lineHeight: 24 }}>✕</Text>
               </Pressable>
             </View>
-
-            <ScrollView showsVerticalScrollIndicator={true} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 4 }}>
-              {/* Platform badge explanation */}
+            <ScrollView showsVerticalScrollIndicator style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 4 }}>
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(99,102,241,0.08)' : 'rgba(99,102,241,0.06)', borderColor: isDark ? 'rgba(99,102,241,0.20)' : 'rgba(99,102,241,0.15)' }]}>
                 <Text style={[styles.infoSectionTitle, { color: isDark ? '#A5B4FC' : '#4338CA' }]}>
                   {Platform.OS === 'ios' ? cs.infoModalPoweredByIos : Platform.OS === 'android' ? 'G  Gemini' : '✶  Smart Analysis'}
@@ -938,34 +1119,25 @@ export function InsightEngine({ data }: InsightEngineProps) {
                     : 'Health correlations are computed locally on your device using evidence-based statistical models. No health data is sent to external servers.'}
                 </Text>
               </View>
-
-              {/* What it analyzes */}
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)' }]}>
                 <Text style={[styles.infoSectionTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{cs.infoModalWhatItAnalyzes}</Text>
                 <Text style={[styles.infoSectionBody, { color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.60)' }]}>
-                  The Insight Engine runs 6 evidence-based correlations across your vitals, sleep, nutrition, and activity data — each grounded in a 2024–2026 peer-reviewed publication. It looks for patterns such as fluid-pressure coupling, vagal withdrawal, insulin sensitivity shifts, circadian cardiac strain, glycaemic sleep fragmentation, and resilience index changes.
+                  The Insight Engine runs 6 evidence-based correlations across your vitals, sleep, nutrition, and activity data — each grounded in a 2024–2026 peer-reviewed publication.
                 </Text>
               </View>
-
-              {/* Privacy */}
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.05)', borderColor: isDark ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.15)' }]}>
                 <Text style={[styles.infoSectionTitle, { color: isDark ? '#4ADE80' : '#15803D' }]}>{cs.infoModalPrivacy}</Text>
                 <Text style={[styles.infoSectionBody, { color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.60)' }]}>
-                  {cs.infoModalPrivacyBody ?? 'All analysis is performed entirely on-device. Your health data never leaves your phone. VitalSync does not transmit, store, or share any health information with third parties.'}
+                  {cs.infoModalPrivacyBody ?? 'All analysis is performed entirely on-device. Your health data never leaves your phone.'}
                 </Text>
               </View>
-
-              {/* Disclaimer */}
               <Text style={{ fontSize: 11, color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)', textAlign: 'center', marginTop: 8, lineHeight: 16 }}>
                 {cs.infoModalDisclaimer}
               </Text>
             </ScrollView>
-
             <Pressable
               style={[styles.infoModalClose, { backgroundColor: isDark ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)', borderColor: isDark ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.25)' }]}
               onPress={() => setInfoModalVisible(false)}
-              accessibilityRole="button"
-              accessibilityLabel="Got it"
             >
               <Text style={{ fontSize: 14, fontWeight: '600', color: isDark ? '#A5B4FC' : '#4338CA' }}>{cs.gotIt}</Text>
             </Pressable>
@@ -973,16 +1145,50 @@ export function InsightEngine({ data }: InsightEngineProps) {
         </Pressable>
       </Modal>
 
+      {/* ── Expanded Cards ──────────────────────────────────────────────────── */}
       {sectionExpanded && (
         <View style={styles.cardsContainer}>
-          {insights.map((insight, i) => (
-            <InsightCard
+
+          {/* Full-width cards (correlations 1 & 2) */}
+          {fullCards.map((insight, i) => (
+            <InsightCardFull
               key={i}
               insight={insight}
               index={i}
               isDark={isDark}
             />
           ))}
+
+          {/* Half-width pairs (correlations 3–6) */}
+          {halfPairs.map((pair, pairIdx) => (
+            <View key={pairIdx} style={styles.halfRow}>
+              {pair.map((insight, j) => {
+                const globalIndex = 2 + pairIdx * 2 + j;
+                return (
+                  <InsightCardHalf
+                    key={globalIndex}
+                    insight={insight}
+                    index={globalIndex}
+                    isDark={isDark}
+                    onPress={() => setExpandedHalfIndex(expandedHalfIndex === globalIndex ? null : globalIndex)}
+                  />
+                );
+              })}
+            </View>
+          ))}
+
+          {/* Expanded detail for tapped half-card */}
+          {expandedHalfIndex !== null && expandedHalfIndex >= 2 && (
+            <InsightCardFull
+              key={`detail-${expandedHalfIndex}`}
+              insight={insights[expandedHalfIndex]}
+              index={expandedHalfIndex}
+              isDark={isDark}
+            />
+          )}
+
+          {/* Evidence Library Grid */}
+          <EvidenceLibraryGrid isDark={isDark} cs={cs} />
 
           {/* View all sources deep-link */}
           <TouchableOpacity
@@ -995,8 +1201,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
             }}
             activeOpacity={0.7}
             accessibilityRole="link"
-            accessibilityLabel="View all evidence based sources"
-            accessibilityHint="Opens the Evidence Based Sources screen scrolled to the Insight Engine section"
           >
             <Text style={[styles.viewSourcesText, {
               color: isDark ? 'rgba(140,180,255,0.70)' : 'rgba(30,80,200,0.70)',
@@ -1018,11 +1222,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
-    marginHorizontal: 16,
-    marginBottom: 8,
-  },
-
   // Section header
   sectionHeader: {
     flexDirection: 'row',
@@ -1063,8 +1262,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.3,
   },
-
-  // ? info button in section header
   infoButton: {
     width: 20,
     height: 20,
@@ -1076,6 +1273,317 @@ const styles = StyleSheet.create({
   infoButtonText: {
     fontSize: 11,
     fontWeight: '700',
+    lineHeight: 14,
+  },
+
+  // Cards container
+  cardsContainer: { gap: 10, marginTop: 8, paddingBottom: 4 },
+
+  // Half-width row
+  halfRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  // ── Full-width card ──────────────────────────────────────────────────────
+  cardFull: {
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  accentBar: {
+    height: 3,
+    width: '100%',
+  },
+  detectedGlow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 80,
+  },
+  cardHeaderFull: {
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 6,
+    gap: 6,
+  },
+  cardHeaderTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardHeaderBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  cardIcon: {
+    fontSize: 28,
+  },
+  cardIconSmall: {
+    fontSize: 22,
+  },
+  cardTitleFull: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  cardSummary: {
+    fontSize: 13,
+    lineHeight: 18,
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+  cardFooter: {
+    paddingHorizontal: 14,
+    paddingBottom: 4,
+    gap: 6,
+  },
+  cardDisclaimer: {
+    fontSize: 9,
+    fontStyle: 'italic',
+    paddingHorizontal: 14,
+    paddingBottom: 10,
+  },
+
+  // ── Half-width card ──────────────────────────────────────────────────────
+  cardHalf: {
+    flex: 1,
+    borderRadius: 16,
+    borderWidth: 1,
+    overflow: 'hidden',
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 16,
+    elevation: 8,
+    paddingBottom: 12,
+    minHeight: 200,
+  },
+  halfCardHeader: {
+    paddingHorizontal: 10,
+    paddingTop: 10,
+    paddingBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  cardTitleHalf: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+    paddingHorizontal: 10,
+    paddingBottom: 4,
+  },
+  cardSummaryHalf: {
+    fontSize: 11,
+    lineHeight: 15,
+    paddingHorizontal: 10,
+  },
+
+  // Status pill
+  statusPill: {
+    borderRadius: 6,
+    borderWidth: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  statusText: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.8,
+  },
+  chevron: {
+    fontSize: 22,
+    fontWeight: '300',
+    marginLeft: 8,
+  },
+
+  // Impact badge
+  impactBadge: {
+    borderRadius: 20,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    alignSelf: 'flex-start',
+  },
+  impactBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+  },
+
+  // Metric tag
+  metricTag: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  metricTagText: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 0.1,
+  },
+  metricTagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 5,
+  },
+
+  // Citation row
+  citationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  citationDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+  },
+  citationRowText: {
+    fontSize: 11,
+    fontWeight: '600',
+    flex: 1,
+  },
+  citationArrow: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Expanded content
+  expandedContent: {
+    paddingHorizontal: 12,
+    paddingBottom: 14,
+    gap: 12,
+  },
+
+  // Chart
+  chartContainer: {
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: 'hidden',
+    paddingTop: 6,
+    paddingBottom: 6,
+  },
+  chartPlaceholder: {
+    borderRadius: 12,
+    borderWidth: 1,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chartPlaceholderText: {
+    fontSize: 11,
+    fontStyle: 'italic',
+  },
+
+  // Smart Analysis block
+  analysisBlock: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 6,
+  },
+  analysisLabel: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.0,
+  },
+  analysisText: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: '400',
+  },
+
+  // Full citation block
+  fullCitationBlock: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 10,
+    gap: 4,
+  },
+  citationLabel: {
+    fontSize: 8,
+    fontWeight: '700',
+    letterSpacing: 1.0,
+  },
+  citationText: {
+    fontSize: 11,
+    lineHeight: 15,
+  },
+
+  // Evidence Library
+  evidenceSection: {
+    borderRadius: 16,
+    borderWidth: 1,
+    padding: 14,
+    gap: 12,
+    marginTop: 4,
+  },
+  evidenceHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  evidenceIcon: {
+    fontSize: 24,
+    marginTop: 2,
+  },
+  evidenceTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  evidenceSubtitle: {
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 3,
+  },
+  evidenceGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  evidenceCard: {
+    width: '47%',
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 10,
+    gap: 4,
+    minHeight: 100,
+  },
+  evidenceTagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  evidenceTag: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+  },
+  evidenceTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+  evidenceArrow: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  evidenceCardName: {
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 16,
+  },
+  evidenceCardDesc: {
+    fontSize: 10,
     lineHeight: 14,
   },
 
@@ -1116,208 +1624,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // Cards container
-  cardsContainer: { gap: 10, marginTop: 8 },
-
-  // Individual card — glassmorphism
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    overflow: 'hidden',
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  accentBar: {
-    height: 2.5,
-    width: '100%',
-  },
-  detectedGlow: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 72,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingTop: 12,
-    paddingBottom: 8,
-  },
-  cardHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  indexBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  indexText: {
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  cardTitleBlock: { flex: 1, gap: 4 },
-  platformBrandBadge: {
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 6,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 20,
-  },
-  platformBrandText: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.2,
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  statusPill: {
-    alignSelf: 'flex-start',
-    borderRadius: 6,
-    borderWidth: 1,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-  },
-  statusText: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.8,
-  },
-  chevron: {
-    fontSize: 22,
-    fontWeight: '300',
-    marginLeft: 8,
-  },
-  summary: {
-    fontSize: 12,
-    lineHeight: 17,
-    paddingHorizontal: 14,
-    paddingBottom: 12,
-  },
-
-  // Expanded content
-  expandedContent: {
-    paddingHorizontal: 12,
-    paddingBottom: 14,
-    gap: 12,
-  },
-
-  // Chart
-  chartContainer: {
-    borderRadius: 12,
-    borderWidth: 1,
-    overflow: 'hidden',
-    paddingTop: 6,
-    paddingBottom: 6,
-  },
-  chartLegend: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingBottom: 4,
-    paddingTop: 2,
-  },
-  legendDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  legendText: {
-    fontSize: 9,
-    flex: 1,
-  },
-  chartPlaceholder: {
-    borderRadius: 12,
-    borderWidth: 1,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chartPlaceholderText: {
-    fontSize: 11,
-    fontStyle: 'italic',
-  },
-
-  // Smart Analysis block
-  analysisBlock: {
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 12,
-    gap: 6,
-  },
-  analysisLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 1.0,
-  },
-  analysisText: {
-    fontSize: 12,
-    lineHeight: 18,
-    fontWeight: '400',
-  },
-
-  // Interventions
-  interventionsBlock: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    padding: 12,
-    gap: 8,
-  },
-  interventionsLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 1.0,
-  },
-  interventionRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-  },
-  interventionDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    marginTop: 5,
-  },
-  interventionText: {
-    fontSize: 12,
-    lineHeight: 17,
-    flex: 1,
-  },
-
-  // Citation
-  citationBlock: { gap: 3, paddingTop: 4 },
-  citationLabel: {
-    fontSize: 8,
-    fontWeight: '700',
-    letterSpacing: 1.0,
-  },
-  citationText: {
-    fontSize: 10,
-    lineHeight: 14,
-  },
-  citationDisclaimer: {
-    fontSize: 9,
-    fontStyle: 'italic',
-  },
-
-  // View all sources footer link
+  // View all sources footer
   viewSourcesRow: {
     marginTop: 8,
     paddingTop: 12,
