@@ -345,7 +345,6 @@ export function PaywallScreen({
   // ── Feature lists ─────────────────────────────────────────────────────────
   const primaryFeatures: { text: string; highlight?: boolean }[] = [
     { text: pw.feat13, highlight: true },
-    { text: Platform.OS === 'ios' ? pw.feat14ios : pw.feat14android, highlight: true },
     { text: Platform.OS === 'ios' ? pw.feat2ios : pw.feat2android, highlight: true },
     { text: pw.feat1 },
   ];
@@ -358,7 +357,6 @@ export function PaywallScreen({
     { text: pw.feat8 },
     { text: pw.feat9 },
     { text: pw.feat10 },
-    { text: pw.feat11 },
     { text: pw.feat12 },
   ];
 
