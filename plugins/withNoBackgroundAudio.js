@@ -3,34 +3,54 @@
  *
  * Apple App Review Guideline 2.5.4 fix.
  *
- * The expo-audio and expo-video (supportsBackgroundPlayback) plugins both inject
- * "audio" into the UIBackgroundModes array in Info.plist. VitalSync does NOT play
- * audio in the background — it only uses the microphone for Smart Scribe transcription
- * (foreground only) and plays in-app sounds while the app is active.
+ * expo-audio and expo-video (supportsBackgroundPlayback:true) both inject "audio"
+ * into UIBackgroundModes. VitalSync does NOT play audio in the background.
  *
- * This plugin runs AFTER all other plugins and removes the "audio" entry from
- * UIBackgroundModes so the final Info.plist does not declare background audio
- * capability, satisfying Guideline 2.5.4.
+ * Uses withDangerousMod to edit Info.plist on disk AFTER all other plugins run,
+ * guaranteeing "audio" is absent from UIBackgroundModes in the final binary.
  */
+const { withDangerousMod } = require('@expo/config-plugins');
+const fs = require('fs');
+const path = require('path');
 
-const { withInfoPlist } = require('@expo/config-plugins');
-
-/**
- * @param {import('@expo/config-plugins').ExpoConfig} config
- * @returns {import('@expo/config-plugins').ExpoConfig}
- */
 function withNoBackgroundAudio(config) {
-  return withInfoPlist(config, (cfg) => {
-    const modes = cfg.modResults.UIBackgroundModes;
-    if (Array.isArray(modes)) {
-      cfg.modResults.UIBackgroundModes = modes.filter((m) => m !== 'audio');
-      // If the array is now empty, remove the key entirely to keep the plist clean
-      if (cfg.modResults.UIBackgroundModes.length === 0) {
-        delete cfg.modResults.UIBackgroundModes;
+  return withDangerousMod(config, [
+    'ios',
+    async (cfg) => {
+      const projectName = cfg.modRequest.projectName ?? 'VitalSyncHealthTracker';
+      const infoPlistPath = path.join(
+        cfg.modRequest.platformProjectRoot,
+        projectName,
+        'Info.plist',
+      );
+
+      if (!fs.existsSync(infoPlistPath)) {
+        console.warn('[withNoBackgroundAudio] Info.plist not found at:', infoPlistPath);
+        return cfg;
       }
-    }
-    return cfg;
-  });
+
+      let contents = fs.readFileSync(infoPlistPath, 'utf8');
+      const before = contents;
+
+      // Remove <string>audio</string> from UIBackgroundModes
+      contents = contents.replace(/[ \t]*<string>audio<\/string>\n?/g, '');
+
+      // If UIBackgroundModes array is now empty, remove the entire key+array block
+      contents = contents.replace(
+        /<key>UIBackgroundModes<\/key>\s*<array>\s*<\/array>\s*/g,
+        '',
+      );
+
+      if (contents !== before) {
+        fs.writeFileSync(infoPlistPath, contents, 'utf8');
+        console.log('[withNoBackgroundAudio] Removed "audio" from UIBackgroundModes');
+      } else {
+        console.log('[withNoBackgroundAudio] "audio" not found — nothing to remove');
+      }
+
+      return cfg;
+    },
+  ]);
 }
 
 module.exports = withNoBackgroundAudio;

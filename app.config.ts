@@ -70,6 +70,9 @@ const config: ExpoConfig = {
         "VitalSync Health Tracker uses the microphone for AI Scribe voice-to-text transcription. Audio is processed on-device and never stored or transmitted.",
       NSSpeechRecognitionUsageDescription:
         "VitalSync Health Tracker uses on-device speech recognition to support keyboard dictation. No audio is sent to external servers.",
+      // Guideline 2.5.4: explicitly declare only the background modes we use.
+      // This overrides any 'audio' injected by expo-audio/expo-video plugins.
+      UIBackgroundModes: ["fetch", "bluetooth-central", "bluetooth-peripheral"],
       BGTaskSchedulerPermittedIdentifiers: ["com.vitalsync.healthtracker.data.refresh"],
       LSApplicationQueriesSchemes: [
         "x-apple-health",
@@ -171,13 +174,8 @@ const config: ExpoConfig = {
       },
     ],
     "expo-screen-orientation",
-    [
-      "expo-audio",
-      {
-        microphonePermission:
-          "VitalSync Health Tracker uses the microphone for AI Scribe voice-to-text transcription. Audio is processed on-device and never stored or transmitted.",
-      },
-    ],
+    // expo-audio plugin removed: it injects 'audio' into UIBackgroundModes (Guideline 2.5.4).
+    // NSMicrophoneUsageDescription is declared directly in infoPlist above instead.
     "@react-native-community/datetimepicker",
     "expo-localization",
     [
@@ -222,7 +220,7 @@ const config: ExpoConfig = {
       "expo-video",
       {
         supportsBackgroundPlayback: false,
-        supportsPictureInPicture: true,
+        supportsPictureInPicture: false,
       },
     ],
     [
