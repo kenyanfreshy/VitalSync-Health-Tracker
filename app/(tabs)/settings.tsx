@@ -1887,16 +1887,16 @@ export default function SettingsScreen() {
                 </>
               ) : (
                 <>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>Free Version</Text>
+                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>{t.freeVersionLabel ?? 'Free Version'}</Text>
                   {accessState === 'expired' ? (
                     <Text style={{ fontSize: 12, color: colors.error, marginTop: 2 }}>
-                      Trial expired — subscribe to restore premium access
+                      {t.trialExpiredLabel ?? 'Trial expired — subscribe to restore premium access'}
                     </Text>
                   ) : (
                     <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
                       {subProductsLoading
-                        ? 'Loading plans…'
-                        : `Monthly ${monthlyPrice}/mo · Yearly ${yearlyPrice}/yr — includes 14-day free trial`}
+                        ? (t.loadingPlansLabel ?? 'Loading plans…')
+                        : (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes 14-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
                     </Text>
                   )}
                 </>
@@ -1910,7 +1910,7 @@ export default function SettingsScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={{ fontSize: 15, fontWeight: '600', color: '#6366F1' }}>
-                  {accessState === 'expired' ? 'Subscribe Now' : 'Start 14-Day Free Trial'}
+                  {accessState === 'expired' ? (t.subscribeNowLabel ?? 'Subscribe Now') : (t.startTrialLabel ?? 'Start 14-Day Free Trial')}
                 </Text>
                 <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
               </TouchableOpacity>
@@ -2062,6 +2062,14 @@ export default function SettingsScreen() {
             }
           />
 
+          <SettingsRow
+            icon="doc.text.fill"
+            iconColor="#10B981"
+            label={se.evidenceSources}
+            subtitle={se.evidenceSourcesSub}
+            onPress={() => router.push('/settings/clinical-sources' as any)}
+            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
+          />
           <SettingsRow
             icon="building.2.fill"
             iconColor="#22C55E"
@@ -4201,13 +4209,6 @@ export default function SettingsScreen() {
                 <IconSymbol name="chevron.right" size={14} color={colors.muted} />
               </View>
             }
-          />
-          <SettingsRow
-            icon="doc.text.fill"
-            iconColor="#10B981"
-            label={se.evidenceSources}
-            subtitle={se.evidenceSourcesSub}
-            onPress={() => router.push('/settings/clinical-sources' as any)}
           />
           <SettingsRow
             icon="lock.shield.fill"

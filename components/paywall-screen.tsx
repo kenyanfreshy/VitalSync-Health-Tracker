@@ -160,8 +160,8 @@ export function PaywallScreen({
   // ── Disclosure text (Apple 3.1.2(c)) ─────────────────────────────────────
   const selectedLabel = selectedPlan === PRODUCT_IDS.yearly ? yearlyLabel : monthlyLabel;
   const disclosureText = selectedPlan === FREE_PLAN_ID
-    ? 'Free plan includes basic logging with limited history.'
-    : `After the 14-day free trial, your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`;
+    ? ((pw as any).freePlanDisclosure ?? 'Free plan includes basic logging with limited history.')
+    : ((pw as any).trialDisclosure ?? `After the 14-day free trial, your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`).replace('{price}', selectedLabel);
 
   // ── CTA label ─────────────────────────────────────────────────────────────
   const ctaLabel = selectedPlan === FREE_PLAN_ID
@@ -461,7 +461,7 @@ export function PaywallScreen({
                 <Text style={s.planPeriodUnit}>/yr</Text>
               </Text>
             )}
-            <Text style={s.trialSubText}>14-day free trial</Text>
+            <Text style={s.trialSubText}>{(pw as any).introFreeTrial ?? '14-day free trial'}</Text>
             <Text style={s.savingText}>Save ~17%</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}
@@ -489,7 +489,7 @@ export function PaywallScreen({
                 <Text style={s.planPeriodUnit}>/mo</Text>
               </Text>
             )}
-            <Text style={s.trialSubText}>14-day free trial</Text>
+            <Text style={s.trialSubText}>{(pw as any).introFreeTrial ?? '14-day free trial'}</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.monthly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.monthly && <View style={s.radioInner} />}
             </View>

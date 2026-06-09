@@ -5,6 +5,22 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.58 (Build 10058) — 2026-06-09
+
+### Translations & i18n
+- **Paywall fully translated** — '14-day free trial', 'Annual', 'Monthly', plan labels, and legal disclosure text now appear in all 10 languages (en, es, fr, zh, pt, ar, sw, hi, de, ja).
+- **Onboarding slide 2 fully translated** — scrollable tab labels ('Our Mission', 'Features', "What's New"), 'Tap a tab to explore' prompt, mission body text, and all feature descriptions now translated in all 10 languages.
+- **Subscription settings labels translated** — 'Free Version', 'Monthly $4.99/mo', 'Yearly $49.99/yr — includes 14-day free trial', and 'Start 14-day free trial' now translated in all 10 languages.
+- **Evidence sources disclaimer banner translated** — the disclaimer text on the Evidence-Based Sources screen is now fully localised in all 10 languages.
+
+### Correlate Tab
+- **Apple emoji removed** — the platform branding badge (🍎 / G) has been removed from correlation card headers for a cleaner, less cluttered look.
+
+### Settings — Health Data
+- **Evidence-Based Sources moved** — the 'Evidence-Based Sources' row has been moved from the About section to Settings → Health Data, placed just before Pharmacies, for more logical discoverability.
+
+---
+
 ## Build 5 — 2026-03-25
 
 ### App Store Review Fixes

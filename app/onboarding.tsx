@@ -700,10 +700,10 @@ export default function OnboardingScreen() {
         {(() => {
           const [welcomeTab, setWelcomeTab] = React.useState(0);
           const WELCOME_TABS = [
-            { label: 'Mission', icon: '❤️', accent: '#22C55E' },
-            { label: 'Features', icon: '⚡', accent: '#60A5FA' },
-            { label: 'Privacy', icon: '🔒', accent: '#34D399' },
-            { label: 'Evidence', icon: '🔬', accent: '#F472B6' },
+            { label: o.tabMission ?? 'Mission', icon: '❤️', accent: '#22C55E' },
+            { label: o.tabFeatures ?? 'Features', icon: '⚡', accent: '#60A5FA' },
+            { label: o.tabPrivacy ?? 'Privacy', icon: '🔒', accent: '#34D399' },
+            { label: o.tabEvidence ?? 'Evidence', icon: '🔬', accent: '#F472B6' },
           ];
           return (
         <View style={[styles.slide, { width: SCREEN_WIDTH, justifyContent: 'flex-start', paddingTop: 0, paddingHorizontal: 0, gap: 0 }]}>
@@ -761,7 +761,7 @@ export default function OnboardingScreen() {
           {welcomeTab === 0 && (
             <View style={{ alignItems: 'center', marginTop: -4, marginBottom: 6 }}>
               <Text style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)', letterSpacing: 0.5 }}>
-                Tap a tab to explore ↑
+                {o.tapTabToExplore ?? 'Tap a tab to explore ↑'}
               </Text>
             </View>
           )}
@@ -778,10 +778,10 @@ export default function OnboardingScreen() {
                   borderWidth: 1, borderColor: 'rgba(34,197,94,0.25)', padding: 18,
                 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: '#22C55E', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
-                    Our Mission
+                    {o.ourMission ?? 'Our Mission'}
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.85)', lineHeight: 20, fontStyle: 'italic' }}>
-                    "Built by a critical care nurse to give every person the same clinical-grade health visibility that only hospital monitors provide — privately, on your own device."
+                    {o.missionQuote ?? '"Built by a critical care nurse to give every person the same clinical-grade health visibility that only hospital monitors provide — privately, on your own device."'}
                   </Text>
                 </View>
                 {/* Creator badge */}
@@ -811,13 +811,13 @@ export default function OnboardingScreen() {
             {welcomeTab === 1 && (
               <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingBottom: 8 }}>
                 {[
-                  { icon: '🩺', label: o.featureBP,         color: '#3B82F6', desc: 'Track BP, heart rate & SpO₂ with AHA-aligned reference ranges' },
-                  { icon: '🌙', label: o.featureSleep,      color: '#8B5CF6', desc: 'AASM-scored sleep stages, efficiency & circadian rhythm analysis' },
-                  { icon: '🩸', label: o.featureBloodSugar, color: '#DC2626', desc: 'Glucose logging with ADA diabetic & pre-diabetic alert thresholds' },
-                  { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: 'Camera food scan — USDA-verified macros in seconds' },
-                  { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: 'Medication reminders, refill tracking & interaction checker' },
-                  { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: 'Lab result storage with trend visualization over time' },
-                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: 'Cross-metric correlation engine grounded in meta-analyzed research' },
+                  { icon: '🩺', label: o.featureBP,         color: '#3B82F6', desc: o.featureBPDesc ?? 'Track BP, heart rate & SpO₂ with AHA-aligned reference ranges' },
+                  { icon: '🌙', label: o.featureSleep,      color: '#8B5CF6', desc: o.featureSleepDesc ?? 'AASM-scored sleep stages, efficiency & circadian rhythm analysis' },
+                  { icon: '🩸', label: o.featureBloodSugar, color: '#DC2626', desc: o.featureBloodSugarDesc ?? 'Glucose logging with ADA diabetic & pre-diabetic alert thresholds' },
+                  { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: o.featureNutritionDesc ?? 'Camera food scan — USDA-verified macros in seconds' },
+                  { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: o.featureMedsDesc ?? 'Medication reminders, refill tracking & interaction checker' },
+                  { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: o.featureLabsDesc ?? 'Lab result storage with trend visualization over time' },
+                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: o.featureCorrelationDesc ?? 'Cross-metric correlation engine grounded in meta-analyzed research' },
                   { icon: '💉', label: o.featureVaccines,   color: '#FB923C', desc: 'Vaccine schedule tracker with CDC & WHO reference guidelines' },
                 ].map(({ icon, label, color, desc }) => (
                   <View key={label} style={{
@@ -848,10 +848,10 @@ export default function OnboardingScreen() {
                   borderWidth: 1, borderColor: 'rgba(52,211,153,0.25)', padding: 18,
                 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: '#34D399', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
-                    Privacy First
+                    {o.privacyFirstLabel ?? 'Privacy First'}
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
-                    Your health data is yours alone. Everything is stored on-device — no accounts required, no cloud uploads, no data sold or shared with anyone.
+                    {o.privacyFirstBody ?? 'Your health data is yours alone. Everything is stored on-device — no accounts required, no cloud uploads, no data sold or shared with anyone.'}
                   </Text>
                 </View>
                 {(ab.privacyPoints as readonly { icon: string; label: string }[]).map((pt) => (
@@ -875,18 +875,18 @@ export default function OnboardingScreen() {
                   borderWidth: 1, borderColor: 'rgba(244,114,182,0.25)', padding: 18,
                 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: '#F472B6', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 8 }}>
-                    Evidence-Based
+                    {o.evidenceBasedLabel ?? 'Evidence-Based'}
                   </Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.80)', lineHeight: 20 }}>
-                    Every health range, insight, and correlation in VitalSync is grounded in peer-reviewed, PubMed-indexed clinical research — not opinion.
+                    {o.evidenceBasedBody ?? 'Every health range, insight, and correlation in VitalSync is grounded in peer-reviewed, PubMed-indexed clinical research — not opinion.'}
                   </Text>
                 </View>
                 {[
-                  { icon: '📊', title: 'Correlation Engine', desc: 'Detects cross-metric patterns using meta-analyzed clinical datasets — not user-submitted averages', color: '#F472B6' },
-                  { icon: '🩺', title: 'Clinical Reference Ranges', desc: 'AHA, ADA, AASM, and WHO thresholds applied to every vital sign and lab value', color: '#60A5FA' },
-                  { icon: '🍽️', title: 'USDA Nutrition Database', desc: 'Macros and micronutrients sourced from USDA FoodData Central — lab-verified, not crowd-sourced', color: '#22C55E' },
-                  { icon: '💤', title: 'NeoSleep Analysis', desc: 'Sleep scored against AASM criteria and Pittsburgh Sleep Quality Index methodology', color: '#8B5CF6' },
-                  { icon: '📈', title: 'NeoVital Monitor', desc: 'Multi-axis normalized vital trend visualization validated against IEEE and British Journal of Anaesthesia standards', color: '#FB923C' },
+                  { icon: '📊', title: o.evidenceCard1Title ?? 'Correlation Engine', desc: o.evidenceCard1Desc ?? 'Detects cross-metric patterns using meta-analyzed clinical datasets — not user-submitted averages', color: '#F472B6' },
+                  { icon: '🩺', title: o.evidenceCard2Title ?? 'Clinical Reference Ranges', desc: o.evidenceCard2Desc ?? 'AHA, ADA, AASM, and WHO thresholds applied to every vital sign and lab value', color: '#60A5FA' },
+                  { icon: '🍽️', title: o.evidenceCard3Title ?? 'USDA Nutrition Database', desc: o.evidenceCard3Desc ?? 'Macros and micronutrients sourced from USDA FoodData Central — lab-verified, not crowd-sourced', color: '#22C55E' },
+                  { icon: '💤', title: o.evidenceCard4Title ?? 'NeoSleep Analysis', desc: o.evidenceCard4Desc ?? 'Sleep scored against AASM criteria and Pittsburgh Sleep Quality Index methodology', color: '#8B5CF6' },
+                  { icon: '📈', title: o.evidenceCard5Title ?? 'NeoVital Monitor', desc: o.evidenceCard5Desc ?? 'Multi-axis normalized vital trend visualization validated against IEEE and British Journal of Anaesthesia standards', color: '#FB923C' },
                 ].map(({ icon, title, desc, color }) => (
                   <View key={title} style={{
                     flexDirection: 'row', alignItems: 'flex-start', gap: 12,

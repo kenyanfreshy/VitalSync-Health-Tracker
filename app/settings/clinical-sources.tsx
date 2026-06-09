@@ -1039,9 +1039,7 @@ export default function ClinicalSourcesScreen() {
       {/* Disclaimer banner */}
       <View style={[styles.disclaimer, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
         <Text style={[styles.disclaimerText, { color: colors.primary }]}>
-          All health recommendations in VitalSync are derived from the peer-reviewed sources listed below.
-          {cds.appInfoDisclaimer ?? 'This app is for informational purposes only and does not constitute medical advice.'}
-          Always consult a qualified healthcare professional before making clinical decisions.
+          {se.evidenceDisclaimerBanner ?? 'All health recommendations in VitalSync are derived from the peer-reviewed sources listed below. Always consult a qualified healthcare professional before making clinical decisions.'}
         </Text>
       </View>
 

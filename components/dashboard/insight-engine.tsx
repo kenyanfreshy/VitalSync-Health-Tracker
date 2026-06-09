@@ -599,14 +599,10 @@ function InsightCard({
   insight,
   index,
   isDark,
-  tooltipVisible,
-  onBrandLongPress,
 }: {
   insight: InsightResult;
   index: number;
   isDark: boolean;
-  tooltipVisible?: boolean;
-  onBrandLongPress?: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const lang = useLang();
@@ -666,56 +662,7 @@ function InsightCard({
               <Text style={[styles.cardTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>
                 {insight.label}
               </Text>
-              {/* Platform branding badge — long-press shows tooltip */}
-              <View style={{ position: 'relative' }}>
-                <Pressable
-                  onLongPress={onBrandLongPress}
-                  delayLongPress={400}
-                  hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                  accessibilityLabel={`Powered by ${intelligenceName}`}
-                  accessibilityHint="Long press for details"
-                >
-                  <View style={[
-                    styles.platformBrandBadge,
-                    Platform.OS === 'ios'
-                      ? { backgroundColor: 'rgba(0,0,0,0.08)', borderColor: 'rgba(0,0,0,0.15)' }
-                      : { backgroundColor: 'rgba(66,133,244,0.10)', borderColor: 'rgba(66,133,244,0.25)' },
-                  ]}>
-                    <Text style={[
-                      styles.platformBrandText,
-                      { color: Platform.OS === 'ios' ? (isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.45)') : '#4285F4' },
-                    ]}>
-                      {Platform.OS === 'ios' ? '🍎' : Platform.OS === 'android' ? 'G' : '✶'}
-                    </Text>
-                  </View>
-                </Pressable>
-                {tooltipVisible && (
-                  <View style={{
-                    position: 'absolute',
-                    top: -34,
-                    left: '50%',
-                    transform: [{ translateX: -70 }],
-                    backgroundColor: isDark ? 'rgba(15,20,35,0.96)' : 'rgba(15,20,35,0.90)',
-                    borderRadius: 8,
-                    paddingHorizontal: 10,
-                    paddingVertical: 5,
-                    borderWidth: 1,
-                    borderColor: Platform.OS === 'ios' ? 'rgba(255,255,255,0.15)' : 'rgba(66,133,244,0.35)',
-                    zIndex: 99,
-                    minWidth: 140,
-                    alignItems: 'center',
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.3,
-                    shadowRadius: 4,
-                    elevation: 8,
-                  }}>
-                    <Text style={{ fontSize: 11, color: '#FFFFFF', fontWeight: '600', textAlign: 'center' }}>
-                      {cs.poweredBy} {intelligenceName}
-                    </Text>
-                  </View>
-                )}
-              </View>
+
             </View>
             <View style={[styles.statusPill, { backgroundColor: statusConfig.bg, borderColor: statusConfig.border }]}>
               <Text style={[styles.statusText, {
@@ -870,16 +817,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
   const cs = useCorrelationStrings();
   const [sectionExpanded, setSectionExpanded] = useState(false); // collapsed by default per EBP guideline
   const [infoModalVisible, setInfoModalVisible] = useState(false);
-  // Tooltip: tracks which insight card's platform badge was long-pressed
-  const [tooltipInsightId, setTooltipInsightId] = useState<number | null>(null);
-  const tooltipTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-  const showBrandTooltip = React.useCallback((id: number) => {
-    if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
-    setTooltipInsightId(id);
-    tooltipTimerRef.current = setTimeout(() => setTooltipInsightId(null), 2200);
-    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
-
   const insights = useMemo<InsightResult[]>(() => [
     analyzeFluidPressure(data),
     analyzeVagalWithdrawal(data),
@@ -909,7 +846,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
             {cs.insightEngineLabel}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
-            6 evidence-based correlations · 2024–2026 peer-reviewed
+            {cs.insightEngineSubtitle ?? '6 evidence-based correlations · 2024–2026 peer-reviewed'}
           </Text>
         </View>
         <View style={styles.sectionHeaderRight}>
@@ -1044,8 +981,6 @@ export function InsightEngine({ data }: InsightEngineProps) {
               insight={insight}
               index={i}
               isDark={isDark}
-              tooltipVisible={tooltipInsightId === i}
-              onBrandLongPress={() => showBrandTooltip(i)}
             />
           ))}
 
@@ -1071,7 +1006,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
             <Text style={[styles.viewSourcesSubtext, {
               color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
             }]}>
-              {CLINICAL_SOURCES_COUNT} peer-reviewed references · Settings → About
+              {CLINICAL_SOURCES_COUNT} peer-reviewed references · {cs.settingsHealthData ?? 'Settings → Health Data'}
             </Text>
           </TouchableOpacity>
         </View>
