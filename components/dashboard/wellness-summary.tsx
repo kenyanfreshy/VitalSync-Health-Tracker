@@ -59,7 +59,7 @@ function trendColor(trend: 'up' | 'down' | 'stable' | 'none', accentColor: strin
 }
 
 // ─── Compute summaries from HealthData ───────────────────────────────────────
-function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
+function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typeof useCorrelationStrings>): MetricSummary[] {
   const cutoff = cutoffDate(daysBack);
 
   // Blood Pressure
@@ -106,7 +106,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
   return [
     {
       icon: '❤️',
-      label: 'Blood Pressure',
+      label: cs.wellnessMetricBloodPressure ?? 'Blood Pressure',
       value: avgSys && avgDia ? `${Math.round(avgSys)}/${Math.round(avgDia)}` : '—',
       unit: 'mmHg',
       trend: avgSys ? (avgSys > 130 ? 'up' : avgSys < 110 ? 'down' : 'stable') : 'none',
@@ -115,7 +115,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '💓',
-      label: 'Heart Rate',
+      label: cs.wellnessMetricHeartRate ?? 'Heart Rate',
       value: avgHR ? `${Math.round(avgHR)}` : '—',
       unit: 'bpm',
       trend: avgHR ? (avgHR > 90 ? 'up' : avgHR < 55 ? 'down' : 'stable') : 'none',
@@ -124,7 +124,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '🌙',
-      label: 'Sleep',
+      label: cs.wellnessMetricSleep ?? 'Sleep',
       value: avgSleep ? `${(avgSleep / 60).toFixed(1)}` : '—',
       unit: 'hrs',
       trend: avgSleep ? (avgSleep >= 420 ? 'stable' : 'down') : 'none',
@@ -133,7 +133,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '🩸',
-      label: 'Blood Glucose',
+      label: cs.wellnessMetricBloodGlucose ?? 'Blood Glucose',
       value: avgBS ? `${Math.round(avgBS)}` : '—',
       unit: 'mg/dL',
       trend: avgBS ? (avgBS > 140 ? 'up' : avgBS < 70 ? 'down' : 'stable') : 'none',
@@ -142,7 +142,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '⚖️',
-      label: 'Weight',
+      label: cs.wellnessMetricWeight ?? 'Weight',
       value: avgWeight ? `${avgWeight.toFixed(1)}` : '—',
       unit: 'lbs',
       trend: 'none',
@@ -151,7 +151,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '👟',
-      label: 'Steps',
+      label: cs.wellnessMetricSteps ?? 'Steps',
       value: avgSteps ? `${Math.round(avgSteps).toLocaleString()}` : '—',
       unit: '/day',
       trend: avgSteps ? (avgSteps >= 8000 ? 'stable' : 'down') : 'none',
@@ -160,7 +160,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '🧂',
-      label: 'Sodium',
+      label: cs.wellnessMetricSodium ?? 'Sodium',
       value: avgSodium ? `${Math.round(avgSodium)}` : '—',
       unit: 'mg',
       trend: avgSodium ? (avgSodium > 2300 ? 'up' : 'stable') : 'none',
@@ -169,7 +169,7 @@ function computeSummaries(data: HealthData, daysBack: number): MetricSummary[] {
     },
     {
       icon: '📊',
-      label: 'HRV',
+      label: cs.wellnessMetricHRV ?? 'HRV',
       value: avgHRV ? `${Math.round(avgHRV)}` : '—',
       unit: 'ms',
       trend: avgHRV ? (avgHRV >= 40 ? 'stable' : 'down') : 'none',
@@ -228,7 +228,7 @@ export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
   const [expanded, setExpanded] = useState(false);
 
   const daysBack = activeTab === 'weekly' ? 7 : 30;
-  const summaries = useMemo(() => computeSummaries(data, daysBack), [data, daysBack]);
+  const summaries = useMemo(() => computeSummaries(data, daysBack, cs), [data, daysBack, cs]);
   const availableCount = summaries.filter(m => m.available).length;
 
   const textColor = isDark ? '#E8EEFF' : '#0F172A';
@@ -272,28 +272,34 @@ export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
       {expanded && (
         <View style={styles.expandedContent}>
           {/* Tab switcher */}
-          <View style={[styles.tabRow, {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
-            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-          }]}>
-            {(['weekly', 'monthly'] as const).map(tab => (
-              <TouchableOpacity
-                key={tab}
-                style={[
-                  styles.tab,
-                  { backgroundColor: activeTab === tab ? tabActiveBg : tabInactiveBg },
-                ]}
-                onPress={() => {
-                  if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setActiveTab(tab);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.tabText, { color: activeTab === tab ? tabActiveColor : tabInactiveColor, fontWeight: activeTab === tab ? '700' : '500' }]}>
-                  {tab === 'weekly' ? (cs.wellnessSummaryWeekly ?? 'Last 7 Days') : (cs.wellnessSummaryMonthly ?? 'Last 30 Days')}
-                </Text>
-              </TouchableOpacity>
-            ))}
+          <View style={styles.tabRow}>
+            {(['weekly', 'monthly'] as const).map(tab => {
+              const active = activeTab === tab;
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  style={[
+                    styles.tab,
+                    {
+                      backgroundColor: active ? tabActiveBg : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                      borderColor: active ? tabActiveColor + '60' : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
+                    },
+                  ]}
+                  onPress={() => {
+                    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setActiveTab(tab);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.tabText, { color: active ? tabActiveColor : tabInactiveColor, fontWeight: active ? '700' : '500' }]}>
+                    {tab === 'weekly' ? (cs.wellnessSummaryWeekly ?? 'Last 7 Days') : (cs.wellnessSummaryMonthly ?? 'Last 30 Days')}
+                  </Text>
+                  {active && (
+                    <View style={[styles.tabUnderline, { backgroundColor: tabActiveColor }]} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
 
           {/* Period label */}
@@ -350,21 +356,30 @@ const styles = StyleSheet.create({
   },
   tabRow: {
     flexDirection: 'row',
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 3,
+    gap: 8,
     marginBottom: 10,
-    gap: 3,
+    paddingHorizontal: 0,
   },
   tab: {
     flex: 1,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   tabText: {
     fontSize: 12,
     letterSpacing: 0.2,
+    textAlign: 'center',
+  },
+  tabUnderline: {
+    height: 2,
+    width: '50%',
+    borderRadius: 1,
+    marginTop: 4,
   },
   periodLabel: {
     fontSize: 10,

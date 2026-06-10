@@ -244,20 +244,38 @@ function PatternScatterChart({
   xLabel,
   yLabel,
   isDark,
+  cs,
 }: {
   result: CorrelationResult;
   accentColor: string;
   xLabel: string;
   yLabel: string;
   isDark: boolean;
+  cs: ReturnType<typeof useCorrelationStrings>;
 }) {
   const pts = result.points;
-  if (pts.length < 2) {
+  if (pts.length < 5) {
     return (
-      <View style={[styles.chartEmpty, { borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)' }]}>
-        <Text style={[styles.chartEmptyText, { color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)' }]}>
-          Not enough data
+      <View style={[styles.chartEmpty, {
+        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+        backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
+        height: 110,
+        gap: 6,
+      }]}>
+        <Text style={{ fontSize: 28, lineHeight: 34 }}>📊</Text>
+        <Text style={[styles.chartEmptyTitle, { color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)' }]}>
+          {cs.patternNoDataTitle ?? 'Not Enough Data Yet'}
         </Text>
+        <Text style={[styles.chartEmptySubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
+          {(cs.patternNoDataSubtitle ?? 'Log at least 5 {x} and {y} entries to see this chart')
+            .replace('{x}', xLabel)
+            .replace('{y}', yLabel)}
+        </Text>
+        <View style={[styles.chartEmptyBadge, { backgroundColor: accentColor + '18', borderColor: accentColor + '35' }]}>
+          <Text style={[styles.chartEmptyBadgeText, { color: accentColor }]}>
+            {pts.length}/5 {cs.patternNoDataEntries ?? 'entries'}
+          </Text>
+        </View>
       </View>
     );
   }
@@ -492,6 +510,7 @@ function PlotCard({
               xLabel={METRIC_LABELS[pair.x]}
               yLabel={METRIC_LABELS[pair.y]}
               isDark={isDark}
+              cs={cs}
             />
           </View>
 
@@ -605,24 +624,27 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
       {sectionExpanded && (
         <View style={styles.sectionBody}>
           {/* Day-range tabs */}
-          <View style={[styles.rangeTabRow, {
-            backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-            borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-          }]}>
+          <View style={styles.rangeTabRow}>
             {DAY_RANGES.map(d => {
               const active = d === dayRange;
               return (
                 <Pressable
                   key={d}
-                  style={[styles.rangeTab, active && { backgroundColor: '#7C3AED22', borderColor: '#7C3AED55' }]}
+                  style={[styles.rangeTab, {
+                    backgroundColor: active ? '#7C3AED22' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                    borderColor: active ? '#7C3AED60' : (isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'),
+                  }]}
                   onPress={() => {
                     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setDayRange(d);
                   }}
                 >
-                  <Text style={[styles.rangeTabText, { color: active ? '#7C3AED' : isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)' }]}>
+                  <Text style={[styles.rangeTabText, { color: active ? '#7C3AED' : isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)', fontWeight: active ? '700' : '500' }]}>
                     {d}d
                   </Text>
+                  {active && (
+                    <View style={[styles.rangeTabUnderline, { backgroundColor: '#7C3AED' }]} />
+                  )}
                 </Pressable>
               );
             })}
@@ -687,20 +709,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginHorizontal: 16,
     marginTop: 12,
-    borderRadius: 10,
-    borderWidth: 0.5,
-    overflow: 'hidden',
+    gap: 8,
   },
   rangeTab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
-    borderRadius: 9,
+    justifyContent: 'center',
+    paddingVertical: 5,
+    paddingHorizontal: 12,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'transparent',
-    margin: 2,
+    overflow: 'hidden',
   },
-  rangeTabText: { fontSize: 12, fontWeight: '600' },
+  rangeTabText: { fontSize: 12, fontWeight: '600', textAlign: 'center' },
+  rangeTabUnderline: { height: 2, width: '50%', borderRadius: 1, marginTop: 4 },
   rangeSubtitle: {
     fontSize: 10,
     marginHorizontal: 16,
@@ -764,13 +786,18 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   chartEmpty: {
-    height: 80,
     borderRadius: 10,
     borderWidth: 0.5,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   chartEmptyText: { fontSize: 12 },
+  chartEmptyTitle: { fontSize: 13, fontWeight: '600', textAlign: 'center' },
+  chartEmptySubtitle: { fontSize: 11, textAlign: 'center', lineHeight: 16, maxWidth: 220 },
+  chartEmptyBadge: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 3, marginTop: 2 },
+  chartEmptyBadgeText: { fontSize: 11, fontWeight: '700' },
 
   scoringBlock: {
     borderRadius: 10,

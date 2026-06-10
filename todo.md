@@ -10355,3 +10355,11 @@
 - [x] Remove peer-reviewed reference footer (viewSourcesRow) from InsightEngine
 - [x] Wire i18n into PatternExplorer scoring block (ANALYSIS SCORES, Data Completeness, Trend Stability, Relationship Strength, Research Confidence, Overall Score)
 - [x] Map Relationship Strength in InsightEngine to |r|×100 instead of status-based fixed values
+
+## v1.0.62 — Correlate Tab Final Polish
+
+- [x] Apply Record tab chip styles (paddingVertical: 5, borderRadius: 20, borderWidth: 1, flex: 1, fontSize: 12) to WellnessSummary and PatternExplorer tabs
+- [x] Remove remaining peer-reviewed wording from InsightEngine subtitle and info modal
+- [x] Pattern Explorer no-data empty state (< 5 points): 📊 icon, title, subtitle with {x}/{y} metric names, progress badge showing n/5 entries
+- [x] Wellness Summary metric row i18n: replace hardcoded Blood Pressure, Heart Rate, Sleep, Blood Glucose, Weight, Steps, Sodium, HRV labels with cs.* keys in all 10 languages
+- [x] Add patternNoDataTitle, patternNoDataSubtitle, patternNoDataEntries, wellnessMetricBloodPressure, wellnessMetricHeartRate, wellnessMetricSleep, wellnessMetricBloodGlucose, wellnessMetricWeight, wellnessMetricSteps, wellnessMetricSodium, wellnessMetricHRV to all 10 language blocks in i18n.ts

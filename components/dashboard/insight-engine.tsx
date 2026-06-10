@@ -48,7 +48,7 @@ import Svg, {
 } from 'react-native-svg';
 import { useColorScheme, useCorrelationStrings, useLang } from '@/hooks';
 import type { HealthData } from '@/lib/health/types';
-import { CLINICAL_SOURCES_COUNT } from '@/app/settings/clinical-sources';
+// CLINICAL_SOURCES_COUNT import removed — footer was removed in v1.0.61
 import { intelligenceName, interpolate } from '@/lib/intelligence';
 import { settingsStrings } from '@/lib/i18n';
 
@@ -975,7 +975,7 @@ function EvidenceLibraryGrid({ isDark, cs }: { isDark: boolean; cs: ReturnType<t
             {cs.evidenceBasedSources ?? 'Evidence Based Sources'}
           </Text>
           <Text style={[styles.evidenceSubtitle, { color: isDark ? 'rgba(180,200,255,0.50)' : 'rgba(0,0,0,0.45)' }]}>
-            {cs.evidenceSourcesSubtitle ?? 'All recommendations are grounded in peer-reviewed meta-analyses published within the last five years.'}
+            {cs.evidenceSourcesSubtitle ?? 'Research references are educational resources and do not constitute medical advice.'}
           </Text>
         </View>
       </View>
@@ -1072,7 +1072,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
             🧠 {cs.insightEngineLabel ?? 'INSIGHT ENGINE'}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
-            {cs.insightEngineSubtitle ?? '6 evidence-based correlations · 2024–2026 peer-reviewed'}
+            {cs.insightEngineSubtitle ?? '6 evidence-based correlations · research-grounded'}
           </Text>
         </View>
         <View style={styles.sectionHeaderRight}>
@@ -1156,7 +1156,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)' }]}>
                 <Text style={[styles.infoSectionTitle, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{cs.infoModalWhatItAnalyzes}</Text>
                 <Text style={[styles.infoSectionBody, { color: isDark ? 'rgba(255,255,255,0.65)' : 'rgba(0,0,0,0.60)' }]}>
-                  The Insight Engine runs 6 evidence-based correlations across your vitals, sleep, nutrition, and activity data — each grounded in a 2024–2026 peer-reviewed publication.
+                  The Insight Engine runs 6 evidence-based correlations across your vitals, sleep, nutrition, and activity data — each grounded in published research references.
                 </Text>
               </View>
               <View style={[styles.infoSection, { backgroundColor: isDark ? 'rgba(34,197,94,0.06)' : 'rgba(34,197,94,0.05)', borderColor: isDark ? 'rgba(34,197,94,0.18)' : 'rgba(34,197,94,0.15)' }]}>
