@@ -91,6 +91,27 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.61 */
+export const whatsNewV1061Strings = {
+  version: "1.0.61",
+  date: "Jun 2026",
+  headline: "Correlate Tab Polish",
+
+  // Improved
+  i1Title: "Wellness Summary Moved Up",
+  i1Desc: "Wellness Summary now appears above Observed Historical Patterns for a more logical top-to-bottom reading flow in the Correlate tab.",
+  i2Title: "Uniform Section Header Heights",
+  i2Desc: "InsightEngine, Wellness Summary, and Pattern Explorer section headers now match the same paddingVertical as Nutrition Analysis for a consistent, polished look.",
+  i3Title: "Pattern Explorer Fully Translated",
+  i3Desc: "All scoring labels (Analysis Scores, Data Completeness, Trend Stability, Relationship Strength, Research Confidence, Overall Score) are now translated into all 10 supported languages.",
+  i4Title: "Relationship Strength Uses Pearson r",
+  i4Desc: "Relationship Strength score in InsightEngine cards now maps directly to |r|×100 computed from the actual chart data, replacing the fixed status-based values.",
+
+  // Fixed
+  f1Title: "Peer-Reviewed Reference Footer Removed",
+  f1Desc: "The 'View all sources' peer-reviewed reference footer has been removed from the bottom of the Correlate tab for a cleaner layout.",
+} as const;
+
 /** Release note content — v1.0.60 */
 export const whatsNewV1060Strings = {
   version: "1.0.60",
@@ -583,6 +604,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1061 = useT(whatsNewV1061Strings);
   const v1060 = useT(whatsNewV1060Strings);
   const v1059 = useT(whatsNewV1059Strings);
   const v1057 = useT(whatsNewV1057Strings);
@@ -598,7 +620,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1060;
+  const latestVersion = v1061;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -728,7 +750,20 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.60 (latest) ── */}
+          {/* ── v1.0.61 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="📐" title={v1061.i1Title} desc={v1061.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="✏️" title={v1061.i2Title} desc={v1061.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🌐" title={v1061.i3Title} desc={v1061.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📈" title={v1061.i4Title} desc={v1061.i4Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color={FIXED_COLOR} />
+            <ReleaseItem emoji="🗑️" title={v1061.f1Title} desc={v1061.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.60 ── */}
+          <OlderVersionHeader version={v1060.version} date={v1060.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="🔬" title={v1060.n1Title} desc={v1060.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

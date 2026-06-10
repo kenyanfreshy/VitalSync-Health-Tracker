@@ -483,6 +483,10 @@ export default function AnalyticsScreen() {
           </Text>
         </View>
 
+        {/* ─── Wellness Summary (above Observed Historical Patterns) ──────── */}
+        <View style={{ height: 14 }} />
+        {state.data && <WellnessSummarySection data={state.data} />}
+
         {/* ─── Observed Historical Patterns ────────────────────────────────── */}
         <View style={{ height: 14 }} />
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
@@ -797,10 +801,6 @@ export default function AnalyticsScreen() {
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
         <View style={{ height: 14 }} />
         {state.data && <InsightEngine data={state.data} />}
-
-        {/* ─── Wellness Summary ────────────────────────────────────────── */}
-        <View style={{ height: 10 }} />
-        {state.data && <WellnessSummarySection data={state.data} />}
 
         {/* ─── Pattern Explorer ─────────────────────────────────────────── */}
         <View style={{ height: 10 }} />

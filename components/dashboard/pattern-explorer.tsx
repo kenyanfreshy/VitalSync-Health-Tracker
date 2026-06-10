@@ -360,11 +360,13 @@ function PlotCard({
   data,
   dayRange,
   isDark,
+  cs,
 }: {
   pair: typeof PLOT_PAIRS[0];
   data: HealthData;
   dayRange: DayRange;
   isDark: boolean;
+  cs: ReturnType<typeof useCorrelationStrings>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const accentColor = METRIC_COLORS[pair.x] ?? '#6366F1';
@@ -499,15 +501,15 @@ function PlotCard({
             borderColor: accentColor + '22',
           }]}>
             <Text style={[styles.scoringTitle, { color: accentColor }]}>
-              📊 ANALYSIS SCORES
+              📊 {cs.scoreAnalysisTitle ?? 'ANALYSIS SCORES'}
             </Text>
-            <ScoreBar label="Data Completeness" value={scores.dataCompleteness} color="#3B82F6" isDark={isDark} />
-            <ScoreBar label="Trend Stability" value={scores.trendStability} color="#10B981" isDark={isDark} />
-            <ScoreBar label="Relationship Strength" value={scores.relationshipStrength} color={accentColor} isDark={isDark} />
-            <ScoreBar label="Research Confidence" value={scores.researchConfidence} color="#8B5CF6" isDark={isDark} />
+            <ScoreBar label={cs.scoreDataCompleteness ?? 'Data Completeness'} value={scores.dataCompleteness} color="#3B82F6" isDark={isDark} />
+            <ScoreBar label={cs.scoreTrendStability ?? 'Trend Stability'} value={scores.trendStability} color="#10B981" isDark={isDark} />
+            <ScoreBar label={cs.scoreRelationshipStrength ?? 'Relationship Strength'} value={scores.relationshipStrength} color={accentColor} isDark={isDark} />
+            <ScoreBar label={cs.scoreResearchConfidence ?? 'Research Confidence'} value={scores.researchConfidence} color="#8B5CF6" isDark={isDark} />
             <View style={[styles.overallRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)' }]}>
               <Text style={[styles.overallLabel, { color: isDark ? 'rgba(200,210,255,0.60)' : 'rgba(0,0,0,0.50)' }]}>
-                Overall Score
+                {cs.scoreOverall ?? 'Overall Score'}
               </Text>
               <View style={[styles.overallBadge, {
                 backgroundColor: accentColor + '22',
@@ -586,10 +588,10 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
       >
         <View style={styles.sectionHeaderLeft}>
           <Text style={[styles.sectionLabel, { color: isDark ? 'rgba(200,180,255,0.60)' : 'rgba(0,0,0,0.45)' }]}>
-            🔬 PATTERN EXPLORER
+            🔬 {cs.patternExplorerLabel ?? 'PATTERN EXPLORER'}
           </Text>
           <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
-            16 relationship scatter plots · 4-metric scoring
+            {cs.patternExplorerSubtitle ?? '16 relationship scatter plots · 4-metric scoring'}
           </Text>
         </View>
         <View style={styles.sectionHeaderRight}>
@@ -628,7 +630,7 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
 
           {/* Subtitle */}
           <Text style={[styles.rangeSubtitle, { color: isDark ? 'rgba(200,180,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>
-            Showing last {dayRange} days · Tap a card to see scatter plot & scores
+            {(cs.patternExplorerRangeSubtitle ?? 'Showing last {n} days · Tap a card to see scatter plot & scores').replace('{n}', String(dayRange))}
           </Text>
 
           {/* Plot cards */}
@@ -640,6 +642,7 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
                 data={data}
                 dayRange={dayRange}
                 isDark={isDark}
+                cs={cs}
               />
             ))}
           </View>

@@ -10345,5 +10345,13 @@
 - [x] Remove Recovery Trend section from analytics.tsx (Correlate tab)
 - [x] Wire PatternExplorer into analytics.tsx after WellnessSummarySection
 - [x] i18n: Pattern Explorer + scoring strings added to all 10 languages (en, es, fr, pt, ar, sw, hi, zh, de, ja)
-- [ ] RTM v1.0.59 document (Requirement Traceability Matrix)
-- [ ] Bump version to v1.0.60, push to GitHub, submit to TestFlight
+- [x] RTM v1.0.59 document (Requirement Traceability Matrix)
+- [x] Bump version to v1.0.60, push to GitHub, submit to TestFlight
+
+## v1.0.61 — Correlate Tab Polish
+
+- [x] Move WellnessSummarySection above Observed Historical Patterns in analytics.tsx
+- [x] Uniform section header paddingVertical: 14 for InsightEngine and WellnessSummary to match Nutrition Analysis (PatternExplorer already has 14)
+- [x] Remove peer-reviewed reference footer (viewSourcesRow) from InsightEngine
+- [x] Wire i18n into PatternExplorer scoring block (ANALYSIS SCORES, Data Completeness, Trend Stability, Relationship Strength, Research Confidence, Overall Score)
+- [x] Map Relationship Strength in InsightEngine to |r|×100 instead of status-based fixed values

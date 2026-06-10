@@ -829,12 +829,12 @@ function InsightCardFull({
 
           {/* 4-Metric Scoring System */}
           <View style={[styles.scoringBlock, { backgroundColor: accent + '0A', borderColor: accent + '22' }]}>
-            <Text style={[styles.scoringTitle, { color: accent }]}>📊 ANALYSIS SCORES</Text>
+            <Text style={[styles.scoringTitle, { color: accent }]}>📊 {cs.scoreAnalysisTitle ?? 'ANALYSIS SCORES'}</Text>
             {[
-              { label: 'Data Completeness',    value: Math.min(100, Math.round((insight.chartData.length / 30) * 100)), color: '#3B82F6' },
-              { label: 'Trend Stability',       value: insight.chartData.length >= 3 ? Math.round(Math.min(1, insight.chartData.length / 14) * 100) : 0, color: '#10B981' },
-              { label: 'Relationship Strength', value: insight.status === 'detected' ? 85 : insight.status === 'normal' ? 55 : 20, color: accent },
-              { label: 'Research Confidence',   value: 88, color: '#8B5CF6' },
+              { label: cs.scoreDataCompleteness ?? 'Data Completeness',    value: Math.min(100, Math.round((insight.chartData.length / 30) * 100)), color: '#3B82F6' },
+              { label: cs.scoreTrendStability ?? 'Trend Stability',       value: insight.chartData.length >= 3 ? Math.round(Math.min(1, insight.chartData.length / 14) * 100) : 0, color: '#10B981' },
+              { label: cs.scoreRelationshipStrength ?? 'Relationship Strength', value: (() => { const pts = insight.chartData; if (pts.length < 3) return 20; const n = pts.length; const xs = pts.map(p => p.x); const ys = pts.map(p => p.y); const mx = xs.reduce((a,b)=>a+b,0)/n; const my = ys.reduce((a,b)=>a+b,0)/n; const num = pts.reduce((s,p)=>s+(p.x-mx)*(p.y-my),0); const dx = Math.sqrt(pts.reduce((s,p)=>s+(p.x-mx)**2,0)); const dy = Math.sqrt(pts.reduce((s,p)=>s+(p.y-my)**2,0)); const r = (dx*dy)===0?0:num/(dx*dy); return Math.round(Math.abs(r)*100); })(), color: accent },
+              { label: cs.scoreResearchConfidence ?? 'Research Confidence',   value: 88, color: '#8B5CF6' },
             ].map(({ label, value, color }) => (
               <View key={label} style={styles.scoreBarRow}>
                 <Text style={[styles.scoreBarLabel, { color: isDark ? 'rgba(200,210,255,0.55)' : 'rgba(0,0,0,0.50)' }]}>{label}</Text>
@@ -845,13 +845,13 @@ function InsightCardFull({
               </View>
             ))}
             <View style={[styles.overallRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)' }]}>
-              <Text style={[styles.overallLabel, { color: isDark ? 'rgba(200,210,255,0.60)' : 'rgba(0,0,0,0.50)' }]}>Overall Score</Text>
+              <Text style={[styles.overallLabel, { color: isDark ? 'rgba(200,210,255,0.60)' : 'rgba(0,0,0,0.50)' }]}>{cs.scoreOverall ?? 'Overall Score'}</Text>
               <View style={[styles.overallBadge, { backgroundColor: accent + '22', borderColor: accent + '55' }]}>
                 <Text style={[styles.overallValue, { color: accent }]}>
                   {Math.round((
                     Math.min(100, Math.round((insight.chartData.length / 30) * 100)) * 0.25 +
                     (insight.chartData.length >= 3 ? Math.round(Math.min(1, insight.chartData.length / 14) * 100) : 0) * 0.25 +
-                    (insight.status === 'detected' ? 85 : insight.status === 'normal' ? 55 : 20) * 0.25 +
+                    (() => { const pts = insight.chartData; if (pts.length < 3) return 20; const n = pts.length; const xs = pts.map((p: {x:number;y:number}) => p.x); const ys = pts.map((p: {x:number;y:number}) => p.y); const mx = xs.reduce((a: number,b: number)=>a+b,0)/n; const my = ys.reduce((a: number,b: number)=>a+b,0)/n; const num = pts.reduce((s: number,p: {x:number;y:number})=>s+(p.x-mx)*(p.y-my),0); const dx = Math.sqrt(pts.reduce((s: number,p: {x:number;y:number})=>s+(p.x-mx)**2,0)); const dy = Math.sqrt(pts.reduce((s: number,p: {x:number;y:number})=>s+(p.y-my)**2,0)); const r = (dx*dy)===0?0:num/(dx*dy); return Math.round(Math.abs(r)*100); })() * 0.25 +
                     88 * 0.25
                   ))}/100
                 </Text>
@@ -1225,29 +1225,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
           {/* Evidence Library Grid */}
           <EvidenceLibraryGrid isDark={isDark} cs={cs} />
 
-          {/* View all sources deep-link */}
-          <TouchableOpacity
-            style={[styles.viewSourcesRow, {
-              borderTopColor: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)',
-            }]}
-            onPress={() => {
-              if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push(('/settings/clinical-sources?scrollTo=insights') as any);
-            }}
-            activeOpacity={0.7}
-            accessibilityRole="link"
-          >
-            <Text style={[styles.viewSourcesText, {
-              color: isDark ? 'rgba(140,180,255,0.70)' : 'rgba(30,80,200,0.70)',
-            }]}>
-              {cs.viewAllSources}
-            </Text>
-            <Text style={[styles.viewSourcesSubtext, {
-              color: isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.25)',
-            }]}>
-              {CLINICAL_SOURCES_COUNT} peer-reviewed references · {cs.settingsHealthData ?? 'Settings → Health Data'}
-            </Text>
-          </TouchableOpacity>
+          {/* peer-reviewed reference footer removed per v1.0.61 */}
         </View>
       )}
     </GlassCard>
@@ -1262,8 +1240,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderRadius: 14,
     borderWidth: 1,
   },

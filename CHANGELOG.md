@@ -5,6 +5,17 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.61 (Build 10061) — 2026-06-10
+
+### Correlate Tab Polish
+- **Wellness Summary moved up** — now appears above Observed Historical Patterns for a more logical reading flow.
+- **Uniform section header heights** — InsightEngine, Wellness Summary, and Pattern Explorer headers now use `paddingHorizontal: 16` / `paddingVertical: 14` to match Nutrition Analysis.
+- **Pattern Explorer fully translated** — all scoring labels (`scoreAnalysisTitle`, `scoreDataCompleteness`, `scoreTrendStability`, `scoreRelationshipStrength`, `scoreResearchConfidence`, `scoreOverall`, `patternExplorerRangeSubtitle`) translated into all 10 languages.
+- **Relationship Strength uses Pearson r** — InsightEngine Relationship Strength score now computed as `|r|×100` from actual chart data, replacing fixed status-based values.
+- **Peer-reviewed reference footer removed** — the 'View all sources' footer has been removed from the InsightEngine section for a cleaner layout.
+
+---
+
 ## v1.0.60 (Build 10060) — 2026-06-10
 
 ### Correlate Tab — Pattern Explorer
