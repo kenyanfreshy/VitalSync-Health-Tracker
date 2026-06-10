@@ -5,6 +5,30 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.64 (Build 10064) — 2026-06-10
+
+### Pattern Explorer V2.0
+- **Personal Insight card** — every expanded scatter plot now shows a 💡 Personal Insight card with a contextual sentence describing the historical relationship between the two metrics over the selected day range (`generatePersonalInsight()`).
+- **Rich Evidence Source block** — each expanded scatter card now shows a full Evidence Source block with journal name, year, study type badge (RCT / Cohort / Meta-Analysis / Cross-Sectional, colour-coded), sample size, and tappable PMID/DOI links (`EvidenceSourceBlock`).
+- **All 16 PLOT_PAIRS enriched** — every pair now carries full `EvidenceSource` metadata: journal, year, studyType, sampleSize, doi, pmid, url.
+
+### Nutrition Analysis — Empty States
+- **Correlate tab: no-data state** — shows ‘No Nutrition Data Yet’ with a `0/7 days` badge and ‘+ Log a Meal’ CTA; accent `#10B981`.
+- **Correlate tab: low-data state** — shows ‘Building Your Nutrition Pattern’ with `n/7` badge and mini progress bar when 1–6 unique days of meal data exist.
+- **Caloric tab: no-data and low-data states** — mirrors Correlate tab pattern with accent `#F59E0B`; ‘No Caloric Data Yet’ / ‘Building Your Caloric Trend’.
+
+### Correlation Trend Chart — Header Progress Badge
+- **Section header badge** — the Observed Historical Patterns section header now shows a compact `n/7` progress badge (accent `#3B82F6`) alongside the chevron when fewer than 7 unique days of data exist; visible even when the section is collapsed.
+
+### Correlate Tab Full Localization
+- **Zero hardcoded strings** — every user-facing string across all 5 Correlate sections (Wellness Summary, Observed Historical Patterns, Nutrition Analysis, Insight Engine, Pattern Explorer) now uses `cs.*` i18n keys with English fallbacks.
+- **26 new i18n keys** — added `peStrengthStrong/Moderate/Weak/NoPattern`, `peStatPoints/RSquared/Coverage/Score`, `peDayRange30/90/180/365`, `pePersonalInsightLabel`, `peResearchSourceLabel`, `peSampleLabel`, `peInsightFallback`, `peDisclaimer`, `peFooterDisclaimer`, `noNutritionDataTitle/Body`, `buildingNutritionTitle/Body`, `noCaloricDataTitle/Body`, `buildingCaloricTitle/Body`, `daysProgressLabel` — all propagated to all 10 language blocks (en, es, fr, de, zh, ja, pt, ar, sw, hi).
+
+### Requirement Traceability Matrix
+- **RTM updated to 102 requirements at 100% coverage** — added PE-R01–PE-R16 (individual relationship requirements), TC-01–TC-26 (translation coverage requirements), plus OH-07, OH-08, NA-07, NA-08, NA-09, PE-13, PE-14.
+
+---
+
 ## v1.0.63 (Build 10063) — 2026-06-09
 
 ### Observed Historical Patterns — Empty States

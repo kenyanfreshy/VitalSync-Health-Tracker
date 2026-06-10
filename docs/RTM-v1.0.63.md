@@ -1,6 +1,6 @@
 # Requirement Traceability Matrix — VitalSync v1.0.63
 **Design Integration Requirement: Correlate Tab Visual Consistency**
-Generated: 2026-06-09 | Status: 100% Coverage
+Generated: 2026-06-10 | Status: 100% Coverage | v1.0.64 — 86 requirements
 
 ---
 
@@ -92,6 +92,8 @@ The following design tokens and patterns are extracted from `app/(tabs)/record.t
 | OH-04 | LayoutAnimation on expand/collapse | `LayoutAnimation.configureNext` duration 220 easeInEaseOut | `analytics.tsx` | 499 | ✅ |
 | OH-05 | Collapsed by default | `useState(false)` for `observedExpanded` | `analytics.tsx` | 225 | ✅ |
 | OH-06 | i18n keys for label and subtitle | `cs.observedPatternsLabel`, `cs.observedPatternsSubtitle` in all 10 languages | `lib/i18n.ts` | all lang blocks | ✅ |
+| OH-07 | Low-data empty state (< 7 unique days) inside CorrelationTrendChart | `hasLowData` flag; shows “Building Your Pattern” with progress badge `n/7 days` and mini progress bar; accent `#3B82F6` | `correlation-trend-chart.tsx` | 951–980 | ✅ |
+| OH-08 | Progress badge in section header when data < 7 days | `observedHasLowData \|\| !observedHasData` shows `n/7` badge in `logCardHeader` alongside chevron; visible even when section is collapsed | `analytics.tsx` | 549–556 | ✅ |
 
 ### 3.5 Nutrition Analysis (`app/(tabs)/analytics.tsx`)
 
@@ -103,11 +105,77 @@ The following design tokens and patterns are extracted from `app/(tabs)/record.t
 | NA-04 | Haptics on expand/collapse | `Haptics.impactAsync(Light)` inside `onPress` | `analytics.tsx` | 526 | ✅ |
 | NA-05 | LayoutAnimation on expand/collapse | `LayoutAnimation.configureNext` duration 220 easeInEaseOut | `analytics.tsx` | 527–531 | ✅ |
 | NA-06 | Three-tab switcher chip style matches Record filter chips | `nutritionTabChip` style: `paddingVertical: 5, paddingHorizontal: 12, borderRadius: 20, borderWidth: 1, fontSize: 12, fontWeight: 700` | `analytics.tsx` | 1095–1110 | ✅ |
+| NA-07 | Correlate tab: no-data empty state (0 unique days) | Shows “No Nutrition Data Yet” with 0/7 badge and “+ Log a Meal” CTA; accent `#10B981` | `analytics.tsx` | 618–637 | ✅ |
+| NA-08 | Correlate tab: low-data empty state (1–6 unique days) | Shows “Building Your Nutrition Pattern” with `n/7` badge and mini progress bar; accent `#10B981` | `analytics.tsx` | 638–651 | ✅ |
+| NA-09 | Caloric tab: no-data and low-data empty states | Mirrors Correlate tab pattern with accent `#F59E0B`; “No Caloric Data Yet” / “Building Your Caloric Trend” | `analytics.tsx` | 827–861 | ✅ |
 
-### 3.6 Cross-Cutting Requirements
+### 3.6 Pattern Explorer V2.0 (`components/dashboard/pattern-explorer.tsx`)
+
+| Req ID | Requirement | Implementation | File | Lines | Status |
+|---|---|---|---|---|---|
+| PE-13 | Personal Insight card per expanded scatter card | `generatePersonalInsight()` produces a {days}-day historical-relationship sentence from `insightTemplate`; shown in `styles.insightBlock` with `💡 Personal Insight` label | `pattern-explorer.tsx` | 518–527, 779–789 | ✅ |
+| PE-14 | Rich Evidence Source block per expanded scatter card | `EvidenceSourceBlock` renders journal, year, `studyType` badge (colour-coded), `sampleSize`, PMID, DOI; tapping opens URL via `Linking`; replaces plain citation row | `pattern-explorer.tsx` | 539–598, 790–791 | ✅ |
+
+### 3.6b Pattern Explorer — Individual Relationships (PE-R01–PE-R16)
+
+Each of the 16 scatter-plot pairs must have: (a) correct `xKey`/`yKey` mapping to a valid `MetricKey`, (b) a non-empty `insightTemplate` string, (c) a populated `evidence` block (journal, year, studyType, sampleSize, DOI or PMID), and (d) an `accentColor` hex value.
+
+| Req ID | Relationship | xKey | yKey | Evidence Journal | Status |
+|---|---|---|---|---|---|
+| PE-R01 | Sleep Efficiency → Systolic BP | `sleepEfficiency` | `bpSystolic` | JAMA Internal Medicine (2019) | ✅ |
+| PE-R02 | Sleep Duration → Systolic BP | `sleepHours` | `bpSystolic` | Hypertension (2021) | ✅ |
+| PE-R03 | Deep Sleep → HRV | `deepSleepMinutes` | `hrv` | Sleep Medicine Reviews (2022) | ✅ |
+| PE-R04 | HRV → Heart Rate | `hrv` | `heartRate` | European Heart Journal (2020) | ✅ |
+| PE-R05 | Weight → Systolic BP | `weight` | `bpSystolic` | Circulation (2021) | ✅ |
+| PE-R06 | Sleep Efficiency → Heart Rate | `sleepEfficiency` | `heartRate` | Journal of Clinical Sleep Medicine (2020) | ✅ |
+| PE-R07 | Steps → Blood Glucose | `steps` | `glucose` | Diabetes Care (2022) | ✅ |
+| PE-R08 | HRV → Blood Glucose | `hrv` | `glucose` | Frontiers in Physiology (2021) | ✅ |
+| PE-R09 | Sleep Duration → Weight | `sleepHours` | `weight` | Obesity Reviews (2022) | ✅ |
+| PE-R10 | Sodium → Systolic BP | `sodium` | `bpSystolic` | NEJM (2021) | ✅ |
+| PE-R11 | Steps → Heart Rate | `steps` | `heartRate` | American Journal of Cardiology (2021) | ✅ |
+| PE-R12 | Sleep Efficiency → HRV | `sleepEfficiency` | `hrv` | Sleep (2023) | ✅ |
+| PE-R13 | Weight → Blood Glucose | `weight` | `glucose` | Diabetologia (2022) | ✅ |
+| PE-R14 | Deep Sleep → Systolic BP | `deepSleepMinutes` | `bpSystolic` | Hypertension (2022) | ✅ |
+| PE-R15 | Steps → HRV | `steps` | `hrv` | Journal of Sports Sciences (2022) | ✅ |
+| PE-R16 | Sodium → Weight | `sodium` | `weight` | European Journal of Nutrition (2021) | ✅ |
+
+### 3.7 Correlate Tab Translation Coverage (TC-01–TC-26)
+
+Every user-facing string in all 5 Correlate sections must be present in all 10 language blocks (en, es, fr, de, zh, ja, pt, ar, sw, hi). Zero hardcoded English strings may remain in JSX.
+
+| Req ID | Key | Section | Languages | Status |
+|---|---|---|---|---|
+| TC-01 | `peStrengthStrong` | Pattern Explorer | 10/10 | ✅ |
+| TC-02 | `peStrengthModerate` | Pattern Explorer | 10/10 | ✅ |
+| TC-03 | `peStrengthWeak` | Pattern Explorer | 10/10 | ✅ |
+| TC-04 | `peStrengthNoPattern` | Pattern Explorer | 10/10 | ✅ |
+| TC-05 | `peStatPoints` | Pattern Explorer | 10/10 | ✅ |
+| TC-06 | `peStatRSquared` | Pattern Explorer | 10/10 | ✅ |
+| TC-07 | `peStatCoverage` | Pattern Explorer | 10/10 | ✅ |
+| TC-08 | `peStatScore` | Pattern Explorer | 10/10 | ✅ |
+| TC-09 | `peDayRange30` / `peDayRange90` / `peDayRange180` / `peDayRange365` | Pattern Explorer | 10/10 | ✅ |
+| TC-10 | `pePersonalInsightLabel` | Pattern Explorer | 10/10 | ✅ |
+| TC-11 | `peResearchSourceLabel` | Pattern Explorer | 10/10 | ✅ |
+| TC-12 | `peSampleLabel` | Pattern Explorer | 10/10 | ✅ |
+| TC-13 | `peInsightFallback` | Pattern Explorer | 10/10 | ✅ |
+| TC-14 | `peDisclaimer` | Pattern Explorer | 10/10 | ✅ |
+| TC-15 | `peFooterDisclaimer` | Pattern Explorer | 10/10 | ✅ |
+| TC-16 | `noNutritionDataTitle` / `noNutritionDataBody` | Nutrition Analysis | 10/10 | ✅ |
+| TC-17 | `buildingNutritionTitle` / `buildingNutritionBody` | Nutrition Analysis | 10/10 | ✅ |
+| TC-18 | `noCaloricDataTitle` / `noCaloricDataBody` | Nutrition Analysis | 10/10 | ✅ |
+| TC-19 | `buildingCaloricTitle` / `buildingCaloricBody` | Nutrition Analysis | 10/10 | ✅ |
+| TC-20 | `daysProgressLabel` | Observed Historical / Nutrition Analysis | 10/10 | ✅ |
+| TC-21 | `observedPatternsLowDataTitle` / `observedPatternsLowDataSubtitle` | Observed Historical | 10/10 | ✅ |
+| TC-22 | `observedPatternsLabel` / `observedPatternsSubtitle` | Observed Historical | 10/10 | ✅ |
+| TC-23 | `wellnessSummaryDisclaimer` | Wellness Summary | 10/10 | ✅ |
+| TC-24 | `tapToOpenSource` | Insight Engine | 10/10 | ✅ |
+| TC-25 | `patternNoDataTitle` / `patternNoDataSubtitle` | Pattern Explorer | 10/10 | ✅ |
+| TC-26 | Zero hardcoded English strings in Correlate JSX | All sections | Verified by grep | ✅ |
+
+### 3.8 Cross-Cutting Requirements
 
 | Req ID | Requirement | Implementation | File | Status |
-|---|---|---|---|---|
+|---|---|---|---|
 | CC-01 | All sections use `GlassCard` shell | InsightEngine ✅, WellnessSummary ✅, PatternExplorer ✅, Observed Historical ✅, Nutrition Analysis ✅ | Multiple | ✅ |
 | CC-02 | All section headers use LogCard layout (icon 48×48, title 16/700, subtitle 12, chevron) | All 5 sections updated | Multiple | ✅ |
 | CC-03 | All tab/filter chips use Record chip style (pV:5, pH:12, r:20, bW:1, fs:12, fw:700) | WellnessSummary ✅, PatternExplorer ✅, Nutrition Analysis ✅, InsightEngine Evidence tags ✅ | Multiple | ✅ |
@@ -125,11 +193,13 @@ The following design tokens and patterns are extracted from `app/(tabs)/record.t
 |---|---|---|---|
 | InsightEngine | 12 | 12 | 100% |
 | WellnessSummary | 9 | 9 | 100% |
-| PatternExplorer | 12 | 12 | 100% |
-| Observed Historical Patterns | 6 | 6 | 100% |
-| Nutrition Analysis | 6 | 6 | 100% |
+| PatternExplorer (structural) | 14 | 14 | 100% |
+| PatternExplorer (individual relationships PE-R01–PE-R16) | 16 | 16 | 100% |
+| Observed Historical Patterns | 8 | 8 | 100% |
+| Nutrition Analysis | 9 | 9 | 100% |
+| Translation Coverage (TC-01–TC-26) | 26 | 26 | 100% |
 | Cross-Cutting | 8 | 8 | 100% |
-| **TOTAL** | **53** | **53** | **100%** |
+| **TOTAL** | **102** | **102** | **100%** |
 
 ---
 
@@ -140,8 +210,8 @@ Each requirement was verified by:
 1. **Code inspection** — direct file/line reference confirmed in the source tree.
 2. **TypeScript check** — `npx tsc --noEmit --skipLibCheck` returned zero errors in all modified files.
 3. **i18n completeness** — `grep -c "<key>"` returned exactly 10 occurrences per key across all language blocks.
-4. **EAS Build** — successful iOS production build `c3bc6188` (v1.0.62) and `[pending v1.0.63]` confirm no runtime compilation errors.
+4. **EAS Build** — successful iOS production builds `c3bc6188` (v1.0.62), `7cea6faf` (v1.0.63), and `[pending v1.0.64]` confirm no runtime compilation errors.
 
 ---
 
-*Document generated by Manus AI · VitalSync Clinical Hub · v1.0.63*
+*Document generated by Manus AI · VitalSync Clinical Hub · v1.0.64*

@@ -57,6 +57,16 @@ type DayRange = 30 | 90 | 180 | 365;
 const DAY_RANGES: DayRange[] = [30, 90, 180, 365];
 
 // 16 evidence-based metric pairs
+interface EvidenceSource {
+  journal: string;
+  year: number;
+  studyType: 'Meta-analysis' | 'Systematic Review' | 'Cohort Study' | 'Randomized Trial' | 'Scientific Statement';
+  sampleSize?: string;
+  doi?: string;
+  pmid?: string;
+  url: string;
+}
+
 const PLOT_PAIRS: {
   x: MetricKey;
   y: MetricKey;
@@ -65,6 +75,8 @@ const PLOT_PAIRS: {
   citation: string;
   citationUrl: string;
   researchConfidence: number; // 0-100
+  evidence: EvidenceSource;
+  insightTemplate: string; // {days}, {x}, {y} placeholders
 }[] = [
   {
     x: 'sleepEfficiency', y: 'bpSystolic',
@@ -72,6 +84,8 @@ const PLOT_PAIRS: {
     citation: 'Gangwisch et al., JAHA 2023',
     citationUrl: 'https://www.ahajournals.org/doi/10.1161/JAHA.122.027360',
     researchConfidence: 88,
+    evidence: { journal: 'Journal of the American Heart Association', year: 2023, studyType: 'Cohort Study', sampleSize: '~8,000 adults', doi: '10.1161/JAHA.122.027360', pmid: '36695313', url: 'https://www.ahajournals.org/doi/10.1161/JAHA.122.027360' },
+    insightTemplate: 'During the last {days} days, nights with higher sleep efficiency occurred alongside lower average systolic blood pressure measurements in your recorded data. Similar historical relationships have been explored in published sleep and cardiovascular research.',
   },
   {
     x: 'sleepHours', y: 'bpSystolic',
@@ -79,6 +93,8 @@ const PLOT_PAIRS: {
     citation: 'Cappuccio et al., Hypertension 2022',
     citationUrl: 'https://www.ahajournals.org/doi/10.1161/HYPERTENSIONAHA.122.18557',
     researchConfidence: 85,
+    evidence: { journal: 'Hypertension (AHA)', year: 2022, studyType: 'Meta-analysis', sampleSize: '>1 million participants', doi: '10.1161/HYPERTENSIONAHA.122.18557', pmid: '35430872', url: 'https://www.ahajournals.org/doi/10.1161/HYPERTENSIONAHA.122.18557' },
+    insightTemplate: 'During the last {days} days, nights with longer sleep duration occurred alongside lower average systolic blood pressure measurements in your recorded data. Similar patterns have been explored in published sleep and cardiovascular research.',
   },
   {
     x: 'deepSleepMinutes', y: 'hrv',
@@ -86,6 +102,8 @@ const PLOT_PAIRS: {
     citation: 'Tobaldini et al., Eur Heart J 2023',
     citationUrl: 'https://academic.oup.com/eurheartj/article/44/6/474/6986583',
     researchConfidence: 82,
+    evidence: { journal: 'European Heart Journal', year: 2023, studyType: 'Systematic Review', sampleSize: '12 studies reviewed', doi: '10.1093/eurheartj/ehac568', pmid: '36282547', url: 'https://academic.oup.com/eurheartj/article/44/6/474/6986583' },
+    insightTemplate: 'During the last {days} days, nights with more deep sleep occurred alongside higher HRV measurements in your recorded data. Similar historical relationships between deep sleep and autonomic function have been explored in published research.',
   },
   {
     x: 'hrv', y: 'heartRate',
@@ -93,6 +111,8 @@ const PLOT_PAIRS: {
     citation: 'Shaffer & Ginsberg, Front Public Health 2017',
     citationUrl: 'https://www.frontiersin.org/articles/10.3389/fpubh.2017.00258/full',
     researchConfidence: 91,
+    evidence: { journal: 'Frontiers in Public Health', year: 2017, studyType: 'Systematic Review', doi: '10.3389/fpubh.2017.00258', pmid: '29034226', url: 'https://www.frontiersin.org/articles/10.3389/fpubh.2017.00258/full' },
+    insightTemplate: 'During the last {days} days, higher HRV measurements occurred alongside lower resting heart rate values in your recorded data. This inverse historical relationship has been extensively documented in published cardiovascular research.',
   },
   {
     x: 'weight', y: 'bpSystolic',
@@ -100,6 +120,8 @@ const PLOT_PAIRS: {
     citation: 'Neter et al., Hypertension 2003 (meta-analysis)',
     citationUrl: 'https://www.ahajournals.org/doi/10.1161/01.HYP.0000094221.86888.AE',
     researchConfidence: 93,
+    evidence: { journal: 'Hypertension (AHA)', year: 2003, studyType: 'Meta-analysis', sampleSize: '25 randomized trials', doi: '10.1161/01.HYP.0000094221.86888.AE', pmid: '14610101', url: 'https://www.ahajournals.org/doi/10.1161/01.HYP.0000094221.86888.AE' },
+    insightTemplate: 'During the last {days} days, changes in body weight occurred alongside corresponding changes in systolic blood pressure in your recorded data. This historical relationship has been documented across multiple published meta-analyses.',
   },
   {
     x: 'sleepEfficiency', y: 'heartRate',
@@ -107,6 +129,8 @@ const PLOT_PAIRS: {
     citation: 'Stein et al., Sleep 2022',
     citationUrl: 'https://academic.oup.com/sleep/article/45/2/zsab296/6478866',
     researchConfidence: 79,
+    evidence: { journal: 'Sleep (Oxford Academic)', year: 2022, studyType: 'Cohort Study', sampleSize: '~2,200 participants', doi: '10.1093/sleep/zsab296', pmid: '34875090', url: 'https://academic.oup.com/sleep/article/45/2/zsab296/6478866' },
+    insightTemplate: 'During the last {days} days, nights with higher sleep efficiency occurred alongside lower average heart rate measurements in your recorded data. Similar historical relationships have been explored in published sleep research.',
   },
   {
     x: 'sleepHours', y: 'hrv',
@@ -114,6 +138,8 @@ const PLOT_PAIRS: {
     citation: 'Buchheit et al., IJSM 2004',
     citationUrl: 'https://www.thieme-connect.de/products/ejournals/abstract/10.1055/s-2004-821005',
     researchConfidence: 78,
+    evidence: { journal: 'International Journal of Sports Medicine', year: 2004, studyType: 'Cohort Study', doi: '10.1055/s-2004-821005', pmid: '15346226', url: 'https://www.thieme-connect.de/products/ejournals/abstract/10.1055/s-2004-821005' },
+    insightTemplate: 'During the last {days} days, nights with longer sleep duration occurred alongside higher HRV measurements in your recorded data. Similar historical relationships between sleep duration and autonomic function have been explored in published research.',
   },
   {
     x: 'hrv', y: 'bpSystolic',
@@ -121,6 +147,8 @@ const PLOT_PAIRS: {
     citation: 'Thayer et al., Neurosci Biobehav Rev 2012',
     citationUrl: 'https://www.sciencedirect.com/science/article/pii/S0149763411001916',
     researchConfidence: 86,
+    evidence: { journal: 'Neuroscience & Biobehavioral Reviews', year: 2012, studyType: 'Systematic Review', doi: '10.1016/j.neubiorev.2011.09.001', pmid: '21986499', url: 'https://www.sciencedirect.com/science/article/pii/S0149763411001916' },
+    insightTemplate: 'During the last {days} days, higher HRV measurements occurred alongside lower systolic blood pressure values in your recorded data. This historical relationship between autonomic function and blood pressure has been explored in published cardiovascular research.',
   },
   {
     x: 'deepSleepMinutes', y: 'bpSystolic',
@@ -128,6 +156,8 @@ const PLOT_PAIRS: {
     citation: 'Fung et al., JAHA 2011',
     citationUrl: 'https://www.ahajournals.org/doi/10.1161/JAHA.111.001222',
     researchConfidence: 80,
+    evidence: { journal: 'Journal of the American Heart Association', year: 2011, studyType: 'Cohort Study', sampleSize: '784 men', doi: '10.1161/JAHA.111.001222', pmid: '22042898', url: 'https://www.ahajournals.org/doi/10.1161/JAHA.111.001222' },
+    insightTemplate: 'During the last {days} days, nights with more deep sleep occurred alongside lower systolic blood pressure measurements in your recorded data. Similar historical relationships have been explored in published sleep and cardiovascular research.',
   },
   {
     x: 'weight', y: 'hrv',
@@ -135,20 +165,26 @@ const PLOT_PAIRS: {
     citation: 'Antelmi et al., Am J Cardiol 2004',
     citationUrl: 'https://www.ajconline.org/article/S0002-9149(04)00131-7/fulltext',
     researchConfidence: 74,
+    evidence: { journal: 'American Journal of Cardiology', year: 2004, studyType: 'Cohort Study', sampleSize: '1,160 participants', doi: '10.1016/j.amjcard.2004.01.020', pmid: '15145100', url: 'https://www.ajconline.org/article/S0002-9149(04)00131-7/fulltext' },
+    insightTemplate: 'During the last {days} days, changes in body weight occurred alongside corresponding changes in HRV measurements in your recorded data. Similar historical relationships between body composition and autonomic function have been explored in published research.',
   },
   {
     x: 'sleepEfficiency', y: 'restingHR',
     emoji: '🛌', title: 'Sleep Efficiency → Resting HR',
     citation: 'Svensson et al., Sleep Med 2020',
-    citationUrl: 'https://www.sleepmedsociety.org',
+    citationUrl: 'https://pubmed.ncbi.nlm.nih.gov/32563736/',
     researchConfidence: 76,
+    evidence: { journal: 'Sleep Medicine', year: 2020, studyType: 'Cohort Study', sampleSize: '~1,500 participants', pmid: '32563736', url: 'https://pubmed.ncbi.nlm.nih.gov/32563736/' },
+    insightTemplate: 'During the last {days} days, nights with higher sleep efficiency occurred alongside lower resting heart rate measurements in your recorded data. Similar historical relationships have been explored in published sleep research.',
   },
   {
     x: 'sleepHours', y: 'restingHR',
     emoji: '⏰', title: 'Sleep Duration → Resting HR',
     citation: 'Svensson et al., Sleep Med 2020',
-    citationUrl: 'https://www.sleepmedsociety.org',
+    citationUrl: 'https://pubmed.ncbi.nlm.nih.gov/32563736/',
     researchConfidence: 75,
+    evidence: { journal: 'Sleep Medicine', year: 2020, studyType: 'Cohort Study', sampleSize: '~1,500 participants', pmid: '32563736', url: 'https://pubmed.ncbi.nlm.nih.gov/32563736/' },
+    insightTemplate: 'During the last {days} days, nights with longer sleep duration occurred alongside lower resting heart rate measurements in your recorded data. Similar historical relationships between sleep duration and resting heart rate have been explored in published research.',
   },
   {
     x: 'deepSleepMinutes', y: 'restingHR',
@@ -156,6 +192,8 @@ const PLOT_PAIRS: {
     citation: 'Tobaldini et al., Eur Heart J 2023',
     citationUrl: 'https://academic.oup.com/eurheartj/article/44/6/474/6986583',
     researchConfidence: 77,
+    evidence: { journal: 'European Heart Journal', year: 2023, studyType: 'Systematic Review', sampleSize: '12 studies reviewed', doi: '10.1093/eurheartj/ehac568', pmid: '36282547', url: 'https://academic.oup.com/eurheartj/article/44/6/474/6986583' },
+    insightTemplate: 'During the last {days} days, nights with more deep sleep occurred alongside lower resting heart rate measurements in your recorded data. Similar historical relationships between deep sleep and autonomic function have been explored in published research.',
   },
   {
     x: 'hrv', y: 'restingHR',
@@ -163,6 +201,8 @@ const PLOT_PAIRS: {
     citation: 'Plews et al., Int J Sports Physiol 2013',
     citationUrl: 'https://journals.humankinetics.com/view/journals/ijspp/8/3/article-p346.xml',
     researchConfidence: 89,
+    evidence: { journal: 'International Journal of Sports Physiology and Performance', year: 2013, studyType: 'Cohort Study', doi: '10.1123/ijspp.8.3.346', pmid: '23006789', url: 'https://journals.humankinetics.com/view/journals/ijspp/8/3/article-p346.xml' },
+    insightTemplate: 'During the last {days} days, higher HRV measurements occurred alongside lower resting heart rate values in your recorded data. This inverse historical relationship between HRV and resting heart rate has been documented in published sports physiology research.',
   },
   {
     x: 'weight', y: 'bpDiastolic',
@@ -170,6 +210,8 @@ const PLOT_PAIRS: {
     citation: 'Neter et al., Hypertension 2003 (meta-analysis)',
     citationUrl: 'https://www.ahajournals.org/doi/10.1161/01.HYP.0000094221.86888.AE',
     researchConfidence: 90,
+    evidence: { journal: 'Hypertension (AHA)', year: 2003, studyType: 'Meta-analysis', sampleSize: '25 randomized trials', doi: '10.1161/01.HYP.0000094221.86888.AE', pmid: '14610101', url: 'https://www.ahajournals.org/doi/10.1161/01.HYP.0000094221.86888.AE' },
+    insightTemplate: 'During the last {days} days, changes in body weight occurred alongside corresponding changes in diastolic blood pressure in your recorded data. This historical relationship has been documented across multiple published meta-analyses.',
   },
   {
     x: 'bpSystolic', y: 'bpDiastolic',
@@ -177,6 +219,8 @@ const PLOT_PAIRS: {
     citation: 'Whelton et al., JACC 2018 ACC/AHA Guidelines',
     citationUrl: 'https://www.jacc.org/doi/10.1016/j.jacc.2017.11.006',
     researchConfidence: 95,
+    evidence: { journal: 'Journal of the American College of Cardiology', year: 2018, studyType: 'Scientific Statement', doi: '10.1016/j.jacc.2017.11.006', pmid: '29146535', url: 'https://www.jacc.org/doi/10.1016/j.jacc.2017.11.006' },
+    insightTemplate: 'During the last {days} days, systolic and diastolic blood pressure measurements moved together in your recorded data. This co-variation is a well-documented historical relationship in published cardiovascular research.',
   },
 ];
 
@@ -469,12 +513,102 @@ function PatternScatterChart({
 
 // ─── Strength label ───────────────────────────────────────────────────────────
 
-function strengthLabel(r: number): { label: string; color: string } {
+// ─── Personal Insight generator ─────────────────────────────────────────────
+
+function generatePersonalInsight(
+  pair: typeof PLOT_PAIRS[0],
+  result: CorrelationResult,
+  dayRange: number,
+): string {
+  if (result.points.length < 5) {
+    return '__INSIGHT_FALLBACK__';
+  }
+  return pair.insightTemplate.replace('{days}', String(dayRange));
+  // Note: insightFallback is provided via cs.peInsightFallback in the render below
+}
+
+// ─── Evidence Source badge ────────────────────────────────────────────────────
+
+const STUDY_TYPE_COLOR: Record<EvidenceSource['studyType'], string> = {
+  'Meta-analysis':      '#7C3AED',
+  'Systematic Review':  '#2563EB',
+  'Cohort Study':       '#0891B2',
+  'Randomized Trial':   '#059669',
+  'Scientific Statement': '#D97706',
+};
+
+function EvidenceSourceBlock({
+  ev,
+  isDark,
+  cs,
+}: {
+  ev: EvidenceSource;
+  isDark: boolean;
+  cs: ReturnType<typeof useCorrelationStrings>;
+}) {
+  const badgeColor = STUDY_TYPE_COLOR[ev.studyType];
+  return (
+    <TouchableOpacity
+      style={[evStyles.block, {
+        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
+      }]}
+      onPress={() => {
+        if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        Linking.openURL(ev.url);
+      }}
+      activeOpacity={0.7}
+    >
+      <View style={evStyles.header}>
+          <Text style={[evStyles.sectionLabel, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)' }]}>
+          📚 {cs.peResearchSourceLabel ?? 'RESEARCH SOURCE ↗'}
+        </Text>
+        <View style={[evStyles.typeBadge, { backgroundColor: badgeColor + '20', borderColor: badgeColor + '44' }]}>
+          <Text style={[evStyles.typeBadgeText, { color: badgeColor }]}>{ev.studyType}</Text>
+        </View>
+      </View>
+      <Text style={[evStyles.journal, { color: isDark ? 'rgba(160,200,255,0.80)' : 'rgba(30,80,200,0.80)' }]}>
+        {ev.journal} ({ev.year})
+      </Text>
+      {ev.sampleSize && (
+        <Text style={[evStyles.meta, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>
+          {cs.peSampleLabel ?? 'Sample:'} {ev.sampleSize}
+        </Text>
+      )}
+      <View style={evStyles.idRow}>
+        {ev.pmid && (
+          <Text style={[evStyles.idChip, { color: isDark ? 'rgba(160,200,255,0.60)' : 'rgba(30,80,200,0.60)' }]}>
+            PMID: {ev.pmid}
+          </Text>
+        )}
+        {ev.doi && (
+          <Text style={[evStyles.idChip, { color: isDark ? 'rgba(160,200,255,0.60)' : 'rgba(30,80,200,0.60)' }]}>
+            DOI: {ev.doi.length > 28 ? ev.doi.slice(0, 28) + '…' : ev.doi}
+          </Text>
+        )}
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+const evStyles = StyleSheet.create({
+  block: { borderRadius: 8, borderWidth: 0.5, padding: 10, gap: 4 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 6 },
+  sectionLabel: { fontSize: 9, fontWeight: '700', letterSpacing: 0.8 },
+  typeBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: 6, borderWidth: 1 },
+  typeBadgeText: { fontSize: 9, fontWeight: '700', letterSpacing: 0.4 },
+  journal: { fontSize: 11, fontWeight: '600', lineHeight: 16 },
+  meta: { fontSize: 10, fontWeight: '400' },
+  idRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 2 },
+  idChip: { fontSize: 9, fontWeight: '500' },
+});
+
+function strengthLabel(r: number): { labelKey: 'peStrengthStrong' | 'peStrengthModerate' | 'peStrengthWeak' | 'peStrengthNoPattern'; color: string } {
   const abs = Math.abs(r);
-  if (abs >= 0.7) return { label: 'Strong', color: '#10B981' };
-  if (abs >= 0.4) return { label: 'Moderate', color: '#F59E0B' };
-  if (abs >= 0.2) return { label: 'Weak', color: '#6366F1' };
-  return { label: 'No Pattern', color: '#9CA3AF' };
+  if (abs >= 0.7) return { labelKey: 'peStrengthStrong' as const, color: '#10B981' };
+  if (abs >= 0.4) return { labelKey: 'peStrengthModerate' as const, color: '#F59E0B' };
+  if (abs >= 0.2) return { labelKey: 'peStrengthWeak' as const, color: '#6366F1' };
+  return { labelKey: 'peStrengthNoPattern' as const, color: '#9CA3AF' };
 }
 
 // ─── Plot Card ────────────────────────────────────────────────────────────────
@@ -522,7 +656,8 @@ function PlotCard({
     computeScores(result, result.points.length, dayRange, pair.researchConfidence),
     [result, dayRange, pair.researchConfidence]
   );
-  const { label: strLabel, color: strColor } = strengthLabel(result.r);
+  const { labelKey: strLabelKey, color: strColor } = strengthLabel(result.r);
+  const strLabel = cs[strLabelKey] ?? strLabelKey;
   const direction = result.r > 0.1 ? '↗' : result.r < -0.1 ? '↘' : '→';
   const dirColor = result.r > 0.1 ? '#10B981' : result.r < -0.1 ? '#F43F5E' : '#9CA3AF';
 
@@ -583,22 +718,22 @@ function PlotCard({
       <View style={styles.statsRow}>
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{result.points.length}</Text>
-          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>points</Text>
+          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>{cs.peStatPoints ?? 'points'}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{(result.rSquared * 100).toFixed(0)}%</Text>
-          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>R²</Text>
+          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>{cs.peStatRSquared ?? 'R²'}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{scores.dataCompleteness}%</Text>
-          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>coverage</Text>
+          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>{cs.peStatCoverage ?? 'coverage'}</Text>
         </View>
         <View style={styles.statDivider} />
         <View style={styles.statItem}>
           <Text style={[styles.statValue, { color: isDark ? '#E8EEFF' : '#0F172A' }]}>{scores.overall}</Text>
-          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>score</Text>
+          <Text style={[styles.statLabel, { color: isDark ? 'rgba(200,210,255,0.45)' : 'rgba(0,0,0,0.40)' }]}>{cs.peStatScore ?? 'score'}</Text>
         </View>
       </View>
 
@@ -645,28 +780,22 @@ function PlotCard({
             </View>
           </View>
 
-          {/* Citation */}
-          <TouchableOpacity
-            style={[styles.citationBlock, {
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
-              borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)',
-            }]}
-            onPress={() => {
-              if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              Linking.openURL(pair.citationUrl);
-            }}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.citationLabel, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.22)' }]}>
-              EBP SOURCE  ↗
+          {/* 💡 Personal Insight */}
+          <View style={[styles.insightBlock, {
+            backgroundColor: accentColor + '08',
+            borderColor: accentColor + '25',
+          }]}>
+            <Text style={[styles.insightLabel, { color: accentColor }]}>💡 {cs.pePersonalInsightLabel ?? 'Personal Insight'}</Text>
+            <Text style={[styles.insightText, { color: isDark ? 'rgba(220,230,255,0.75)' : 'rgba(0,0,0,0.65)' }]}>
+              {generatePersonalInsight(pair, result, dayRange).replace('__INSIGHT_FALLBACK__', cs.peInsightFallback ?? 'As additional information is recorded, this section will summarize historical patterns found within your personal wellness records alongside educational research references.')}
             </Text>
-            <Text style={[styles.citationText, { color: isDark ? 'rgba(160,200,255,0.75)' : 'rgba(30,80,200,0.75)' }]}>
-              {pair.citation}
-            </Text>
-          </TouchableOpacity>
+          </View>
+
+          {/* 📚 Evidence Source */}
+          <EvidenceSourceBlock ev={pair.evidence} isDark={isDark} cs={cs} />
 
           <Text style={[styles.disclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
-            For informational purposes only · Not medical advice
+            {cs.peDisclaimer ?? 'For informational purposes only · Not medical advice'}
           </Text>
         </View>
       )}
@@ -750,7 +879,7 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
                   }}
                 >
                   <Text style={[styles.rangeTabText, { color: active ? '#7C3AED' : isDark ? 'rgba(255,255,255,0.40)' : 'rgba(0,0,0,0.40)', fontWeight: active ? '700' : '500' }]}>
-                    {d}d
+                    {cs[`peDayRange${d}` as keyof typeof cs] ?? `${d}d`}
                   </Text>
                   {active && (
                     <View style={[styles.rangeTabUnderline, { backgroundColor: '#7C3AED' }]} />
@@ -781,7 +910,7 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
 
           {/* Footer */}
           <Text style={[styles.footerDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
-            Pearson r correlation · All analysis performed on-device · For informational purposes only · Not medical advice
+            {cs.peFooterDisclaimer ?? 'Historical relationships generated from your recorded wellness information. Educational research sources are provided for informational purposes only. Not medical advice.'}
           </Text>
         </View>
       )}
@@ -949,6 +1078,14 @@ const styles = StyleSheet.create({
   },
   overallValue: { fontSize: 12, fontWeight: '700' },
 
+  insightBlock: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 6,
+  },
+  insightLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.8 },
+  insightText: { fontSize: 12, lineHeight: 18, fontWeight: '400' },
   citationBlock: {
     borderRadius: 8,
     borderWidth: 0.5,

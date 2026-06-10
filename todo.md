@@ -10384,3 +10384,15 @@
 - [x] Add v1.0.63 What's New entry to whats-new-sheet.tsx
 - [x] Update LATEST_WHATS_NEW_VERSION to 1.0.63
 - [x] Add v1.0.63 entry to CHANGELOG.md
+- [x] Pattern Explorer V2.0: add Personal Insight card per expanded scatter card (generatePersonalInsight, insightTemplate, insightBlock style)
+- [x] Pattern Explorer V2.0: add rich Evidence Source block per expanded scatter card (EvidenceSourceBlock: journal, year, studyType badge, sampleSize, PMID, DOI, Linking.openURL)
+- [x] Pattern Explorer V2.0: enrich all 16 PLOT_PAIRS with EvidenceSource metadata (journal, year, studyType, sampleSize, doi, pmid, url)
+- [x] Pattern Explorer V2.0: update footer disclaimer to historical-relationship language (remove "Pearson r correlation" from footer)
+- [x] Nutrition Analysis: add hasLowData / !hasData empty states to Correlate tab (No Nutrition Data Yet / Building Your Nutrition Pattern, progress badge + bar, accent #10B981)
+- [x] Nutrition Analysis: add hasLowData / !hasData empty states to Caloric tab (No Caloric Data Yet / Building Your Caloric Trend, progress badge + bar, accent #F59E0B)
+- [x] Correlation Trend Chart: surface progress badge (n/7) in Observed Historical Patterns section header when data < 7 days (visible even when section is collapsed)
+- [x] Update RTM-v1.0.63.md to 60 requirements (100% coverage): add OH-07, OH-08, NA-07, NA-08, NA-09, PE-13, PE-14
+- [x] Bump version to 1.0.64 / buildNumber 10064 / versionCode 64
+- [x] Add v1.0.64 What's New entry to whats-new-sheet.tsx
+- [x] Update LATEST_WHATS_NEW_VERSION to 1.0.64
+- [x] Add v1.0.64 entry to CHANGELOG.md

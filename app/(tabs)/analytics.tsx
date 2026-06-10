@@ -402,6 +402,48 @@ export default function AnalyticsScreen() {
     return { todayNutritionCount: count, todayCaloriesKcal: kcal, nutritionStreak: streak };
   }, [state.data?.sodiumIntake]);
 
+  // ── Observed Historical Patterns data density (for header badge) ────────────
+  const { observedHasData, observedHasLowData, observedUniqueDays } = useMemo(() => {
+    if (!state.data) return { observedHasData: false, observedHasLowData: false, observedUniqueDays: 0 };
+    // Count unique days across all primary trend metrics: pulse, sleep, bloodPressure
+    const daySet = new Set<string>();
+    const addDays = (records: Array<{ timestamp: string | number | Date }>) => {
+      records.forEach(r => {
+        const d = new Date(r.timestamp);
+        daySet.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+      });
+    };
+    addDays(state.data.pulse ?? []);
+    // SleepRecord uses .date (YYYY-MM-DD) not .timestamp
+    (state.data.sleep ?? []).forEach(r => {
+      const d = new Date(r.date);
+      daySet.add(`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`);
+    });
+    addDays(state.data.bloodPressure ?? []);
+    const uniqueDays = daySet.size;
+    return {
+      observedHasData: uniqueDays > 0,
+      observedHasLowData: uniqueDays > 0 && uniqueDays < 7,
+      observedUniqueDays: uniqueDays,
+    };
+  }, [state.data]);
+
+  // ── Nutrition data density (for empty-state logic) ──────────────────────
+  const { nutritionHasData, nutritionHasLowData, nutritionUniqueDays } = useMemo(() => {
+    const allRecords = state.data?.sodiumIntake ?? [];
+    const uniqueDays = new Set(
+      allRecords.map(r => {
+        const d = new Date(r.timestamp);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      })
+    ).size;
+    return {
+      nutritionHasData: uniqueDays > 0,
+      nutritionHasLowData: uniqueDays > 0 && uniqueDays < 7,
+      nutritionUniqueDays: uniqueDays,
+    };
+  }, [state.data?.sodiumIntake]);
+
   // ── Share handler ─────────────────────────────────────────────────────────
   const handleShare = useCallback(async (insight: EngineInsight) => {
     if (sharingId) return; // prevent double-tap
@@ -508,6 +550,14 @@ export default function AnalyticsScreen() {
               <Text style={[styles.logCardTitle, { color: colors.foreground }]}>{cs.observedPatternsLabel ?? 'Observed Historical Patterns'}</Text>
               <Text style={[styles.logCardSubtitle, { color: colors.muted }]}>{cs.observedPatternsSubtitle ?? 'Trend lines · 30-day rolling correlations'}</Text>
             </View>
+            {/* Progress badge — visible when collapsed so users see data-building progress */}
+            {(observedHasLowData || !observedHasData) && (
+              <View style={[styles.observedProgressBadge, { borderColor: '#3B82F6' + '40', backgroundColor: '#3B82F6' + '12' }]}>
+                <Text style={[styles.observedProgressText, { color: '#3B82F6' }]}>
+                  {(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', String(observedUniqueDays))}
+                </Text>
+              </View>
+            )}
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </Pressable>
           {observedExpanded && (
@@ -598,11 +648,48 @@ export default function AnalyticsScreen() {
               <Reanimated.View style={nutritionTabAnimStyle}>
               {nutritionTab === 'correlate' && (
                 <View>
+                  {/* ── Correlate empty / low-data states ── */}
+                  {!nutritionHasData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(16,185,129,0.07)' : 'rgba(16,185,129,0.05)', borderColor: '#10B981' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>🥗</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.noNutritionDataTitle ?? 'No Nutrition Data Yet'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.noNutritionDataBody ?? 'Log meals to see your nutrition correlate score and dietary quality patterns here.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#10B981' + '40', backgroundColor: '#10B981' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#10B981' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', '0')}</Text>
+                      </View>
+                      <Pressable
+                        style={[styles.nutritionEmptyCTA, { backgroundColor: '#10B981' + '20', borderColor: '#10B981' + '50' }]}
+                        onPress={() => {
+                          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push('/(tabs)/log');
+                        }}
+                      >
+                        <Text style={[styles.nutritionEmptyCTAText, { color: '#10B981' }]}>{cs.logMealCta ?? '+ Log a Meal'}</Text>
+                      </Pressable>
+                    </View>
+                  ) : nutritionHasLowData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(16,185,129,0.07)' : 'rgba(16,185,129,0.05)', borderColor: '#10B981' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>📈</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.buildingNutritionTitle ?? 'Building Your Nutrition Pattern'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.buildingNutritionBody ?? 'Keep logging meals — your nutrition correlate score becomes available after 7 days of data.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#10B981' + '40', backgroundColor: '#10B981' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#10B981' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', String(nutritionUniqueDays))}</Text>
+                      </View>
+                      <View style={[styles.nutritionEmptyProgressBar, { backgroundColor: '#10B981' + '20' }]}>
+                        <View style={[styles.nutritionEmptyProgressFill, { backgroundColor: '#10B981', width: `${Math.min(Math.round((nutritionUniqueDays / 7) * 100), 100)}%` as `${number}%` }]} />
+                      </View>
+                    </View>
+                  ) : null}
+                  {nutritionHasData && (
                   <NutritionCorrelateCard
                     sodiumRecords={state.data?.sodiumIntake ?? []}
                     collapsed={!dashExpanded}
                     onToggle={() => toggleSection(setDashExpanded, 'dash')}
-                  />
+                  />)}
                   {NUTRITION_CORRELATE_REFS.length > 0 && (
                     <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 4 }}>
                       <Text style={[styles.citationLabel, { color: colors.muted }]}>References:</Text>
@@ -770,11 +857,48 @@ export default function AnalyticsScreen() {
 
               {nutritionTab === 'caloric' && (
                 <View>
+                  {/* ── Caloric empty / low-data states ── */}
+                  {!nutritionHasData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(245,158,11,0.07)' : 'rgba(245,158,11,0.05)', borderColor: '#F59E0B' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>📊</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.noCaloricDataTitle ?? 'No Caloric Data Yet'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.noCaloricDataBody ?? 'Log meals with calorie information to see your caloric trend analysis here.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#F59E0B' + '40', backgroundColor: '#F59E0B' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#F59E0B' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', '0')}</Text>
+                      </View>
+                      <Pressable
+                        style={[styles.nutritionEmptyCTA, { backgroundColor: '#F59E0B' + '20', borderColor: '#F59E0B' + '50' }]}
+                        onPress={() => {
+                          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push('/(tabs)/log');
+                        }}
+                      >
+                        <Text style={[styles.nutritionEmptyCTAText, { color: '#F59E0B' }]}>{cs.logMealCta ?? '+ Log a Meal'}</Text>
+                      </Pressable>
+                    </View>
+                  ) : nutritionHasLowData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(245,158,11,0.07)' : 'rgba(245,158,11,0.05)', borderColor: '#F59E0B' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>📈</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.buildingCaloricTitle ?? 'Building Your Caloric Trend'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.buildingCaloricBody ?? 'Keep logging meals — caloric trend analysis becomes available after 7 days of data.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#F59E0B' + '40', backgroundColor: '#F59E0B' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#F59E0B' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', String(nutritionUniqueDays))}</Text>
+                      </View>
+                      <View style={[styles.nutritionEmptyProgressBar, { backgroundColor: '#F59E0B' + '20' }]}>
+                        <View style={[styles.nutritionEmptyProgressFill, { backgroundColor: '#F59E0B', width: `${Math.min(Math.round((nutritionUniqueDays / 7) * 100), 100)}%` as `${number}%` }]} />
+                      </View>
+                    </View>
+                  ) : null}
+                  {nutritionHasData && (
                   <CaloricTrendInsightCard
                     sodiumIntake={state.data?.sodiumIntake ?? []}
                     bloodPressure={state.data?.bloodPressure ?? []}
                     bloodSugar={state.data?.bloodSugar ?? []}
-                  />
+                  />)}
                   {NUTRITION_CALORIC_REFS.length > 0 && (
                     <View style={{ paddingHorizontal: 16, paddingBottom: 12, gap: 4 }}>
                       <Text style={[styles.citationLabel, { color: colors.muted }]}>References:</Text>
@@ -1278,6 +1402,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   nutritionEmptyCTAText: { fontSize: 13, fontWeight: '700' },
+  nutritionEmptyProgressBadge: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 3, marginTop: 2 },
+  nutritionEmptyProgressText: { fontSize: 11, fontWeight: '700' },
+  nutritionEmptyProgressBar: { width: '80%', height: 4, borderRadius: 2, overflow: 'hidden' as const, marginTop: 2 },
+  nutritionEmptyProgressFill: { height: 4, borderRadius: 2 },
+  observedProgressBadge: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 8, paddingVertical: 3, marginRight: 6 },
+  observedProgressText: { fontSize: 10, fontWeight: '700' },
   // Nutrition Analysis header badge
   nutritionBadge: {
     paddingHorizontal: 8,

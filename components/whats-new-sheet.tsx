@@ -91,6 +91,27 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.64 */
+export const whatsNewV1064Strings = {
+  version: "1.0.64",
+  date: "Jun 2026",
+  headline: "Pattern Explorer V2 + Nutrition Empty States",
+
+  // New
+  n1Title: "Personal Insight Card",
+  n1Desc: "Every expanded scatter plot in Pattern Explorer now shows a 💡 Personal Insight card with a contextual sentence describing your historical relationship between the two metrics over the selected day range.",
+  n2Title: "Nutrition Analysis Empty States",
+  n2Desc: "The Correlate and Caloric tabs in Nutrition Analysis now show friendly empty states (‘No Data Yet’ / ‘Building Your Pattern’) with a progress badge and progress bar when fewer than 7 days of meal data have been logged.",
+
+  // Improved
+  i1Title: "Rich Evidence Source Block",
+  i1Desc: "Each expanded scatter card now shows a full Evidence Source block with journal name, year, study type badge (RCT / Cohort / Meta-Analysis / Cross-Sectional), sample size, and tappable PMID/DOI links.",
+  i2Title: "Observed Patterns Header Badge",
+  i2Desc: "The Observed Historical Patterns section header now shows a compact n/7 progress badge alongside the chevron when fewer than 7 days of data exist — visible even when the section is collapsed.",
+  i3Title: "RTM Updated to 60 Requirements",
+  i3Desc: "Requirement Traceability Matrix updated from 53 to 60 requirements at 100% coverage, adding OH-07/08, NA-07/08/09, PE-13/14.",
+} as const;
+
 /** Release note content — v1.0.63 */
 export const whatsNewV1063Strings = {
   version: "1.0.63",
@@ -640,6 +661,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1064 = useT(whatsNewV1064Strings);
   const v1063 = useT(whatsNewV1063Strings);
   const v1062 = useT(whatsNewV1062Strings);
   const v1061 = useT(whatsNewV1061Strings);
@@ -658,7 +680,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1063;
+  const latestVersion = v1064;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -788,7 +810,19 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.63 (latest) ── */}
+          {/* ── v1.0.64 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="💡" title={v1064.n1Title} desc={v1064.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🥗" title={v1064.n2Title} desc={v1064.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="📚" title={v1064.i1Title} desc={v1064.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📌" title={v1064.i2Title} desc={v1064.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="✅" title={v1064.i3Title} desc={v1064.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.63 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="📈" title={v1063.n1Title} desc={v1063.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
