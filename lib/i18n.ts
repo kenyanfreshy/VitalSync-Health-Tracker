@@ -35790,6 +35790,8 @@ export const correlationStrings = {
     patternNoDataEntries: 'entries',
     patternExplorerLabel: '🔬 PATTERN EXPLORER',
     patternExplorerSubtitle: '16 relationship scatter plots · 4-metric scoring',
+    observedPatternsLabel: 'Observed Historical Patterns',
+    observedPatternsSubtitle: 'Trend lines · 30-day rolling correlations',
     patternExplorerRangeSubtitle: 'Showing last {n} days · Tap a card to see scatter plot & scores',
     scoreAnalysisTitle: 'ANALYSIS SCORES',
     scoreDataCompleteness: 'Data Completeness',

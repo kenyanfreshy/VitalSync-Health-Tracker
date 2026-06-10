@@ -19,7 +19,9 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { GlassCard } from '@/components/glass-card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme, useCorrelationStrings } from '@/hooks';
+import { useColors } from '@/hooks/use-colors';
 import type { HealthData } from '@/lib/health/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -263,6 +265,7 @@ interface WellnessSummarySectionProps {
 export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const colors = useColors();
   const cs = useCorrelationStrings();
   const [activeTab, setActiveTab] = useState<'weekly' | 'monthly'>('weekly');
   const [expanded, setExpanded] = useState(false);
@@ -279,33 +282,32 @@ export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
   const tabInactiveColor = mutedColor;
 
   return (
-    <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16, marginBottom: 8 }}>
-      {/* Section header */}
+    <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16, marginBottom: 10 }}>
+      {/* Section header — matches Record tab LogCard style exactly */}
       <Pressable
-        style={[styles.sectionHeader, {
-          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-        }]}
+        style={styles.sectionHeader}
         onPress={() => {
           if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           setExpanded(e => !e);
         }}
         accessibilityRole="button"
       >
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.sectionLabel, { color: isDark ? 'rgba(180,200,255,0.55)' : 'rgba(0,0,0,0.45)' }]}>
-            📊 {cs.wellnessSummaryLabel ?? 'WELLNESS SUMMARY'}
+        {/* Icon wrap — matches Record LogCard iconWrap */}
+        <View style={styles.cardIconWrap}>
+          <Text style={styles.cardIcon}>📊</Text>
+        </View>
+        {/* Content — matches Record LogCard content */}
+        <View style={styles.cardContent}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+            {cs.wellnessSummaryLabel ?? 'Wellness Summary'}
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: mutedColor }]}>
+          <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
             {availableCount > 0
               ? `${availableCount} ${cs.wellnessSummaryMetrics ?? 'metrics tracked'} · ${activeTab === 'weekly' ? (cs.wellnessSummaryWeekly ?? 'Last 7 days') : (cs.wellnessSummaryMonthly ?? 'Last 30 days')}`
               : (cs.wellnessSummaryNoData ?? 'Log data to see your summary')}
           </Text>
         </View>
-        <Text style={[styles.sectionChevron, {
-          color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-          transform: [{ rotate: expanded ? '90deg' : '0deg' }],
-        }]}>›</Text>
+        <IconSymbol name="chevron.right" size={18} color={colors.muted} />
       </Pressable>
 
       {/* Expanded content */}
@@ -366,29 +368,22 @@ export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
+  // ── Record-tab-matching LogCard header styles ──────────────────────────
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: 14,
-    borderWidth: 1,
   },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-  },
-  sectionSubtitle: {
-    fontSize: 11,
-    fontWeight: '400',
-    marginTop: 2,
-  },
-  sectionChevron: {
-    fontSize: 20,
-    fontWeight: '300',
-  },
+  cardIconWrap: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14, backgroundColor: '#6366F122' },
+  cardIcon: { fontSize: 24 },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 16, fontWeight: '700' },
+  cardSubtitle: { fontSize: 12, marginTop: 2 },
+  // legacy — kept for metric rows
+  sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1.1 },
+  sectionSubtitle: { fontSize: 11, fontWeight: '400', marginTop: 2 },
+  sectionChevron: { fontSize: 20, fontWeight: '300' },
   expandedContent: {
     paddingHorizontal: 12,
     paddingBottom: 12,

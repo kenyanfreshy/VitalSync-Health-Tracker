@@ -10363,3 +10363,17 @@
 - [x] Pattern Explorer no-data empty state (< 5 points): 📊 icon, title, subtitle with {x}/{y} metric names, progress badge showing n/5 entries
 - [x] Wellness Summary metric row i18n: replace hardcoded Blood Pressure, Heart Rate, Sleep, Blood Glucose, Weight, Steps, Sodium, HRV labels with cs.* keys in all 10 languages
 - [x] Add patternNoDataTitle, patternNoDataSubtitle, patternNoDataEntries, wellnessMetricBloodPressure, wellnessMetricHeartRate, wellnessMetricSleep, wellnessMetricBloodGlucose, wellnessMetricWeight, wellnessMetricSteps, wellnessMetricSodium, wellnessMetricHRV to all 10 language blocks in i18n.ts
+
+## v1.0.63 — Correlate Tab Full Design Consistency + RTM
+
+- [x] Redesign InsightEngine section header to match Record LogCard style (GlassCard, 48x48 icon wrap, fontSize 16 title, fontSize 12 subtitle, IconSymbol chevron.right, haptics, LayoutAnimation)
+- [x] Redesign WellnessSummary section header to match Record LogCard style
+- [x] Redesign PatternExplorer section header to match Record LogCard style
+- [x] Wrap Observed Historical Patterns in GlassCard (accentColor #64748B) with LogCard header, haptics, LayoutAnimation
+- [x] Redesign Nutrition Analysis header to LogCard style (remove explorerHeader pattern, use logCardHeader)
+- [x] All tab/filter chips across all 5 sections use Record chip style (pV:5, pH:12, borderRadius:20, borderWidth:1, fontSize:12, fontWeight:700)
+- [x] Scatter point tap-to-tooltip in PatternExplorer (date, X value, Y value)
+- [x] WellnessSummary trend arrows use true period-over-period comparison
+- [x] Add observedPatternsLabel and observedPatternsSubtitle i18n keys to all 10 languages
+- [x] Generate RTM-v1.0.63.md with 100% coverage (53/53 requirements)
+- [x] Zero TypeScript errors in all modified files

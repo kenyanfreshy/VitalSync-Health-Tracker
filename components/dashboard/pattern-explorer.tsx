@@ -33,7 +33,9 @@ import Svg, {
   G,
 } from 'react-native-svg';
 import { GlassCard } from '@/components/glass-card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme, useCorrelationStrings } from '@/hooks';
+import { useColors } from '@/hooks/use-colors';
 import {
   computeCorrelation,
   extractMetricSeries,
@@ -681,6 +683,7 @@ interface PatternExplorerProps {
 export function PatternExplorer({ data }: PatternExplorerProps) {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const colors = useColors();
   const cs = useCorrelationStrings();
   const [sectionExpanded, setSectionExpanded] = useState(false);
   const [dayRange, setDayRange] = useState<DayRange>(30);
@@ -697,31 +700,34 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
   }, []);
 
   return (
-    <GlassCard accentColor="#7C3AED" noPadding style={{ marginHorizontal: 16, marginBottom: 8 }}>
-      {/* Section header */}
+    <GlassCard accentColor="#7C3AED" noPadding style={{ marginHorizontal: 16, marginBottom: 10 }}>
+      {/* Section header — matches Record tab LogCard style exactly */}
       <Pressable
-        style={[styles.sectionHeader, {
-          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-        }]}
+        style={styles.sectionHeader}
         onPress={toggleSection}
         accessibilityRole="button"
         accessibilityLabel="Pattern Explorer"
         accessibilityHint={sectionExpanded ? 'Tap to collapse' : 'Tap to expand'}
       >
-        <View style={styles.sectionHeaderLeft}>
-          <Text style={[styles.sectionLabel, { color: isDark ? 'rgba(200,180,255,0.60)' : 'rgba(0,0,0,0.45)' }]}>
-            🔬 {cs.patternExplorerLabel ?? 'PATTERN EXPLORER'}
+        {/* Icon wrap — matches Record LogCard iconWrap */}
+        <View style={styles.cardIconWrap}>
+          <Text style={styles.cardIcon}>🔬</Text>
+        </View>
+        {/* Content — matches Record LogCard content */}
+        <View style={styles.cardContent}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+            {cs.patternExplorerLabel ?? 'Pattern Explorer'}
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
+          <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
             {cs.patternExplorerSubtitle ?? '16 relationship scatter plots · 4-metric scoring'}
           </Text>
         </View>
+        {/* Right: count badge + chevron */}
         <View style={styles.sectionHeaderRight}>
           <View style={[styles.countBadge, { backgroundColor: 'rgba(124,58,237,0.20)', borderColor: 'rgba(124,58,237,0.40)' }]}>
             <Text style={[styles.countBadgeText, { color: '#7C3AED' }]}>16</Text>
           </View>
-          <Text style={[styles.chevron, { color: '#7C3AED', transform: [{ rotate: sectionExpanded ? '90deg' : '0deg' }] }]}>›</Text>
+          <IconSymbol name="chevron.right" size={18} color={colors.muted} />
         </View>
       </Pressable>
 
@@ -786,16 +792,21 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  // ── Record-tab-matching LogCard header styles ──────────────────────────
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderBottomWidth: 0.5,
   },
+  cardIconWrap: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14, backgroundColor: '#7C3AED22' },
+  cardIcon: { fontSize: 24 },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 16, fontWeight: '700' },
+  cardSubtitle: { fontSize: 12, marginTop: 2 },
   sectionHeaderLeft: { flex: 1, gap: 2 },
   sectionHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  // legacy — kept for PlotCard internal use
   sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1.2 },
   sectionSubtitle: { fontSize: 11, fontWeight: '400' },
   countBadge: {

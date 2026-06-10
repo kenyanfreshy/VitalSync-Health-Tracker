@@ -47,6 +47,8 @@ import Svg, {
   Stop,
 } from 'react-native-svg';
 import { useColorScheme, useCorrelationStrings, useLang } from '@/hooks';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useColors } from '@/hooks/use-colors';
 import type { HealthData } from '@/lib/health/types';
 // CLINICAL_SOURCES_COUNT import removed — footer was removed in v1.0.61
 import { intelligenceName, interpolate } from '@/lib/intelligence';
@@ -1027,6 +1029,7 @@ interface InsightEngineProps {
 export function InsightEngine({ data }: InsightEngineProps) {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
+  const colors = useColors();
   const router = useRouter();
   const cs = useCorrelationStrings();
   const lang = useLang();
@@ -1055,26 +1058,32 @@ export function InsightEngine({ data }: InsightEngineProps) {
   ];
 
   return (
-    <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16, marginBottom: 8 }}>
-      {/* Section header */}
+    <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16, marginBottom: 10 }}>
+      {/* Section header — matches Record tab LogCard style exactly */}
       <Pressable
-        style={[styles.sectionHeader, {
-          backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-          borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-        }]}
-        onPress={() => setSectionExpanded(e => !e)}
+        style={styles.sectionHeader}
+        onPress={() => {
+          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          setSectionExpanded(e => !e);
+        }}
         accessibilityRole="button"
         accessibilityLabel="Insight Engine"
         accessibilityHint={sectionExpanded ? 'Tap to collapse' : 'Tap to expand'}
       >
-        <View style={styles.sectionHeaderLeft}>
-          <Text style={[styles.sectionLabel, { color: isDark ? 'rgba(180,200,255,0.55)' : 'rgba(0,0,0,0.45)' }]}>
-            🧠 {cs.insightEngineLabel ?? 'INSIGHT ENGINE'}
+        {/* Icon wrap — matches Record LogCard iconWrap */}
+        <View style={[styles.cardIconWrap, { backgroundColor: '#6366F122' }]}>
+          <Text style={styles.cardIcon}>🧠</Text>
+        </View>
+        {/* Content — matches Record LogCard content */}
+        <View style={styles.cardContent}>
+          <Text style={[styles.cardTitle, { color: colors.foreground }]}>
+            {cs.insightEngineLabel ?? 'INSIGHT ENGINE'}
           </Text>
-          <Text style={[styles.sectionSubtitle, { color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.30)' }]}>
+          <Text style={[styles.cardSubtitle, { color: colors.muted }]}>
             {cs.insightEngineSubtitle ?? '6 evidence-based correlations · research-grounded'}
           </Text>
         </View>
+        {/* Right side: detected badge + info + chevron */}
         <View style={styles.sectionHeaderRight}>
           {detectedCount > 0 && (
             <View style={styles.detectedBadge}>
@@ -1099,10 +1108,7 @@ export function InsightEngine({ data }: InsightEngineProps) {
               <Text style={[styles.infoButtonText, { color: isDark ? 'rgba(180,200,255,0.70)' : 'rgba(60,80,180,0.70)' }]}>?</Text>
             </View>
           </Pressable>
-          <Text style={[styles.sectionChevron, {
-            color: isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)',
-            transform: [{ rotate: sectionExpanded ? '90deg' : '0deg' }],
-          }]}>›</Text>
+          <IconSymbol name="chevron.right" size={18} color={colors.muted} />
         </View>
       </Pressable>
 
@@ -1236,31 +1242,25 @@ export function InsightEngine({ data }: InsightEngineProps) {
 
 const styles = StyleSheet.create({
   // Section header
+  // ── Record-tab-matching LogCard header styles ──────────────────────────
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: 14,
-    borderWidth: 1,
+    gap: 0,
   },
+  cardIconWrap: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  cardIcon: { fontSize: 24 },
+  cardContent: { flex: 1 },
+  cardTitle: { fontSize: 16, fontWeight: '700' },
+  cardSubtitle: { fontSize: 12, marginTop: 2 },
   sectionHeaderLeft: { flex: 1 },
   sectionHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.1,
-  },
-  sectionSubtitle: {
-    fontSize: 11,
-    fontWeight: '400',
-    marginTop: 2,
-  },
-  sectionChevron: {
-    fontSize: 20,
-    fontWeight: '300',
-  },
+  // legacy — kept for InsightCardFull internal use
+  sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1.1 },
+  sectionSubtitle: { fontSize: 11, fontWeight: '400', marginTop: 2 },
+  sectionChevron: { fontSize: 20, fontWeight: '300' },
   detectedBadge: {
     backgroundColor: '#F43F5E',
     borderRadius: 10,

@@ -62,6 +62,7 @@ import { InsightEngine } from '@/components/dashboard/insight-engine';
 import { WellnessSummarySection } from '@/components/dashboard/wellness-summary';
 import { PatternExplorer } from '@/components/dashboard/pattern-explorer';
 import { CorrelationTrendChart } from '@/components/correlation-trend-chart';
+import { IconSymbol } from '@/components/ui/icon-symbol';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
 import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
@@ -221,6 +222,7 @@ export default function AnalyticsScreen() {
     opacity: nutritionTabOpacity.value,
   }));
   const [nutritionMergedExpanded, setNutritionMergedExpanded] = useState(false);
+  const [observedExpanded, setObservedExpanded] = useState(false);
   const [nutritionTab, setNutritionTab] = useState<'correlate' | 'diabetic' | 'caloric'>('correlate');
   const [bestNutritionStreak, setBestNutritionStreak] = useState(0);
 
@@ -487,20 +489,39 @@ export default function AnalyticsScreen() {
         <View style={{ height: 14 }} />
         {state.data && <WellnessSummarySection data={state.data} />}
 
-        {/* ─── Observed Historical Patterns ────────────────────────────────── */}
-        <View style={{ height: 14 }} />
-        <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
-        <View style={{ height: 14 }} />
-        <CorrelationTrendChart data={state.data ?? null} days={30} />
-
-        <View style={{ height: 14 }} />
-        <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
-        <View style={{ height: 14 }} />
-        {/* ─── Nutrition Analysis — three-tab card ─────────────────────────────────────────────── */}
-        <GlassCard accentColor="#10B981" noPadding style={{ marginHorizontal: 16 }}>
-          {/* ── Collapsible header ── */}
+        {/* ─── Observed Historical Patterns ─ LogCard style ──────────────── */}
+        <View style={{ height: 10 }} />
+        <GlassCard accentColor="#64748B" noPadding style={{ marginHorizontal: 16, marginBottom: 10 }}>
           <Pressable
-            style={[styles.explorerHeader, { paddingHorizontal: 16, paddingVertical: 14 }]}
+            style={styles.logCardHeader}
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              LayoutAnimation.configureNext({ duration: 220, update: { type: 'easeInEaseOut' }, create: { type: 'easeInEaseOut', property: 'opacity' }, delete: { type: 'easeInEaseOut', property: 'opacity' } });
+              setObservedExpanded(v => !v);
+            }}
+            accessibilityRole="button"
+          >
+            <View style={styles.logCardIconWrap}>
+              <Text style={{ fontSize: 24 }}>📈</Text>
+            </View>
+            <View style={styles.logCardContent}>
+              <Text style={[styles.logCardTitle, { color: colors.foreground }]}>{cs.observedPatternsLabel ?? 'Observed Historical Patterns'}</Text>
+              <Text style={[styles.logCardSubtitle, { color: colors.muted }]}>{cs.observedPatternsSubtitle ?? 'Trend lines · 30-day rolling correlations'}</Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
+          </Pressable>
+          {observedExpanded && (
+            <View style={{ paddingBottom: 12 }}>
+              <CorrelationTrendChart data={state.data ?? null} days={30} />
+            </View>
+          )}
+        </GlassCard>
+        <View style={{ height: 4 }} />
+        {/* ─── Nutrition Analysis — LogCard style ─────────────────────────── */}
+        <GlassCard accentColor="#10B981" noPadding style={{ marginHorizontal: 16, marginBottom: 10 }}>
+          {/* ── Collapsible header — matches Record tab LogCard style exactly ── */}
+          <Pressable
+            style={styles.logCardHeader}
             onPress={() => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               LayoutAnimation.configureNext({
@@ -515,37 +536,18 @@ export default function AnalyticsScreen() {
             accessibilityLabel={cs.nutritionAnalysis}
             accessibilityHint={nutritionMergedExpanded ? (cs.tapToCollapse ?? 'Tap to collapse') : (cs.tapToExpand ?? 'Tap to expand')}
           >
-<>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1, flexWrap: 'wrap' }}>
-                <Text style={{ fontSize: 14 }}>🥗</Text>
-                <Text style={[styles.sectionLabel, { color: '#10B981', marginBottom: 0 }]}>{cs.nutritionAnalysis.toUpperCase()}</Text>
-                {todayNutritionCount > 0 ? (
-                  <View style={[styles.nutritionBadge, { backgroundColor: '#10B98120', borderColor: '#10B98150' }]}>
-                    <Text style={[styles.nutritionBadgeText, { color: '#10B981' }]}>
-                      {todayNutritionCount} {todayNutritionCount === 1 ? 'entry' : 'entries'}
-                      {todayCaloriesKcal > 0 ? ` · ${todayCaloriesKcal.toLocaleString()} kcal` : ''}
-                    </Text>
-                  </View>
-                ) : (
-                  <View style={[styles.nutritionBadge, { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }]}>
-                    <Text style={[styles.nutritionBadgeText, { color: colors.muted }]}>no entries today</Text>
-                  </View>
-                )}
-                {nutritionStreak >= 2 && (
-                  <View style={{ gap: 2 }}>
-                    <View style={[styles.nutritionBadge, { backgroundColor: '#F59E0B18', borderColor: '#F59E0B50' }]}>
-                      <Text style={[styles.nutritionBadgeText, { color: '#F59E0B' }]}>🔥 {nutritionStreak}d streak</Text>
-                    </View>
-                    {bestNutritionStreak > nutritionStreak && (
-                      <Text style={{ fontSize: 10, color: colors.muted, textAlign: 'center', marginTop: 1 }}>
-                        Best: {bestNutritionStreak}d
-                      </Text>
-                    )}
-                  </View>
-                )}
-              </View>
-              <Text style={[styles.explorerChevron, { color: colors.muted, transform: [{ rotate: nutritionMergedExpanded ? '90deg' : '0deg' }] }]}>›</Text>
-            </>
+            <View style={styles.logCardIconWrap}>
+              <Text style={{ fontSize: 24 }}>🥗</Text>
+            </View>
+            <View style={styles.logCardContent}>
+              <Text style={[styles.logCardTitle, { color: colors.foreground }]}>{cs.nutritionAnalysis}</Text>
+              <Text style={[styles.logCardSubtitle, { color: colors.muted }]}>
+                {todayNutritionCount > 0
+                  ? `${todayNutritionCount} ${todayNutritionCount === 1 ? 'entry' : 'entries'}${todayCaloriesKcal > 0 ? ` · ${todayCaloriesKcal.toLocaleString()} kcal` : ''}${nutritionStreak >= 2 ? ` · 🔥 ${nutritionStreak}d streak` : ''}`
+                  : (cs.noEntriesToday ?? 'No entries today')}
+              </Text>
+            </View>
+            <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </Pressable>
 
           {/* ── Three-tab switcher always visible ── */}
@@ -1056,6 +1058,12 @@ const styles = StyleSheet.create({
   explorerChevron: {
     fontSize: 20, fontWeight: '600', lineHeight: 24,
   },
+  // ── Record-tab-matching LogCard header styles ──────────────────────────
+  logCardHeader: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14 },
+  logCardIconWrap: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+  logCardContent: { flex: 1 },
+  logCardTitle: { fontSize: 16, fontWeight: '700' },
+  logCardSubtitle: { fontSize: 12, marginTop: 2 },
 
   // Empty state
   emptyCard: {
