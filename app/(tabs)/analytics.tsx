@@ -60,6 +60,7 @@ import { CaloricTrendInsightCard } from '@/components/caloric-trend-insight-card
 import { ReadinessHistoryChart } from '@/components/readiness-history-chart';
 import { InsightEngine } from '@/components/dashboard/insight-engine';
 import { WellnessSummarySection } from '@/components/dashboard/wellness-summary';
+import { PatternExplorer } from '@/components/dashboard/pattern-explorer';
 import { CorrelationTrendChart } from '@/components/correlation-trend-chart';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
@@ -210,7 +211,6 @@ export default function AnalyticsScreen() {
   const [toastClipboard, setToastClipboard] = useState(false);
   const [dashExpanded, setDashExpanded] = useState(true);
   const [diabeticExpanded, setDiabeticExpanded] = useState(true);
-  const [recoveryExpanded, setRecoveryExpanded] = useState(true);
   const [dashDietExpanded, setDashDietExpanded] = useState(true);
   const [circadianLagTab, setCircadianLagTab] = useState<'circadian' | 'lag'>('circadian');
   // Reanimated shared value: 0 = circadian, 1 = lag
@@ -246,20 +246,19 @@ export default function AnalyticsScreen() {
           const s = JSON.parse(v);
           if (typeof s.dash === 'boolean') setDashExpanded(s.dash);
           if (typeof s.diabetic === 'boolean') setDiabeticExpanded(s.diabetic);
-          if (typeof s.recovery === 'boolean') setRecoveryExpanded(s.recovery);
           if (typeof s.dashDiet === 'boolean') setDashDietExpanded(s.dashDiet);
         } catch (_unused) { /* ignore */ }
       }
     }).catch(() => {});
   }, []);
 
-  function persistSections(dash: boolean, diabetic: boolean, recovery: boolean, dashDiet: boolean) {
-    safeSetItem(CORRELATE_STATE_KEY, JSON.stringify({ dash, diabetic, recovery, dashDiet })).catch(() => {});
+  function persistSections(dash: boolean, diabetic: boolean, dashDiet: boolean) {
+    safeSetItem(CORRELATE_STATE_KEY, JSON.stringify({ dash, diabetic, dashDiet })).catch(() => {});
   }
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [committedX, setCommittedX] = useState<MetricKey>('sleepEfficiency');
   const [committedY, setCommittedY] = useState<MetricKey>('bpSystolic');
-  function toggleSection(setter: React.Dispatch<React.SetStateAction<boolean>>, key: 'dash' | 'diabetic' | 'recovery' | 'dashDiet') {
+  function toggleSection(setter: React.Dispatch<React.SetStateAction<boolean>>, key: 'dash' | 'diabetic' | 'dashDiet') {
     LayoutAnimation.configureNext({
       duration: 220,
       update: { type: 'easeInEaseOut' },
@@ -271,9 +270,8 @@ export default function AnalyticsScreen() {
       const next = !v;
       const d = key === 'dash' ? next : dashExpanded;
       const di = key === 'diabetic' ? next : diabeticExpanded;
-      const r = key === 'recovery' ? next : recoveryExpanded;
       const dd = key === 'dashDiet' ? next : dashDietExpanded;
-      persistSections(d, di, r, dd);
+      persistSections(d, di, dd);
       return next;
     });
   }
@@ -485,19 +483,7 @@ export default function AnalyticsScreen() {
           </Text>
         </View>
 
-           {/* ─── Recovery Trend Chart ──────────────────────────────────── */}
-        <GlassCard accentColor="#10B981" noPadding style={{ marginHorizontal: 16 }}>
-          <SectionLabel
-            title={cs.recoveryTrend.toUpperCase()}
-            accentColor="#10B981"
-            icon="heart.fill"
-            collapsed={!recoveryExpanded}
-            onToggle={() => toggleSection(setRecoveryExpanded, 'recovery')}
-          />
-          {recoveryExpanded && <ReadinessHistoryChart />}
-        </GlassCard>
-
-        {/* ─── Observed Historical Patterns (below Recovery Trend) ────────────────── */}
+        {/* ─── Observed Historical Patterns ────────────────────────────────── */}
         <View style={{ height: 14 }} />
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
         <View style={{ height: 14 }} />
@@ -815,6 +801,10 @@ export default function AnalyticsScreen() {
         {/* ─── Wellness Summary ────────────────────────────────────────── */}
         <View style={{ height: 10 }} />
         {state.data && <WellnessSummarySection data={state.data} />}
+
+        {/* ─── Pattern Explorer ─────────────────────────────────────────── */}
+        <View style={{ height: 10 }} />
+        {state.data && <PatternExplorer data={state.data} />}
 
         {/* ─── REMOVED: Custom Correlation Explorer (replaced by InsightEngine) ─── */}
         {false && (

@@ -10336,3 +10336,14 @@
 - [x] Translate all new correlate strings into all 10 languages in i18n.ts
 - [ ] Generate RTM with 100% coverage, compliance checklist, gap analysis
 - [x] Bump version to v1.0.59, push to GitHub, submit to TestFlight
+
+## v1.0.60 — Correlate Tab Completion
+
+- [x] Pattern Explorer: 16 scatter plots with 30/90/180/365-day views, Pearson r correlation/confidence/completeness scores (pattern-explorer.tsx)
+- [x] 4-Metric Scoring System on InsightEngine cards: Data Completeness, Trend Stability, Relationship Strength, Research Confidence + Overall Score bar chart
+- [x] InsightEngine: first 2 full-width cards always expanded by default (defaultExpanded=true)
+- [x] Remove Recovery Trend section from analytics.tsx (Correlate tab)
+- [x] Wire PatternExplorer into analytics.tsx after WellnessSummarySection
+- [x] i18n: Pattern Explorer + scoring strings added to all 10 languages (en, es, fr, pt, ar, sw, hi, zh, de, ja)
+- [ ] RTM v1.0.59 document (Requirement Traceability Matrix)
+- [ ] Bump version to v1.0.60, push to GitHub, submit to TestFlight

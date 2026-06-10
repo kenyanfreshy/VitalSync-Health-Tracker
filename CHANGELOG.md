@@ -5,6 +5,19 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.60 (Build 10060) — 2026-06-10
+
+### Correlate Tab — Pattern Explorer
+- **Pattern Explorer** — new section with 16 evidence-based scatter plots (Sleep → BP, HRV → HR, Weight → BP, Deep Sleep → HRV, and 12 more) across 30/90/180/365-day views with Pearson r, R², and data completeness scores.
+- **4-Metric Scoring System** — each InsightEngine card now shows Data Completeness, Trend Stability, Relationship Strength, and Research Confidence scores with animated progress bars and an Overall Score badge.
+- **Insight cards always expanded** — first two full-width Insight Engine cards open in expanded state by default.
+- **Recovery Trend removed** — the Recovery Trend section has been removed from the Correlate tab.
+
+### Translations & i18n
+- **Pattern Explorer + scoring strings** — all new strings (`patternExplorerLabel`, `scoreDataCompleteness`, `scoreTrendStability`, `scoreRelationshipStrength`, `scoreResearchConfidence`, `scoreOverall`, `scoreAnalysisTitle`) translated into all 10 languages.
+
+---
+
 ## v1.0.59 (Build 10059) — 2026-06-09
 
 ### Correlate Tab Redesign

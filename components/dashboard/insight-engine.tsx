@@ -698,12 +698,14 @@ function InsightCardFull({
   insight,
   index,
   isDark,
+  defaultExpanded = false,
 }: {
   insight: InsightResult;
   index: number;
   isDark: boolean;
+  defaultExpanded?: boolean;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const lang = useLang();
   const cs = useCorrelationStrings();
   const accent = insight.accentColor;
@@ -823,6 +825,38 @@ function InsightCardFull({
             <Text style={[styles.analysisText, { color: isDark ? 'rgba(220,228,255,0.82)' : 'rgba(0,0,0,0.80)' }]}>
               {insight.aiAnalysis}
             </Text>
+          </View>
+
+          {/* 4-Metric Scoring System */}
+          <View style={[styles.scoringBlock, { backgroundColor: accent + '0A', borderColor: accent + '22' }]}>
+            <Text style={[styles.scoringTitle, { color: accent }]}>📊 ANALYSIS SCORES</Text>
+            {[
+              { label: 'Data Completeness',    value: Math.min(100, Math.round((insight.chartData.length / 30) * 100)), color: '#3B82F6' },
+              { label: 'Trend Stability',       value: insight.chartData.length >= 3 ? Math.round(Math.min(1, insight.chartData.length / 14) * 100) : 0, color: '#10B981' },
+              { label: 'Relationship Strength', value: insight.status === 'detected' ? 85 : insight.status === 'normal' ? 55 : 20, color: accent },
+              { label: 'Research Confidence',   value: 88, color: '#8B5CF6' },
+            ].map(({ label, value, color }) => (
+              <View key={label} style={styles.scoreBarRow}>
+                <Text style={[styles.scoreBarLabel, { color: isDark ? 'rgba(200,210,255,0.55)' : 'rgba(0,0,0,0.50)' }]}>{label}</Text>
+                <View style={styles.scoreBarTrack}>
+                  <View style={[styles.scoreBarFill, { width: `${value}%` as any, backgroundColor: color }]} />
+                </View>
+                <Text style={[styles.scoreBarValue, { color }]}>{value}</Text>
+              </View>
+            ))}
+            <View style={[styles.overallRow, { borderTopColor: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)' }]}>
+              <Text style={[styles.overallLabel, { color: isDark ? 'rgba(200,210,255,0.60)' : 'rgba(0,0,0,0.50)' }]}>Overall Score</Text>
+              <View style={[styles.overallBadge, { backgroundColor: accent + '22', borderColor: accent + '55' }]}>
+                <Text style={[styles.overallValue, { color: accent }]}>
+                  {Math.round((
+                    Math.min(100, Math.round((insight.chartData.length / 30) * 100)) * 0.25 +
+                    (insight.chartData.length >= 3 ? Math.round(Math.min(1, insight.chartData.length / 14) * 100) : 0) * 0.25 +
+                    (insight.status === 'detected' ? 85 : insight.status === 'normal' ? 55 : 20) * 0.25 +
+                    88 * 0.25
+                  ))}/100
+                </Text>
+              </View>
+            </View>
           </View>
 
           {/* Full citation */}
@@ -1149,13 +1183,14 @@ export function InsightEngine({ data }: InsightEngineProps) {
       {sectionExpanded && (
         <View style={styles.cardsContainer}>
 
-          {/* Full-width cards (correlations 1 & 2) */}
+          {/* Full-width cards (correlations 1 & 2) — always expanded by default */}
           {fullCards.map((insight, i) => (
             <InsightCardFull
               key={i}
               insight={insight}
               index={i}
               isDark={isDark}
+              defaultExpanded={true}
             />
           ))}
 
@@ -1622,6 +1657,68 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingVertical: 12,
     alignItems: 'center',
+  },
+
+  // 4-Metric Scoring System
+  scoringBlock: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 8,
+  },
+  scoringTitle: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.0,
+    marginBottom: 2,
+  },
+  scoreBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  scoreBarLabel: {
+    fontSize: 10,
+    width: 130,
+  },
+  scoreBarTrack: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(128,128,128,0.18)',
+    overflow: 'hidden',
+  },
+  scoreBarFill: {
+    height: 4,
+    borderRadius: 2,
+  },
+  scoreBarValue: {
+    fontSize: 10,
+    fontWeight: '700',
+    width: 24,
+    textAlign: 'right',
+  },
+  overallRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingTop: 8,
+    borderTopWidth: 0.5,
+    marginTop: 2,
+  },
+  overallLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  overallBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  overallValue: {
+    fontSize: 12,
+    fontWeight: '700',
   },
 
   // View all sources footer

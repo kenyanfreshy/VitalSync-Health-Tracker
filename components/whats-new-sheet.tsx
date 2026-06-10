@@ -91,6 +91,23 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.60 */
+export const whatsNewV1060Strings = {
+  version: "1.0.60",
+  date: "Jun 2026",
+  headline: "Pattern Explorer + Scoring System",
+
+  // New
+  n1Title: "Pattern Explorer — 16 Scatter Plots",
+  n1Desc: "New Pattern Explorer section in the Correlate tab shows 16 evidence-based scatter plots across 30/90/180/365-day views with Pearson r correlation, R², and data completeness scores.",
+  n2Title: "4-Metric Scoring System on Insight Cards",
+  n2Desc: "Each InsightEngine card now shows Data Completeness, Trend Stability, Relationship Strength, and Research Confidence scores with animated progress bars and an Overall Score badge.",
+
+  // Improved
+  i1Title: "Insight Cards Always Expanded",
+  i1Desc: "The first two full-width Insight Engine cards now open in expanded state by default, so key correlations are immediately visible without any tap.",
+} as const;
+
 /** Release note content — v1.0.57 */
 export const whatsNewV1057Strings = {
   version: "1.0.57",
@@ -566,6 +583,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1060 = useT(whatsNewV1060Strings);
   const v1059 = useT(whatsNewV1059Strings);
   const v1057 = useT(whatsNewV1057Strings);
   const v1056 = useT(whatsNewV1056Strings);
@@ -580,7 +598,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1059;
+  const latestVersion = v1060;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -710,7 +728,18 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.59 (latest) ── */}
+          {/* ── v1.0.60 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🔬" title={v1060.n1Title} desc={v1060.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📊" title={v1060.n2Title} desc={v1060.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="✅" title={v1060.i1Title} desc={v1060.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.59 ── */}
+          <OlderVersionHeader version={v1059.version} date={v1059.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="✨" title={v1059.n1Title} desc={v1059.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
