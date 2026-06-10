@@ -91,6 +91,27 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.63 */
+export const whatsNewV1063Strings = {
+  version: "1.0.63",
+  date: "Jun 2026",
+  headline: "Observed Patterns Empty State",
+
+  // New
+  n1Title: "Building Your Pattern State",
+  n1Desc: "Observed Historical Patterns now shows a friendly 'Building Your Pattern' state with a progress badge (n/7 days) and animated progress bar when fewer than 7 unique days of data have been logged.",
+  n2Title: "No Data Yet State",
+  n2Desc: "When no data has been logged for either metric, Observed Historical Patterns shows a 'No Data Yet' state with a 0/7 days badge — consistent with the Pattern Explorer empty state design.",
+
+  // Improved
+  i1Title: "Full Correlate Tab Design Consistency",
+  i1Desc: "All 5 Correlate sections (InsightEngine, WellnessSummary, PatternExplorer, Observed Historical Patterns, Nutrition Analysis) now share the exact same GlassCard shell, LogCard header, chip style, and haptic interaction as the Record tab.",
+  i2Title: "Scatter Point Tap-to-Tooltip",
+  i2Desc: "Tapping any scatter point in Pattern Explorer now shows a tooltip with the date, X value, and Y value for that data point.",
+  i3Title: "Period-over-Period Trend Arrows",
+  i3Desc: "Wellness Summary metric cards now show up/down/flat trend arrows comparing the current period to the previous period.",
+} as const;
+
 /** Release note content — v1.0.62 */
 export const whatsNewV1062Strings = {
   version: "1.0.62",
@@ -619,6 +640,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1063 = useT(whatsNewV1063Strings);
   const v1062 = useT(whatsNewV1062Strings);
   const v1061 = useT(whatsNewV1061Strings);
   const v1060 = useT(whatsNewV1060Strings);
@@ -636,7 +658,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1062;
+  const latestVersion = v1063;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -766,7 +788,19 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.62 (latest) ── */}
+          {/* ── v1.0.63 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="📈" title={v1063.n1Title} desc={v1063.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📊" title={v1063.n2Title} desc={v1063.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🎨" title={v1063.i1Title} desc={v1063.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔍" title={v1063.i2Title} desc={v1063.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📉" title={v1063.i3Title} desc={v1063.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.62 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="⬜" title={v1062.i1Title} desc={v1062.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

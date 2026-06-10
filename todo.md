@@ -10377,3 +10377,10 @@
 - [x] Add observedPatternsLabel and observedPatternsSubtitle i18n keys to all 10 languages
 - [x] Generate RTM-v1.0.63.md with 100% coverage (53/53 requirements)
 - [x] Zero TypeScript errors in all modified files
+- [x] Add Observed Historical Patterns empty state (hasLowData < 7 days: progress badge + bar; !hasData: 0/7 badge)
+- [x] Add observedPatternsLowDataTitle and observedPatternsLowDataSubtitle i18n keys to all 10 languages
+- [x] Fix i18n.ts duplicate keys (scoreDataCompleteness, scoreTrendStability, etc.) introduced by prior session
+- [x] Bump version to 1.0.63 / buildNumber 10063 / versionCode 63
+- [x] Add v1.0.63 What's New entry to whats-new-sheet.tsx
+- [x] Update LATEST_WHATS_NEW_VERSION to 1.0.63
+- [x] Add v1.0.63 entry to CHANGELOG.md

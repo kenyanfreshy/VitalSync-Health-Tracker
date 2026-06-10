@@ -577,6 +577,18 @@ export function CorrelationTrendChart({ data, days = 30 }: CorrelationTrendChart
 
   // Show chart if either series has at least 1 data point; the 3-point minimum is enforced per-series in the chart render
   const hasData = normPrimary.length >= 1 || normSecondary.length >= 1;
+  // Unique days with data for the selected metrics
+  const primaryUniqueDays = useMemo(
+    () => new Set(primarySeries.map(p => p.x.toDateString())).size,
+    [primarySeries],
+  );
+  const secondaryUniqueDays = useMemo(
+    () => new Set(secondarySeries.map(p => p.x.toDateString())).size,
+    [secondarySeries],
+  );
+  const maxUniqueDays = Math.max(primaryUniqueDays, secondaryUniqueDays);
+  // Low-data state: has some data but fewer than 7 unique days
+  const hasLowData = hasData && maxUniqueDays < 7;
 
   const textPri  = isDark ? '#E2E8F0' : '#1E293B';
   const textMuted = isDark ? '#94A3B8' : '#64748B';
@@ -919,12 +931,52 @@ export function CorrelationTrendChart({ data, days = 30 }: CorrelationTrendChart
 
       {/* ── Chart ─────────────────────────────────────────────────────────── */}
       {!hasData ? (
+        /* ── No data at all ───────────────────────────────────────────────────────── */
+        <View style={ctStyles.emptyState}>
+          <Text style={ctStyles.emptyIcon}>📊</Text>
+          <Text style={[ctStyles.emptyTitle, { color: textPri }]}>
+            {cs.patternNoDataTitle ?? 'No Data Yet'}
+          </Text>
+          <Text style={[ctStyles.emptyText, { color: textMuted }]}>
+            {cs.patternNoDataSubtitle
+              ? cs.patternNoDataSubtitle
+                  .replace('{x}', TREND_METRIC_LABELS[primaryMetric].split(' (')[0])
+                  .replace('{y}', TREND_METRIC_LABELS[secondaryMetric].split(' (')[0])
+              : `Log ${TREND_METRIC_LABELS[primaryMetric].split(' (')[0]} or ${TREND_METRIC_LABELS[secondaryMetric].split(' (')[0]} to see trend patterns.`}
+          </Text>
+          <View style={[ctStyles.emptyProgressBadge, { borderColor: accent + '40', backgroundColor: accent + '12' }]}>
+            <Text style={[ctStyles.emptyProgressText, { color: accent }]}>0 / 7 days</Text>
+          </View>
+        </View>
+      ) : hasLowData ? (
+        /* ── Building pattern: < 7 unique days ───────────────────────────────────── */
         <View style={ctStyles.emptyState}>
           <Text style={ctStyles.emptyIcon}>📈</Text>
-          <Text style={[ctStyles.emptyTitle, { color: textPri }]}>Insufficient Data</Text>
-          <Text style={[ctStyles.emptyText, { color: textMuted }]}>
-            Log data for at least one metric to see trend patterns. Log both metrics for correlation analysis.
+          <Text style={[ctStyles.emptyTitle, { color: textPri }]}>
+            {cs.observedPatternsLowDataTitle ?? 'Building Your Pattern'}
           </Text>
+          <Text style={[ctStyles.emptyText, { color: textMuted }]}>
+            {cs.observedPatternsLowDataSubtitle
+              ? cs.observedPatternsLowDataSubtitle
+                  .replace('{x}', TREND_METRIC_LABELS[primaryMetric].split(' (')[0])
+                  .replace('{y}', TREND_METRIC_LABELS[secondaryMetric].split(' (')[0])
+              : `Keep logging \u2014 patterns emerge after 7 days of ${TREND_METRIC_LABELS[primaryMetric].split(' (')[0]} and ${TREND_METRIC_LABELS[secondaryMetric].split(' (')[0]}.`}
+          </Text>
+          {/* Progress badge: n / 7 days */}
+          <View style={[ctStyles.emptyProgressBadge, { borderColor: accent + '40', backgroundColor: accent + '12' }]}>
+            <Text style={[ctStyles.emptyProgressText, { color: accent }]}>
+              {maxUniqueDays} / 7 days
+            </Text>
+          </View>
+          {/* Mini progress bar */}
+          <View style={[ctStyles.emptyProgressBar, { backgroundColor: accent + '20' }]}>
+            <View
+              style={[
+                ctStyles.emptyProgressFill,
+                { backgroundColor: accent, width: `${Math.min(Math.round((maxUniqueDays / 7) * 100), 100)}%` as `${number}%` },
+              ]}
+            />
+          </View>
         </View>
       ) : viewMode === 'scatter' ? (
         /* ── Scatter-plot mode (reference-image style) ─────────────────────────── */
@@ -1215,6 +1267,25 @@ const ctStyles = StyleSheet.create({
   emptyIcon: { fontSize: 32 },
   emptyTitle: { fontSize: 14, fontWeight: '700' },
   emptyText: { fontSize: 12, lineHeight: 18, textAlign: 'center' },
+  emptyProgressBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 5,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  emptyProgressText: { fontSize: 12, fontWeight: '700', letterSpacing: 0.3 },
+  emptyProgressBar: {
+    width: 160,
+    height: 4,
+    borderRadius: 2,
+    overflow: 'hidden' as const,
+    marginTop: 8,
+  },
+  emptyProgressFill: {
+    height: 4,
+    borderRadius: 2,
+  },
   patternBox: {
     marginHorizontal: 16,
     marginBottom: 12,

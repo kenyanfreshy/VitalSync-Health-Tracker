@@ -5,6 +5,20 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.63 (Build 10063) — 2026-06-09
+
+### Observed Historical Patterns — Empty States
+- **Building Your Pattern state** — Observed Historical Patterns now shows a friendly 'Building Your Pattern' state with a progress badge (`n/7 days`) and mini progress bar when fewer than 7 unique days of data have been logged for the selected metrics.
+- **No Data Yet state** — when no data has been logged for either metric, a 'No Data Yet' state is shown with a `0/7 days` badge, consistent with the Pattern Explorer empty state design.
+- **i18n** — `observedPatternsLowDataTitle` and `observedPatternsLowDataSubtitle` added to all 10 language blocks (en, es, fr, de, zh, ja, pt, ar, sw, hi).
+
+### Correlate Tab Design Consistency (from v1.0.63 RTM)
+- **Full Record tab design language** — all 5 Correlate sections (InsightEngine, WellnessSummary, PatternExplorer, Observed Historical Patterns, Nutrition Analysis) share the exact same GlassCard shell, LogCard header, chip style, and haptic interaction as the Record tab.
+- **Scatter point tap-to-tooltip** — tapping any scatter point in Pattern Explorer shows a tooltip with date, X value, and Y value.
+- **Period-over-period trend arrows** — Wellness Summary metric cards show up/down/flat trend arrows comparing current period to previous period.
+
+---
+
 ## v1.0.62 (Build 10062) — 2026-06-09
 
 ### Correlate Tab Final Polish
