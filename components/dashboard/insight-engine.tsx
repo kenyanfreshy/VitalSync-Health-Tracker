@@ -1398,7 +1398,7 @@ const styles = StyleSheet.create({
 
   // Status pill
   statusPill: {
-    borderRadius: 6,
+    borderRadius: 20,
     borderWidth: 1,
     paddingHorizontal: 7,
     paddingVertical: 2,
@@ -1563,11 +1563,11 @@ const styles = StyleSheet.create({
   },
   evidenceCard: {
     width: '47%',
+    aspectRatio: 1,
     borderRadius: 12,
     borderWidth: 1,
     padding: 10,
     gap: 4,
-    minHeight: 100,
   },
   evidenceTagRow: {
     flexDirection: 'row',

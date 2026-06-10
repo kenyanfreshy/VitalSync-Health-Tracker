@@ -5,6 +5,15 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.62 (Build 10062) — 2026-06-09
+
+### Correlate Tab Final Polish
+- **Evidence Library cards now square** — source cards (PubMed, AHA, Cochrane, WHO, ISSN, AND-EAL) use `aspectRatio: 1` for perfectly square tiles.
+- **Uniform chip style across all Correlate tabs** — Evidence Library source tag pills now match Record/WellnessSummary/PatternExplorer chip style (`borderRadius: 20`, `paddingVertical: 5`, `paddingHorizontal: 12`, `fontSize: 12`, `fontWeight: 700`).
+- **InsightCardHalf status pill rounded** — status pill inside half-width Insight cards now uses `borderRadius: 20`, consistent with the full chip language across the Correlate tab.
+
+---
+
 ## v1.0.61 (Build 10061) — 2026-06-10
 
 ### Correlate Tab Polish

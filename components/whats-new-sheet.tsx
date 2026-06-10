@@ -91,6 +91,21 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.62 */
+export const whatsNewV1062Strings = {
+  version: "1.0.62",
+  date: "Jun 2026",
+  headline: "Correlate Tab Final Polish",
+
+  // Improved
+  i1Title: "Evidence Library Cards Now Square",
+  i1Desc: "Evidence Library source cards (PubMed, AHA, Cochrane, WHO, ISSN, AND-EAL) now use aspectRatio:1 for perfectly square tiles that look intentional alongside the updated chip tags.",
+  i2Title: "Uniform Chip Style Across All Correlate Tabs",
+  i2Desc: "Evidence Library source tag pills now match the Record/WellnessSummary/PatternExplorer chip style: borderRadius 20, paddingVertical 5, paddingHorizontal 12, fontSize 12, fontWeight 700.",
+  i3Title: "InsightCardHalf Status Pill Rounded",
+  i3Desc: "The status pill inside half-width Insight cards now uses borderRadius 20, consistent with the full chip language across the entire Correlate tab.",
+} as const;
+
 /** Release note content — v1.0.61 */
 export const whatsNewV1061Strings = {
   version: "1.0.61",
@@ -604,6 +619,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1062 = useT(whatsNewV1062Strings);
   const v1061 = useT(whatsNewV1061Strings);
   const v1060 = useT(whatsNewV1060Strings);
   const v1059 = useT(whatsNewV1059Strings);
@@ -620,7 +636,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1061;
+  const latestVersion = v1062;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -750,7 +766,15 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.61 (latest) ── */}
+          {/* ── v1.0.62 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="⬜" title={v1062.i1Title} desc={v1062.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🎨" title={v1062.i2Title} desc={v1062.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📌" title={v1062.i3Title} desc={v1062.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.61 ── */}
+          <OlderVersionHeader version={v1061.version} date={v1061.date} dividerColor={dividerColor} subtitleColor={subtitleColor} />
           <View style={styles.section}>
             <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
             <ReleaseItem emoji="📐" title={v1061.i1Title} desc={v1061.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
