@@ -1576,15 +1576,15 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   evidenceTag: {
-    borderRadius: 8,
+    borderRadius: 20,
     borderWidth: 1,
-    paddingHorizontal: 7,
-    paddingVertical: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
   },
   evidenceTagText: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '700',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   evidenceArrow: {
     fontSize: 12,
