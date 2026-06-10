@@ -46,6 +46,23 @@ function cutoffDate(daysBack: number): Date {
   return d;
 }
 
+/**
+ * Compare current vs previous period to derive a trend direction.
+ * threshold: minimum % change to count as up/down (default 3%)
+ */
+function periodTrend(
+  current: number | null,
+  previous: number | null,
+  threshold = 0.03,
+): 'up' | 'down' | 'stable' | 'none' {
+  if (current == null) return 'none';
+  if (previous == null) return 'stable';
+  const delta = (current - previous) / Math.abs(previous);
+  if (delta > threshold) return 'up';
+  if (delta < -threshold) return 'down';
+  return 'stable';
+}
+
 function trendArrow(trend: 'up' | 'down' | 'stable' | 'none'): string {
   if (trend === 'up') return '↑';
   if (trend === 'down') return '↓';
@@ -61,47 +78,70 @@ function trendColor(trend: 'up' | 'down' | 'stable' | 'none', accentColor: strin
 // ─── Compute summaries from HealthData ───────────────────────────────────────
 function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typeof useCorrelationStrings>): MetricSummary[] {
   const cutoff = cutoffDate(daysBack);
+  const prevCutoff = cutoffDate(daysBack * 2); // previous period of equal length
 
-  // Blood Pressure
-  const bpRecords = (data.bloodPressure ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const systolicVals = bpRecords.map(r => r.systolic).filter((v): v is number => v != null && v > 0);
-  const diastolicVals = bpRecords.map(r => r.diastolic).filter((v): v is number => v != null && v > 0);
+  // ── Blood Pressure ──────────────────────────────────────────────────────────
+  const allBP = data.bloodPressure ?? [];
+  const bpCurr = allBP.filter(r => new Date(r.timestamp) >= cutoff);
+  const bpPrev = allBP.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const systolicVals = bpCurr.map(r => r.systolic).filter((v): v is number => v != null && v > 0);
+  const diastolicVals = bpCurr.map(r => r.diastolic).filter((v): v is number => v != null && v > 0);
   const avgSys = avg(systolicVals);
   const avgDia = avg(diastolicVals);
+  const prevSys = avg(bpPrev.map(r => r.systolic).filter((v): v is number => v != null && v > 0));
 
-  // Heart Rate
-  const hrRecords = (data.pulse ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const hrVals = hrRecords.map(r => r.bpm).filter((v): v is number => v != null && v > 0);
+  // ── Heart Rate ───────────────────────────────────────────────────────────────
+  const allPulse = data.pulse ?? [];
+  const hrCurr = allPulse.filter(r => new Date(r.timestamp) >= cutoff);
+  const hrPrev = allPulse.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const hrVals = hrCurr.map(r => r.bpm).filter((v): v is number => v != null && v > 0);
   const avgHR = avg(hrVals);
+  const prevHR = avg(hrPrev.map(r => r.bpm).filter((v): v is number => v != null && v > 0));
 
-  // Sleep
-  const sleepRecords = (data.sleep ?? []).filter(r => new Date(r.bedtime) >= cutoff);
-  const sleepMins = sleepRecords.map(r => r.totalMinutes ?? 0).filter(v => v > 0);
+  // ── Sleep ────────────────────────────────────────────────────────────────────
+  const allSleep = data.sleep ?? [];
+  const sleepCurr = allSleep.filter(r => new Date(r.bedtime) >= cutoff);
+  const sleepPrev = allSleep.filter(r => { const d = new Date(r.bedtime); return d >= prevCutoff && d < cutoff; });
+  const sleepMins = sleepCurr.map(r => r.totalMinutes ?? 0).filter(v => v > 0);
   const avgSleep = avg(sleepMins);
+  const prevSleep = avg(sleepPrev.map(r => r.totalMinutes ?? 0).filter(v => v > 0));
 
-  // Blood Sugar
-  const bsRecords = (data.bloodSugar ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const bsVals = bsRecords.map(r => r.glucoseMgDl).filter((v): v is number => v != null && v > 0);
+  // ── Blood Sugar ──────────────────────────────────────────────────────────────
+  const allBS = data.bloodSugar ?? [];
+  const bsCurr = allBS.filter(r => new Date(r.timestamp) >= cutoff);
+  const bsPrev = allBS.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const bsVals = bsCurr.map(r => r.glucoseMgDl).filter((v): v is number => v != null && v > 0);
   const avgBS = avg(bsVals);
+  const prevBS = avg(bsPrev.map(r => r.glucoseMgDl).filter((v): v is number => v != null && v > 0));
 
-  // Weight
-  const weightRecords = (data.weight ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const weightVals = weightRecords.map(r => r.weightLbs > 0 ? r.weightLbs : (r.weightKg ? r.weightKg * 2.205 : 0)).filter(v => v > 0);
+  // ── Weight ───────────────────────────────────────────────────────────────────
+  const allWeight = data.weight ?? [];
+  const weightCurr = allWeight.filter(r => new Date(r.timestamp) >= cutoff);
+  const weightPrev = allWeight.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const weightVals = weightCurr.map(r => r.weightLbs > 0 ? r.weightLbs : (r.weightKg ? r.weightKg * 2.205 : 0)).filter(v => v > 0);
   const avgWeight = avg(weightVals);
+  const prevWeight = avg(weightPrev.map(r => r.weightLbs > 0 ? r.weightLbs : (r.weightKg ? r.weightKg * 2.205 : 0)).filter(v => v > 0));
 
-  // Activity (steps)
-  const actRecords = (data.activity ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const stepVals = actRecords.map(r => r.steps ?? 0).filter((v): v is number => v > 0);
+  // ── Activity (steps) ─────────────────────────────────────────────────────────
+  const allAct = data.activity ?? [];
+  const actCurr = allAct.filter(r => new Date(r.timestamp) >= cutoff);
+  const actPrev = allAct.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const stepVals = actCurr.map(r => r.steps ?? 0).filter((v): v is number => v > 0);
   const avgSteps = avg(stepVals);
+  const prevSteps = avg(actPrev.map(r => r.steps ?? 0).filter((v): v is number => v > 0));
 
-  // Sodium
-  const sodiumRecords = (data.sodiumIntake ?? []).filter(r => new Date(r.timestamp) >= cutoff);
-  const sodiumVals = sodiumRecords.map(r => r.sodiumMg).filter((v): v is number => v != null && v > 0);
+  // ── Sodium ───────────────────────────────────────────────────────────────────
+  const allSodium = data.sodiumIntake ?? [];
+  const sodiumCurr = allSodium.filter(r => new Date(r.timestamp) >= cutoff);
+  const sodiumPrev = allSodium.filter(r => { const d = new Date(r.timestamp); return d >= prevCutoff && d < cutoff; });
+  const sodiumVals = sodiumCurr.map(r => r.sodiumMg).filter((v): v is number => v != null && v > 0);
   const avgSodium = avg(sodiumVals);
+  const prevSodium = avg(sodiumPrev.map(r => r.sodiumMg).filter((v): v is number => v != null && v > 0));
 
-  // HRV (from pulse records)
-  const hrvVals = hrRecords.map(r => r.hrv ?? 0).filter(v => v > 0);
+  // ── HRV (from pulse records) ─────────────────────────────────────────────────
+  const hrvVals = hrCurr.map(r => r.hrv ?? 0).filter(v => v > 0);
   const avgHRV = avg(hrvVals);
+  const prevHRV = avg(hrPrev.map(r => r.hrv ?? 0).filter(v => v > 0));
 
   return [
     {
@@ -109,7 +149,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricBloodPressure ?? 'Blood Pressure',
       value: avgSys && avgDia ? `${Math.round(avgSys)}/${Math.round(avgDia)}` : '—',
       unit: 'mmHg',
-      trend: avgSys ? (avgSys > 130 ? 'up' : avgSys < 110 ? 'down' : 'stable') : 'none',
+      trend: periodTrend(avgSys, prevSys),
       accentColor: '#F43F5E',
       available: !!avgSys,
     },
@@ -118,7 +158,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricHeartRate ?? 'Heart Rate',
       value: avgHR ? `${Math.round(avgHR)}` : '—',
       unit: 'bpm',
-      trend: avgHR ? (avgHR > 90 ? 'up' : avgHR < 55 ? 'down' : 'stable') : 'none',
+      trend: periodTrend(avgHR, prevHR),
       accentColor: '#EC4899',
       available: !!avgHR,
     },
@@ -127,7 +167,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricSleep ?? 'Sleep',
       value: avgSleep ? `${(avgSleep / 60).toFixed(1)}` : '—',
       unit: 'hrs',
-      trend: avgSleep ? (avgSleep >= 420 ? 'stable' : 'down') : 'none',
+      trend: periodTrend(avgSleep, prevSleep),
       accentColor: '#8B5CF6',
       available: !!avgSleep,
     },
@@ -136,7 +176,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricBloodGlucose ?? 'Blood Glucose',
       value: avgBS ? `${Math.round(avgBS)}` : '—',
       unit: 'mg/dL',
-      trend: avgBS ? (avgBS > 140 ? 'up' : avgBS < 70 ? 'down' : 'stable') : 'none',
+      trend: periodTrend(avgBS, prevBS),
       accentColor: '#F59E0B',
       available: !!avgBS,
     },
@@ -145,7 +185,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricWeight ?? 'Weight',
       value: avgWeight ? `${avgWeight.toFixed(1)}` : '—',
       unit: 'lbs',
-      trend: 'none',
+      trend: periodTrend(avgWeight, prevWeight),
       accentColor: '#06B6D4',
       available: !!avgWeight,
     },
@@ -154,7 +194,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricSteps ?? 'Steps',
       value: avgSteps ? `${Math.round(avgSteps).toLocaleString()}` : '—',
       unit: '/day',
-      trend: avgSteps ? (avgSteps >= 8000 ? 'stable' : 'down') : 'none',
+      trend: periodTrend(avgSteps, prevSteps),
       accentColor: '#10B981',
       available: !!avgSteps,
     },
@@ -163,7 +203,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricSodium ?? 'Sodium',
       value: avgSodium ? `${Math.round(avgSodium)}` : '—',
       unit: 'mg',
-      trend: avgSodium ? (avgSodium > 2300 ? 'up' : 'stable') : 'none',
+      trend: periodTrend(avgSodium, prevSodium),
       accentColor: '#F97316',
       available: !!avgSodium,
     },
@@ -172,7 +212,7 @@ function computeSummaries(data: HealthData, daysBack: number, cs: ReturnType<typ
       label: cs.wellnessMetricHRV ?? 'HRV',
       value: avgHRV ? `${Math.round(avgHRV)}` : '—',
       unit: 'ms',
-      trend: avgHRV ? (avgHRV >= 40 ? 'stable' : 'down') : 'none',
+      trend: periodTrend(avgHRV, prevHRV),
       accentColor: '#6366F1',
       available: !!avgHRV,
     },

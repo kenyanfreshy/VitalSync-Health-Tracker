@@ -30,6 +30,7 @@ import Svg, {
   Defs,
   LinearGradient,
   Stop,
+  G,
 } from 'react-native-svg';
 import { GlassCard } from '@/components/glass-card';
 import { useColorScheme, useCorrelationStrings } from '@/hooks';
@@ -238,6 +239,15 @@ function ScoreBar({
 
 // ─── Mini Scatter Chart ───────────────────────────────────────────────────────
 
+interface SelectedPoint {
+  index: number;
+  date: string;
+  x: number;
+  y: number;
+  cx: number;
+  cy: number;
+}
+
 function PatternScatterChart({
   result,
   accentColor,
@@ -253,6 +263,7 @@ function PatternScatterChart({
   isDark: boolean;
   cs: ReturnType<typeof useCorrelationStrings>;
 }) {
+  const [selected, setSelected] = useState<SelectedPoint | null>(null);
   const pts = result.points;
   if (pts.length < 5) {
     return (
@@ -288,9 +299,13 @@ function PatternScatterChart({
   const drawW = CHART_W - PAD_X * 2;
   const drawH = CHART_H - PAD_Y * 2;
 
-  const mapped = pts.map(p => ({
+  const mapped = pts.map((p, i) => ({
     cx: PAD_X + ((p.x - xMin) / xRange) * drawW,
     cy: CHART_H - PAD_Y - ((p.y - yMin) / yRange) * drawH,
+    x: p.x,
+    y: p.y,
+    date: p.date,
+    index: i,
   }));
 
   // Regression line endpoints
@@ -301,7 +316,25 @@ function PatternScatterChart({
 
   const gradId = `grad_${accentColor.replace('#', '')}`;
 
+  // Format tooltip values
+  const fmtDate = (d: string) => {
+    try {
+      const dt = new Date(d + 'T00:00:00');
+      return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' });
+    } catch { return d; }
+  };
+  const fmtVal = (v: number, label: string) => {
+    if (label.toLowerCase().includes('sleep')) return `${(v / 60).toFixed(1)}h`;
+    if (v >= 1000) return v.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    return v % 1 === 0 ? String(v) : v.toFixed(1);
+  };
+
+  // Tooltip position: flip to left side if point is in right half
+  const tooltipX = selected ? (selected.cx > CHART_W / 2 ? selected.cx - 130 : selected.cx + 12) : 0;
+  const tooltipY = selected ? Math.max(4, selected.cy - 36) : 0;
+
   return (
+    <View style={{ position: 'relative' }}>
     <Svg width={CHART_W} height={CHART_H}>
       <Defs>
         <LinearGradient id={gradId} x1="0" y1="0" x2="1" y2="0">
@@ -333,20 +366,54 @@ function PatternScatterChart({
           strokeDasharray="4 3"
         />
       )}
-      {/* Data points */}
-      {mapped.map((p, i) => (
-        <Circle
-          key={i}
-          cx={p.cx}
-          cy={p.cy}
-          r={3.5}
-          fill={accentColor}
-          fillOpacity={0.75}
-          stroke={accentColor}
-          strokeWidth={0.5}
-          strokeOpacity={0.9}
-        />
-      ))}
+      {/* Data points with tap hitboxes */}
+      {mapped.map((p) => {
+        const isSelected = selected?.index === p.index;
+        return (
+          <G key={p.index} onPress={() => {
+            setSelected(prev => prev?.index === p.index ? null : {
+              index: p.index,
+              date: p.date,
+              x: p.x,
+              y: p.y,
+              cx: p.cx,
+              cy: p.cy,
+            });
+          }}>
+            {/* Invisible larger hitbox */}
+            <Rect
+              x={p.cx - 10}
+              y={p.cy - 10}
+              width={20}
+              height={20}
+              fill="transparent"
+            />
+            {/* Selected ring */}
+            {isSelected && (
+              <Circle
+                cx={p.cx}
+                cy={p.cy}
+                r={7}
+                fill={accentColor}
+                fillOpacity={0.18}
+                stroke={accentColor}
+                strokeWidth={1.5}
+                strokeOpacity={0.7}
+              />
+            )}
+            <Circle
+              cx={p.cx}
+              cy={p.cy}
+              r={isSelected ? 4.5 : 3.5}
+              fill={accentColor}
+              fillOpacity={isSelected ? 1 : 0.75}
+              stroke={accentColor}
+              strokeWidth={0.5}
+              strokeOpacity={0.9}
+            />
+          </G>
+        );
+      })}
       {/* Axis labels */}
       <SvgText
         x={CHART_W / 2}
@@ -358,6 +425,43 @@ function PatternScatterChart({
         {xLabel.length > 22 ? xLabel.slice(0, 22) + '…' : xLabel}
       </SvgText>
     </Svg>
+    {/* Tooltip overlay */}
+    {selected && (
+      <View
+        style={[
+          styles.tooltip,
+          {
+            left: tooltipX,
+            top: tooltipY,
+            backgroundColor: isDark ? 'rgba(15,18,35,0.96)' : 'rgba(255,255,255,0.97)',
+            borderColor: accentColor + '55',
+            shadowColor: accentColor,
+          },
+        ]}
+        pointerEvents="none"
+      >
+        <Text style={[styles.tooltipDate, { color: isDark ? 'rgba(180,200,255,0.65)' : 'rgba(0,0,0,0.50)' }]}>
+          {fmtDate(selected.date)}
+        </Text>
+        <View style={styles.tooltipRow}>
+          <Text style={[styles.tooltipLabel, { color: isDark ? 'rgba(180,200,255,0.55)' : 'rgba(0,0,0,0.45)' }]}>
+            {xLabel.length > 14 ? xLabel.slice(0, 14) + '…' : xLabel}
+          </Text>
+          <Text style={[styles.tooltipValue, { color: accentColor }]}>
+            {fmtVal(selected.x, xLabel)}
+          </Text>
+        </View>
+        <View style={styles.tooltipRow}>
+          <Text style={[styles.tooltipLabel, { color: isDark ? 'rgba(180,200,255,0.55)' : 'rgba(0,0,0,0.45)' }]}>
+            {yLabel.length > 14 ? yLabel.slice(0, 14) + '…' : yLabel}
+          </Text>
+          <Text style={[styles.tooltipValue, { color: accentColor }]}>
+            {fmtVal(selected.y, yLabel)}
+          </Text>
+        </View>
+      </View>
+    )}
+    </View>
   );
 }
 
@@ -844,4 +948,23 @@ const styles = StyleSheet.create({
   citationText: { fontSize: 11, fontWeight: '500' },
   disclaimer: { fontSize: 9, textAlign: 'center', marginTop: 2 },
   footerDisclaimer: { fontSize: 9, textAlign: 'center', marginHorizontal: 16, marginTop: 12 },
+
+  tooltip: {
+    position: 'absolute',
+    width: 118,
+    borderRadius: 9,
+    borderWidth: 1,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    gap: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.22,
+    shadowRadius: 6,
+    elevation: 6,
+    zIndex: 99,
+  },
+  tooltipDate: { fontSize: 9, fontWeight: '600', letterSpacing: 0.4, marginBottom: 2 },
+  tooltipRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 4 },
+  tooltipLabel: { fontSize: 9, fontWeight: '400', flex: 1 },
+  tooltipValue: { fontSize: 11, fontWeight: '700' },
 });
