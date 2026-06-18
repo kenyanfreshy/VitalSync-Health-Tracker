@@ -10412,3 +10412,13 @@
 - [x] Bump version to 1.0.65 (buildNumber 10065, versionCode 65)
 - [x] Update What's New sheet with v1.0.65 entry
 - [x] Update CHANGELOG.md with v1.0.65 entry
+
+## v1.0.66 — Floating Wellness Disclaimer + Macro Empty State
+
+- [x] Build FloatingWellnessDisclaimer component (glassmorphic floating bar with pulse animation, expand/collapse, 24h reappear)
+- [x] Wire FloatingWellnessDisclaimer into Record, Correlate, Health Report, Settings, and HealthKit Permissions screens
+- [x] Remove static WellnessDisclaimerBanner from those 4 screens (replaced by floating version)
+- [x] Add Macro tab empty state (hasLowData / !hasData) in analytics.tsx
+- [x] Add tabMacro + noMacroDataTitle/Body + buildingMacroTitle/Body i18n keys to all 10 language blocks
+- [x] TypeScript check (no errors), version bump to 1.0.66, What's New + CHANGELOG
+- [ ] Commit, EAS build, TestFlight submission

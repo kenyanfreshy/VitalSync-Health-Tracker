@@ -91,6 +91,23 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.66 */
+export const whatsNewV1066Strings = {
+  version: "1.0.66",
+  date: "Jun 2026",
+  headline: "Floating Wellness Disclaimer + Macros Tab",
+
+  // New
+  n1Title: "Floating Wellness Disclaimer",
+  n1Desc: "A glassmorphic floating disclaimer now appears on all main screens with a pulsing green indicator, expand/collapse animation, and auto-reappears every 24 hours to keep wellness context visible without being intrusive.",
+  n2Title: "Macros Analytics Tab",
+  n2Desc: "A new \u{1F96C} Macros tab in Nutrition Analysis displays your macro breakdown when 7+ days of macro data are logged, with friendly empty states and a progress bar for users still building their macro history.",
+
+  // Improved
+  i1Title: "Nutrition Tab Expanded to 4 Tabs",
+  i1Desc: "The Nutrition Analysis section now features four tabs \u2014 Correlate, Glucose Tracking, Caloric, and Macros \u2014 each with its own color accent and persistent selection across sessions.",
+} as const;
+
 /** Release note content — v1.0.65 */
 export const whatsNewV1065Strings = {
   version: "1.0.65",
@@ -682,6 +699,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1066 = useT(whatsNewV1066Strings);
   const v1065 = useT(whatsNewV1065Strings);
   const v1064 = useT(whatsNewV1064Strings);
   const v1063 = useT(whatsNewV1063Strings);
@@ -702,7 +720,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1065;
+  const latestVersion = v1066;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -832,7 +850,17 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.65 (latest) ── */}
+          {/* ── v1.0.66 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="💬" title={v1066.n1Title} desc={v1066.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🥦" title={v1066.n2Title} desc={v1066.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="📊" title={v1066.i1Title} desc={v1066.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.65 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="🛡️" title={v1065.n1Title} desc={v1065.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

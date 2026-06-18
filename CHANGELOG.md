@@ -5,6 +5,23 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.66 (Build 10066) — 2026-06-18
+
+### Floating Wellness Disclaimer
+- **FloatingWellnessDisclaimer component** — a glassmorphic floating disclaimer bar with a pulsing green indicator, expand/collapse animation, and 24-hour auto-reappear logic. Replaces the static `WellnessDisclaimerBanner` on Record, Correlate, Health Report, Settings, and HealthKit Permissions screens.
+- The floating bar uses `BlurView` glassmorphism, a `#22C55E` pulsing dot, and a `withTiming` expand/collapse animation. Dismissed state persists to AsyncStorage with a 24-hour TTL keyed to `@vsht:disclaimerDismissedAt`.
+
+### Macros Analytics Tab
+- **New 🥦 Macros tab** added to the Nutrition Analysis section in the Correlate screen.
+- Shows `WeeklyMacroIntelCard` when 7+ days of macro data (records with `proteinG`, `carbsG`, or `fatG` > 0) are logged.
+- Displays friendly empty states ('No Macro Data Yet' / 'Building Your Macro Profile') with a progress badge and progress bar for users still building their macro history.
+- **Nutrition tab expanded to 4 tabs** — Correlate, Glucose Tracking, Caloric, and Macros; each with its own color accent (green, blue, amber, purple) and persistent tab selection across sessions.
+
+### i18n
+- `tabMacro`, `noMacroDataTitle`, `noMacroDataBody`, `buildingMacroTitle`, `buildingMacroBody` keys added to all 10 language blocks in `correlationStrings`.
+
+---
+
 ## v1.0.65 (Build 10065) — 2026-06-18
 
 ### Apple Guideline 1.4.1 Compliance

@@ -33,7 +33,7 @@ import Animated, {
  Easing } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
-import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
+import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useHealth } from '@/lib/health/health-context';
@@ -785,8 +785,6 @@ export default function RecordScreen() {
       >
 
         {/* ── Health Metrics ──────────────────────────────────────────────── */}
-        {/* Wellness disclaimer */}
-        <WellnessDisclaimerBanner />
         <Text style={s.sectionTitle}>{rs.sectionHealthMetrics}</Text>
         {/* ── Vitals source filter chips — only shown when both HealthKit and manual records exist ── */}
         {showVitalsFilter && (
@@ -1095,6 +1093,8 @@ export default function RecordScreen() {
         <View style={{ height: 40 }} />
       </ScrollView>
       <ScrollToTopButton opacity={recordScrollTopOpacity} visible={showRecordScrollTop} onPress={recordScrollToTop} />
+      {/* Floating wellness disclaimer — absolute overlay, stays visible while scrolling */}
+      <FloatingWellnessDisclaimer bottomOffset={80} position="bottom" />
     </ScreenContainer>
   );
 }

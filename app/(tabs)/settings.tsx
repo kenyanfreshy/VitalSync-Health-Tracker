@@ -12,7 +12,7 @@ import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, withSequence,
 import { useFocusEffect, useLocalSearchParams, useRouter, router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View, Pressable, Alert, Platform, Switch, Linking, Modal, AppState, type AppStateStatus, useColorScheme, Animated, LayoutAnimation, UIManager, TextInput, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
+import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/glass-card';
 import { BleScannerSheet } from '@/components/ble-device-scanner';
@@ -1432,8 +1432,7 @@ export default function SettingsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView ref={scrollViewRef} onScroll={handleSettingsScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {/* Wellness disclaimer */}
-        <WellnessDisclaimerBanner />
+        {/* Wellness disclaimer moved to floating overlay — see below */}
         {/* ─── Header ───────────────────────────────────────────────────────── */}
         <View style={[styles.header, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
           <Text style={[styles.title, { color: colors.foreground }]}>{t.title}</Text>
@@ -4903,6 +4902,8 @@ export default function SettingsScreen() {
         onClose={() => setGoalsSheetVisible(false)}
       />
       <ScrollToTopButton opacity={settingsScrollTopOpacity} visible={showSettingsScrollTop} onPress={settingsScrollToTop} />
+      {/* Floating wellness disclaimer — absolute overlay, stays visible while scrolling */}
+      <FloatingWellnessDisclaimer bottomOffset={80} position="bottom" />
       {/* Key Rotation sheet — Settings > Privacy & Security > Reset Encryption Key */}
       <KeyRotationSheet
         visible={keyRotationSheetVisible}

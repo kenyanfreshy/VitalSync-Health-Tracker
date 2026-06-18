@@ -34,7 +34,7 @@ import {
 import { WebView } from 'react-native-webview';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
+import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { GlassCard } from '@/components/glass-card';
@@ -660,8 +660,7 @@ export default function ReportScreen() {
       {UpsellSheet}
 
       <ScrollView ref={reportScrollRef} onScroll={handleReportScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {/* Wellness disclaimer */}
-        <WellnessDisclaimerBanner />
+        {/* Wellness disclaimer moved to floating overlay — see below */}
 
         {/* ─── Header ─────────────────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -1647,6 +1646,8 @@ export default function ReportScreen() {
         </SafeAreaView>
       </Modal>
       <ScrollToTopButton opacity={reportScrollTopOpacity} visible={showReportScrollTop} onPress={reportScrollToTop} />
+      {/* Floating wellness disclaimer — absolute overlay, stays visible while scrolling */}
+      <FloatingWellnessDisclaimer bottomOffset={80} position="bottom" />
 
       {/* ─── Inline Language Picker Modal ─────────────────────────────── */}
       <Modal

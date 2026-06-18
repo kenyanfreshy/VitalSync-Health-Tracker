@@ -40,6 +40,7 @@ import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { ScreenContainer } from '@/components/screen-container';
+import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { isRNHAvailable, initAppleHealthKit } from '@/lib/health/rnh-loader';
 import { useHealth } from '@/lib/health/health-context';
@@ -832,6 +833,21 @@ export default function HealthKitPermissionsScreen() {
           </View>
         )}
 
+        {/* Wellness disclaimer — Apple Guideline 1.4.1 compliance (above Cardiovascular) */}
+        {!loading && (
+          <View style={[styles.wellnessDisclaimerCard, { backgroundColor: isDark ? '#0F1A2E' : '#EFF6FF', borderColor: isDark ? '#1E3A5F' : '#BFDBFE' }]}>
+            <IconSymbol name="info.circle.fill" size={15} color={isDark ? '#60A5FA' : '#2563EB'} />
+            <View style={{ flex: 1, gap: 6 }}>
+              <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
+                {t.hkWellnessDisclaimer1 ?? 'VitalSync is intended for personal wellness tracking, organization, and educational purposes only. It does not diagnose, treat, cure, prevent, or monitor any disease or medical condition.'}
+              </Text>
+              <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#7DD3FC' : '#1D4ED8', opacity: 0.85 }]}>
+                {t.hkWellnessDisclaimer2 ?? 'Health information displayed in VitalSync originates from Apple Health and compatible third-party sources. Data accuracy depends on the originating source.'}
+              </Text>
+            </View>
+          </View>
+        )}
+
         {/* Permission list grouped by category */}
         {!loading && CATEGORIES.map((category) => {
           const items = PERMISSION_ITEMS.filter((i) => i.category === category);
@@ -1046,21 +1062,35 @@ export default function HealthKitPermissionsScreen() {
           </View>
         )}
 
-        {/* Wellness disclaimer — Apple Guideline 1.4.1 compliance */}
-        <View style={[styles.wellnessDisclaimerCard, { backgroundColor: isDark ? '#0F1A2E' : '#EFF6FF', borderColor: isDark ? '#1E3A5F' : '#BFDBFE' }]}>
-          <IconSymbol name="info.circle.fill" size={15} color={isDark ? '#60A5FA' : '#2563EB'} />
-          <View style={{ flex: 1, gap: 6 }}>
-            <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
-              {t.hkWellnessDisclaimer1 ?? 'VitalSync is intended for personal wellness tracking, organization, and educational purposes only. It does not diagnose, treat, cure, prevent, or monitor any disease or medical condition.'}
+        {/* Legal links — Terms of Use (EULA) and Privacy Policy */}
+        <View style={styles.legalLinksRow}>
+          <Pressable
+            onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            accessibilityRole="link"
+            accessibilityLabel={t.hkTermsOfUse ?? 'Terms of Use (EULA)'}
+          >
+            <Text style={[styles.legalLinkText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+              {t.hkTermsOfUse ?? 'Terms of Use (EULA)'}
             </Text>
-            <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#7DD3FC' : '#1D4ED8', opacity: 0.85 }]}>
-              {t.hkWellnessDisclaimer2 ?? 'Health information displayed in VitalSync originates from Apple Health and compatible third-party sources. Data accuracy depends on the originating source.'}
+          </Pressable>
+          <Text style={[styles.legalLinkSep, { color: isDark ? '#4B5563' : '#9CA3AF' }]}>·</Text>
+          <Pressable
+            onPress={() => Linking.openURL('https://vitalsyncpersonalwellnesshub.com/article/privacy-policy')}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            accessibilityRole="link"
+            accessibilityLabel={t.hkPrivacyPolicy ?? 'Privacy Policy'}
+          >
+            <Text style={[styles.legalLinkText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
+              {t.hkPrivacyPolicy ?? 'Privacy Policy'}
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      {/* Floating wellness disclaimer — absolute overlay, stays visible while scrolling */}
+      <FloatingWellnessDisclaimer bottomOffset={16} position="bottom" />
     </ScreenContainer>
   );
 }
@@ -1348,6 +1378,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginTop: 16,
+  },
+  legalLinksRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  legalLinkText: {
+    fontSize: 13,
+    fontWeight: '500',
+    textDecorationLine: 'underline',
+  },
+  legalLinkSep: {
+    fontSize: 13,
   },
   wellnessDisclaimerText: {
     fontSize: 12,

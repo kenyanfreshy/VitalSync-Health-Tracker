@@ -31,7 +31,7 @@ import {
 import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
+import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { useRTL } from '@/hooks/use-rtl';
 import { GlassCard } from '@/components/glass-card';
@@ -58,6 +58,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NutritionCorrelateCard } from '@/components/nutrition-correlate-card';
 import { useMacroGoals } from '@/hooks/use-macro-goals';
 import { CaloricTrendInsightCard } from '@/components/caloric-trend-insight-card';
+import { WeeklyMacroIntelCard } from '@/components/weekly-macro-intel-card';
 import { ReadinessHistoryChart } from '@/components/readiness-history-chart';
 import { InsightEngine } from '@/components/dashboard/insight-engine';
 import { WellnessSummarySection } from '@/components/dashboard/wellness-summary';
@@ -189,7 +190,7 @@ export default function AnalyticsScreen() {
   const ds = (disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en;
   const cs = useCorrelationStrings();
   const isRTL = useRTL();
-  const { state } = useHealth();
+  const { state, dietType } = useHealth();
   const [hrWindow, setHrWindow] = useState<HrWindowSize>("4h");
   React.useEffect(() => { loadHrWindow().then(setHrWindow); }, []);
   // EKG records for AFib episode count metric
@@ -224,7 +225,7 @@ export default function AnalyticsScreen() {
   }));
   const [nutritionMergedExpanded, setNutritionMergedExpanded] = useState(false);
   const [observedExpanded, setObservedExpanded] = useState(false);
-  const [nutritionTab, setNutritionTab] = useState<'correlate' | 'diabetic' | 'caloric'>('correlate');
+  const [nutritionTab, setNutritionTab] = useState<'correlate' | 'diabetic' | 'caloric' | 'macro'>('correlate');
   const [bestNutritionStreak, setBestNutritionStreak] = useState(0);
 
   // Persist nutritionTab across sessions
@@ -232,7 +233,7 @@ export default function AnalyticsScreen() {
   const NUTRITION_BEST_STREAK_KEY = '@vitalsync/nutrition_best_streak_v1';
   useEffect(() => {
     AsyncStorage.getItem(NUTRITION_TAB_KEY).then(v => {
-      if (v === 'correlate' || v === 'diabetic' || v === 'caloric') setNutritionTab(v);
+      if (v === 'correlate' || v === 'diabetic' || v === 'caloric' || v === 'macro') setNutritionTab(v as 'correlate' | 'diabetic' | 'caloric' | 'macro');
     }).catch(() => {});
     AsyncStorage.getItem(NUTRITION_BEST_STREAK_KEY).then(v => {
       if (v) setBestNutritionStreak(parseInt(v, 10) || 0);
@@ -443,8 +444,24 @@ export default function AnalyticsScreen() {
       nutritionHasLowData: uniqueDays > 0 && uniqueDays < 7,
       nutritionUniqueDays: uniqueDays,
     };
+    }, [state.data?.sodiumIntake]);
+  // ── Macro data density (for Macro tab empty-state logic) ─────────────────
+  const { macroHasData, macroHasLowData, macroUniqueDays } = useMemo(() => {
+    const allRecords = (state.data?.sodiumIntake ?? []).filter(
+      r => (r.proteinG ?? 0) > 0 || (r.carbsG ?? 0) > 0 || (r.fatG ?? 0) > 0
+    );
+    const uniqueDays = new Set(
+      allRecords.map(r => {
+        const d = new Date(r.timestamp);
+        return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      })
+    ).size;
+    return {
+      macroHasData: uniqueDays > 0,
+      macroHasLowData: uniqueDays > 0 && uniqueDays < 7,
+      macroUniqueDays: uniqueDays,
+    };
   }, [state.data?.sodiumIntake]);
-
   // ── Share handler ─────────────────────────────────────────────────────────
   const handleShare = useCallback(async (insight: EngineInsight) => {
     if (sharingId) return; // prevent double-tap
@@ -510,8 +527,7 @@ export default function AnalyticsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView ref={analyticsScrollRef} onScroll={handleAnalyticsScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
-        {/* Wellness disclaimer */}
-        <WellnessDisclaimerBanner />
+        {/* Wellness disclaimer moved to floating overlay — see below */}
 
         {/* ─── Header ─────────────────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -603,12 +619,13 @@ export default function AnalyticsScreen() {
             <IconSymbol name="chevron.right" size={18} color={colors.muted} />
           </Pressable>
 
-          {/* ── Three-tab switcher always visible ── */}
+          {/* ── Four-tab switcher always visible ── */}
           <View style={[styles.nutritionTabRow, { borderTopWidth: 0.5, borderTopColor: colors.border }]}>
             {([
               { key: 'correlate', label: cs.tabCorrelate,  color: '#10B981' },
               { key: 'diabetic',  label: cs.tabDiabetic,   color: '#0EA5E9' },
               { key: 'caloric',   label: cs.tabCaloric,    color: '#F59E0B' },
+              { key: 'macro',     label: cs.tabMacro ?? '\u{1F96C} Macros', color: '#8B5CF6' },
             ] as const).map(({ key, label, color }) => {
               const active = nutritionTab === key;
               return (
@@ -920,11 +937,62 @@ export default function AnalyticsScreen() {
                   )}
                 </View>
               )}
+
+              {nutritionTab === 'macro' && (
+                <View>
+                  {/* ── Macro empty / low-data states ── */}
+                  {!macroHasData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(139,92,246,0.07)' : 'rgba(139,92,246,0.05)', borderColor: '#8B5CF6' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>🥦</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.noMacroDataTitle ?? 'No Macro Data Yet'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.noMacroDataBody ?? 'Log meals with macro information to see your daily macro breakdown here.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#8B5CF6' + '40', backgroundColor: '#8B5CF6' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#8B5CF6' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', '0')}</Text>
+                      </View>
+                      <Pressable
+                        style={[styles.nutritionEmptyCTA, { backgroundColor: '#8B5CF6' + '20', borderColor: '#8B5CF6' + '50' }]}
+                        onPress={() => {
+                          if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          router.push('/(tabs)/log');
+                        }}
+                      >
+                        <Text style={[styles.nutritionEmptyCTAText, { color: '#8B5CF6' }]}>{cs.logMealCta ?? '+ Log a Meal'}</Text>
+                      </Pressable>
+                    </View>
+                  ) : macroHasLowData ? (
+                    <View style={[styles.nutritionEmptyState, { marginHorizontal: 16, marginBottom: 12, backgroundColor: isDark ? 'rgba(139,92,246,0.07)' : 'rgba(139,92,246,0.05)', borderColor: '#8B5CF6' + '30' }]}>
+                      <Text style={styles.nutritionEmptyIcon}>📈</Text>
+                      <Text style={[styles.nutritionEmptyTitle, { color: colors.foreground }]}>{cs.buildingMacroTitle ?? 'Building Your Macro Profile'}</Text>
+                      <Text style={[styles.nutritionEmptyBody, { color: colors.muted }]}>
+                        {cs.buildingMacroBody ?? 'Keep logging meals — macro breakdown becomes available after 7 days of data.'}
+                      </Text>
+                      <View style={[styles.nutritionEmptyProgressBadge, { borderColor: '#8B5CF6' + '40', backgroundColor: '#8B5CF6' + '12' }]}>
+                        <Text style={[styles.nutritionEmptyProgressText, { color: '#8B5CF6' }]}>{(cs.daysProgressLabel ?? '{n} / 7 days').replace('{n}', String(macroUniqueDays))}</Text>
+                      </View>
+                      <View style={[styles.nutritionEmptyProgressBar, { backgroundColor: '#8B5CF6' + '20' }]}>
+                        <View style={[styles.nutritionEmptyProgressFill, { backgroundColor: '#8B5CF6', width: `${Math.min(Math.round((macroUniqueDays / 7) * 100), 100)}%` as `${number}%` }]} />
+                      </View>
+                    </View>
+                  ) : null}
+                  {macroHasData && (
+                    <WeeklyMacroIntelCard
+                      sodiumRecords={state.data?.sodiumIntake ?? []}
+                      bloodSugarRecords={state.data?.bloodSugar ?? []}
+                      weightRecords={state.data?.weight ?? []}
+                      vitalSignsRecords={state.data?.vitalSigns ?? []}
+                      activityRecords={state.data?.activity ?? []}
+                      dietProtocol={dietType ?? 'standard'}
+                      weightKg={state.data?.bodyComposition?.[0]?.weightKg ?? null}
+                    />
+                  )}
+                </View>
+              )}
               </Reanimated.View>
             </View>
           )}
         </GlassCard>
-
         {/* ─── Insight Engine ─────────────────────────────────────────── */}
         <View style={{ height: 14 }} />
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
@@ -1156,6 +1224,8 @@ export default function AnalyticsScreen() {
         })()}
       </ScrollView>
       <ScrollToTopButton opacity={analyticsScrollTopOpacity} visible={showAnalyticsScrollTop} onPress={analyticsScrollToTop} />
+      {/* Floating wellness disclaimer — absolute overlay, stays visible while scrolling */}
+      <FloatingWellnessDisclaimer bottomOffset={80} position="bottom" />
 
       {/* ─── Toast ───────────────────────────────────────────────────────── */}
       <ShareToast visible={toastVisible} usedClipboard={toastClipboard} />
