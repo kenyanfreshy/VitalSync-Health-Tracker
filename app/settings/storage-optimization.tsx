@@ -120,7 +120,7 @@ function EKGTallySection({ colors }: { colors: ReturnType<typeof useColors> }) {
         </View>
         <View style={styles.tallyCell}>
           <Text style={[styles.tallyValue, { color: '#EF4444' }]}>{tally.atrialFibrillation}</Text>
-          <Text style={[styles.tallyLabel, { color: colors.muted }]}>AFib (always kept)</Text>
+          <Text style={[styles.tallyLabel, { color: colors.muted }]}>Atrial Fibrillation (always kept)</Text>
         </View>
         <View style={styles.tallyCell}>
           <Text style={[styles.tallyValue, { color: '#22C55E' }]}>{tally.sinusRhythm}</Text>
@@ -143,7 +143,7 @@ function EKGTallySection({ colors }: { colors: ReturnType<typeof useColors> }) {
       {routineStripsRemaining === 0 ? (
         <Text style={[styles.tallyNote, { color: '#B45309' }]}>
           Daily routine strip limit reached. New routine readings are being summarized in the tally only.
-          AFib strips are always retained.
+          Atrial Fibrillation recordings are always retained.
         </Text>
       ) : (
         <Text style={[styles.tallyNote, { color: colors.muted }]}>

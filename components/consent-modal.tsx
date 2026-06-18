@@ -44,7 +44,7 @@ const CONSENT_EN: Record<string, string> = Object.fromEntries(
 
 const CONSENT_KEY   = '@vsht:consent_accepted';
 const PRIVACY_URL   = 'https://vitalsyncpersonalwellnesshub.com/article/privacy-policy';
-const TERMS_BASE    = 'https://vitalsyncpersonalwellnesshub.com/article/subscription-plans?v=1';
+const TERMS_BASE    = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 /** Minimum time (ms) the skeleton is shown so it never flashes on fast devices */
 const MIN_SKELETON_MS = 400;
 

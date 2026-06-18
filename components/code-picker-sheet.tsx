@@ -198,7 +198,7 @@ export function CodePickerSheet({
           <View style={s.emptyState}>
             <IconSymbol name="magnifyingglass" size={40} color={colors.muted} />
             <Text style={[s.emptyTitle, { color: colors.foreground }]}>
-              {mode === 'icd10' ? 'Search diagnoses' : 'Search procedures'}
+              {mode === 'icd10' ? 'Search conditions' : 'Search procedures'}
             </Text>
             <Text style={[s.emptySub, { color: colors.muted }]}>
               {mode === 'icd10'

@@ -749,7 +749,7 @@ export default function ThresholdSettingsScreen() {
             borderColor: '#EF444430',
           }]}>
             <Text style={[styles.spo2NoteText, { color: colors.muted }]}>
-              {t.afibCooldownHint ?? 'Alert fires when a new AFib episode is detected. Minimum time between alerts: 1–24 hours.'}
+              {t.afibCooldownHint ?? 'Alert fires when a new Atrial Fibrillation recording is logged. Minimum time between alerts: 1–24 hours.'}
             </Text>
           </View>
         </SectionCard>

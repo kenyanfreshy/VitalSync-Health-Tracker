@@ -264,7 +264,7 @@ export function EKGSparklineDetailSheet({
                   <Text style={styles.alertIcon}>⚠️</Text>
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.alertTitle, { color: '#EF4444' }]}>
-                      {totalAfib} AFib episode{totalAfib !== 1 ? 's' : ''} detected
+                      {totalAfib} Atrial Fibrillation recording{totalAfib !== 1 ? 's' : ''} in the last 7 days
                     </Text>
                     {lastAfib && (
                       <Text style={[styles.alertSub, { color: colors.muted }]}>
@@ -290,8 +290,8 @@ export function EKGSparklineDetailSheet({
               {/* Legend */}
               <View style={styles.legendRow}>
                 {[
-                  { color: '#22C55E', label: 'Sinus' },
-                  { color: '#EF4444', label: 'AFib' },
+                  { color: '#22C55E', label: 'Sinus Rhythm' },
+                  { color: '#EF4444', label: 'Atrial Fibrillation' },
                   { color: '#F59E0B', label: 'Inconclusive' },
                   { color: colors.muted, label: 'Unclassified' },
                 ].map(l => (

@@ -91,6 +91,27 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.65 */
+export const whatsNewV1065Strings = {
+  version: "1.0.65",
+  date: "Jun 2026",
+  headline: "Apple 1.4.1 Compliance + Full Localization",
+
+  // New
+  n1Title: "Wellness Disclaimer Banners",
+  n1Desc: "A clear wellness disclaimer banner ('VitalSync is a personal wellness app, not a medical device') now appears at the top of the Record, Correlate, Health Report, and Settings screens, and on the paywall.",
+  n2Title: "Terms of Use (EULA) Link",
+  n2Desc: "The Terms of Service link throughout the app now points to Apple's standard EULA at apple.com/legal/internet-services/itunes/dev/stdeula/ and is labelled 'Terms of Use (EULA)'.",
+
+  // Improved
+  i1Title: "Medical Language Remediation",
+  i1Desc: "All high-risk medical-device phrases (AFib detection, clinical decisions, meta-analyzed clinical datasets, diagnoses) replaced with compliant wellness-tracking language across EKG, Correlate, Onboarding, Thresholds, and Settings screens.",
+  i2Title: "Health Data Access Screen Disclaimer",
+  i2Desc: "The Health Data Access (HealthKit permissions) screen now displays a two-paragraph wellness disclaimer card explaining that VitalSync is not a medical device and does not provide clinical advice.",
+  i3Title: "Correlate Tab Full Localization",
+  i3Desc: "Every user-facing string in all 5 Correlate sections is now fully translated into all 10 supported languages. Zero hardcoded English strings remain.",
+} as const;
+
 /** Release note content — v1.0.64 */
 export const whatsNewV1064Strings = {
   version: "1.0.64",
@@ -661,6 +682,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1065 = useT(whatsNewV1065Strings);
   const v1064 = useT(whatsNewV1064Strings);
   const v1063 = useT(whatsNewV1063Strings);
   const v1062 = useT(whatsNewV1062Strings);
@@ -680,7 +702,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1064;
+  const latestVersion = v1065;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -810,7 +832,19 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.64 (latest) ── */}
+          {/* ── v1.0.65 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🛡️" title={v1065.n1Title} desc={v1065.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📄" title={v1065.n2Title} desc={v1065.n2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="✅" title={v1065.i1Title} desc={v1065.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🏥" title={v1065.i2Title} desc={v1065.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🌍" title={v1065.i3Title} desc={v1065.i3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.64 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="💡" title={v1064.n1Title} desc={v1064.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

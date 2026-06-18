@@ -767,7 +767,7 @@ function buildPdfHtml(sections: RefSection[], disclaimer?: string): string {
   <h1>VitalSync: Personal Health Hub — Evidence Sources</h1>
   <p class="meta">Generated ${date} · ${totalRefs} peer-reviewed references · v1.1.0</p>
   <div class="disclaimer">
-    \${disclaimer ?? 'All health recommendations in VitalSync are derived from the peer-reviewed sources listed below. This document is for informational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional before making clinical decisions.'}<br><br>
+    \${disclaimer ?? 'All health information in VitalSync is derived from the peer-reviewed sources listed below. This content is for educational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional.'}<br><br>
     <strong>App Review Navigation:</strong> Settings → About → Evidence Based Sources
   </div>
   ${sectionHtml}
@@ -1039,7 +1039,7 @@ export default function ClinicalSourcesScreen() {
       {/* Disclaimer banner */}
       <View style={[styles.disclaimer, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
         <Text style={[styles.disclaimerText, { color: colors.primary }]}>
-          {se.evidenceDisclaimerBanner ?? 'All health recommendations in VitalSync are derived from the peer-reviewed sources listed below. Always consult a qualified healthcare professional before making clinical decisions.'}
+          {se.evidenceDisclaimerBanner ?? 'All health information in VitalSync is derived from the peer-reviewed sources listed below. This content is for educational purposes only and does not constitute medical advice. Always consult a qualified healthcare professional.'}
         </Text>
       </View>
 

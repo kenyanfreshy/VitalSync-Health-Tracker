@@ -5,6 +5,35 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.65 (Build 10065) — 2026-06-18
+
+### Apple Guideline 1.4.1 Compliance
+- **Wellness disclaimer banners** — a clear, non-dismissible banner ('VitalSync Health Tracker is a personal wellness and health organisation app. It is not a medical device and does not provide medical advice, diagnoses, or treatment recommendations.') added to the top of the Record, Correlate, Health Report, and Settings tab screens, and to the paywall footer.
+- **Health Data Access screen disclaimer** — a two-paragraph wellness disclaimer card added to the HealthKit permissions screen, explaining the app is not a medical device and all data is stored locally on-device.
+- **Medical language remediation** — replaced all high/medium-risk medical-device phrases app-wide:
+  - EKG: 'AFib detected' → 'irregular rhythm detected'; 'AFib classification' → 'rhythm classification'
+  - Clinical Narrative: 'AFib episode detected' → 'irregular rhythm episode logged'
+  - Thresholds: 'AFib episode is detected' → 'irregular rhythm event is logged'
+  - Clinical Sources: 'clinical decisions' → 'personal wellness decisions'
+  - Data Privacy: 'clinical decisions' → 'personal wellness decisions'
+  - Storage Optimization: 'AFib (always kept)' → 'Irregular Rhythm (always kept)'
+  - Onboarding: 'meta-analyzed clinical datasets' → 'peer-reviewed wellness research'
+  - Code Picker: 'Search diagnoses' → 'Search conditions'
+- **HealthKit permission labels renamed** — 'Electrocardiogram (EKG)' → 'Heart Rhythm (EKG)', 'Blood Oxygen (SpO₂)' → 'Oxygen Saturation (SpO₂)', 'Respiratory Rate' → 'Breathing Rate' across all 10 language blocks.
+
+### Terms of Use (EULA)
+- **Apple EULA link** — all 'Terms of Service' labels and URLs replaced with 'Terms of Use (EULA)' pointing to `https://www.apple.com/legal/internet-services/itunes/dev/stdeula/` in the paywall, settings, and all other footer links.
+- **Privacy Policy URL** — confirmed pointing to `https://vitalsyncpersonalwellnesshub.com/article/privacy-policy` (unchanged).
+
+### Correlate Tab Full Localization
+- **Zero hardcoded strings** — every user-facing string across all 5 Correlate sections now uses `cs.*` i18n keys with English fallbacks.
+- **26 new i18n keys** propagated to all 10 language blocks (en, es, fr, de, zh, ja, pt, ar, sw, hi).
+
+### Reviewer Package
+- **docs/reviewer-package-v1.0.65.md** — full Apple reviewer package: compliant App Store description, reviewer notes, walkthrough script, video script, compliance matrix, and 1.4.1 resolution summary.
+
+---
+
 ## v1.0.64 (Build 10064) — 2026-06-10
 
 ### Pattern Explorer V2.0

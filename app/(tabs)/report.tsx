@@ -34,6 +34,7 @@ import {
 import { WebView } from 'react-native-webview';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { GlassCard } from '@/components/glass-card';
@@ -659,6 +660,8 @@ export default function ReportScreen() {
       {UpsellSheet}
 
       <ScrollView ref={reportScrollRef} onScroll={handleReportScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        {/* Wellness disclaimer */}
+        <WellnessDisclaimerBanner />
 
         {/* ─── Header ─────────────────────────────────────────────────────── */}
         <View style={styles.header}>

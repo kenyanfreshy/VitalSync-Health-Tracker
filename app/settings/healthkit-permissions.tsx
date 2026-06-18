@@ -1046,6 +1046,19 @@ export default function HealthKitPermissionsScreen() {
           </View>
         )}
 
+        {/* Wellness disclaimer — Apple Guideline 1.4.1 compliance */}
+        <View style={[styles.wellnessDisclaimerCard, { backgroundColor: isDark ? '#0F1A2E' : '#EFF6FF', borderColor: isDark ? '#1E3A5F' : '#BFDBFE' }]}>
+          <IconSymbol name="info.circle.fill" size={15} color={isDark ? '#60A5FA' : '#2563EB'} />
+          <View style={{ flex: 1, gap: 6 }}>
+            <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#93C5FD' : '#1E40AF' }]}>
+              {t.hkWellnessDisclaimer1 ?? 'VitalSync is intended for personal wellness tracking, organization, and educational purposes only. It does not diagnose, treat, cure, prevent, or monitor any disease or medical condition.'}
+            </Text>
+            <Text style={[styles.wellnessDisclaimerText, { color: isDark ? '#7DD3FC' : '#1D4ED8', opacity: 0.85 }]}>
+              {t.hkWellnessDisclaimer2 ?? 'Health information displayed in VitalSync originates from Apple Health and compatible third-party sources. Data accuracy depends on the originating source.'}
+            </Text>
+          </View>
+        </View>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </ScreenContainer>
@@ -1325,5 +1338,20 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '500',
     lineHeight: 15,
+  },
+  wellnessDisclaimerCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginTop: 16,
+  },
+  wellnessDisclaimerText: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: '400',
   },
 });

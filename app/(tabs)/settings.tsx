@@ -12,6 +12,7 @@ import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, withSequence,
 import { useFocusEffect, useLocalSearchParams, useRouter, router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View, Pressable, Alert, Platform, Switch, Linking, Modal, AppState, type AppStateStatus, useColorScheme, Animated, LayoutAnimation, UIManager, TextInput, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/glass-card';
 import { BleScannerSheet } from '@/components/ble-device-scanner';
@@ -1431,6 +1432,8 @@ export default function SettingsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView ref={scrollViewRef} onScroll={handleSettingsScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        {/* Wellness disclaimer */}
+        <WellnessDisclaimerBanner />
         {/* ─── Header ───────────────────────────────────────────────────────── */}
         <View style={[styles.header, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
           <Text style={[styles.title, { color: colors.foreground }]}>{t.title}</Text>

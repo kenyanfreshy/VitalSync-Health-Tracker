@@ -817,7 +817,7 @@ export default function OnboardingScreen() {
                   { icon: '📷', label: o.featureNutrition,  color: '#22C55E', desc: o.featureNutritionDesc ?? 'Camera food scan — USDA-verified macros in seconds' },
                   { icon: '💊', label: o.featureMeds,       color: '#A78BFA', desc: o.featureMedsDesc ?? 'Medication reminders, refill tracking & interaction checker' },
                   { icon: '🔬', label: o.featureLabs,       color: '#60A5FA', desc: o.featureLabsDesc ?? 'Lab result storage with trend visualization over time' },
-                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: o.featureCorrelationDesc ?? 'Cross-metric correlation engine grounded in meta-analyzed research' },
+                  { icon: '📊', label: o.featureCorrelation,color: '#F472B6', desc: o.featureCorrelationDesc ?? 'Cross-metric correlation engine grounded in peer-reviewed research' },
                   { icon: '💉', label: o.featureVaccines,   color: '#FB923C', desc: 'Vaccine schedule tracker with CDC & WHO reference guidelines' },
                 ].map(({ icon, label, color, desc }) => (
                   <View key={label} style={{
@@ -882,7 +882,7 @@ export default function OnboardingScreen() {
                   </Text>
                 </View>
                 {[
-                  { icon: '📊', title: o.evidenceCard1Title ?? 'Correlation Engine', desc: o.evidenceCard1Desc ?? 'Detects cross-metric patterns using meta-analyzed clinical datasets — not user-submitted averages', color: '#F472B6' },
+                  { icon: '📊', title: o.evidenceCard1Title ?? 'Correlation Engine', desc: o.evidenceCard1Desc ?? 'Detects cross-metric patterns using peer-reviewed research datasets — not user-submitted averages', color: '#F472B6' },
                   { icon: '🩺', title: o.evidenceCard2Title ?? 'Clinical Reference Ranges', desc: o.evidenceCard2Desc ?? 'AHA, ADA, AASM, and WHO thresholds applied to every vital sign and lab value', color: '#60A5FA' },
                   { icon: '🍽️', title: o.evidenceCard3Title ?? 'USDA Nutrition Database', desc: o.evidenceCard3Desc ?? 'Macros and micronutrients sourced from USDA FoodData Central — lab-verified, not crowd-sourced', color: '#22C55E' },
                   { icon: '💤', title: o.evidenceCard4Title ?? 'NeoSleep Analysis', desc: o.evidenceCard4Desc ?? 'Sleep scored against AASM criteria and Pittsburgh Sleep Quality Index methodology', color: '#8B5CF6' },
@@ -1531,7 +1531,7 @@ export default function OnboardingScreen() {
                 </Text>
                 <Pressable
                   style={({ pressed }) => [{ opacity: pressed ? 0.6 : 1, alignSelf: 'flex-end', marginTop: 8 }]}
-                  onPress={() => Linking.openURL('https://vitalsync.health/terms')}
+                  onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}
                 >
                   <Text style={{ color: SLIDE_META[7].iconColor, fontSize: 12, fontWeight: '600', textDecorationLine: 'underline' }}>
                     {o.viewTermsOfUse ?? 'Full Terms of Use'} →

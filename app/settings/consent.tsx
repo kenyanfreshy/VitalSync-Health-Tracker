@@ -43,7 +43,7 @@ import {
 const CONSENT_KEY        = '@vsht:consent_accepted';
 const CONSENT_DATE_KEY   = '@vsht:consent_accepted_date';
 const PRIVACY_URL        = 'https://vitalsyncpersonalwellnesshub.com/article/privacy-policy';
-const TERMS_URL          = 'https://vitalsyncpersonalwellnesshub.com/article/subscription-plans?v=1';
+const TERMS_URL          = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
 
 /** Human-readable changelog for each consent version */
 const CONSENT_HISTORY: { version: number; date: string; summary: string }[] = [

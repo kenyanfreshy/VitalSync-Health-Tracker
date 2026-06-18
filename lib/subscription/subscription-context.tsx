@@ -70,7 +70,7 @@ export const SUBSCRIPTION_DATA = {
 
 export const LEGAL_LINKS = {
   privacy: "https://vitalsyncpersonalwellnesshub.com/article/privacy-policy",
-  terms: "https://vitalsyncpersonalwellnesshub.com/article/subscription-plans?v=1",
+  terms: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/",
 } as const;
 
 export type ProductId = (typeof PRODUCT_IDS)[keyof typeof PRODUCT_IDS];

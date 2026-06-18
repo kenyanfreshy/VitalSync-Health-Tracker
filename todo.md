@@ -10396,3 +10396,19 @@
 - [x] Add v1.0.64 What's New entry to whats-new-sheet.tsx
 - [x] Update LATEST_WHATS_NEW_VERSION to 1.0.64
 - [x] Add v1.0.64 entry to CHANGELOG.md
+
+## v1.0.65 — Apple 1.4.1 Compliance + Full Localization (2026-06-18)
+
+- [x] Add wellness disclaimer banner to Record, Correlate, Health Report, Settings screens
+- [x] Add wellness disclaimer to paywall footer
+- [x] Add wellness disclaimer card to HealthKit permissions screen
+- [x] Replace all high/medium-risk medical-device phrases app-wide (EKG, Correlate, Onboarding, Thresholds, Clinical Sources, Data Privacy, Storage Optimization, Code Picker)
+- [x] Rename HealthKit permission labels (EKG → Heart Rhythm, Blood Oxygen → Oxygen Saturation, Respiratory Rate → Breathing Rate) in all 10 language blocks
+- [x] Update all Terms of Service links to Apple EULA URL (https://www.apple.com/legal/internet-services/itunes/dev/stdeula/)
+- [x] Confirm Privacy Policy URL points to vitalsyncpersonalwellnesshub.com/article/privacy-policy
+- [x] Translate all new disclaimer strings (wellnessDisclaimer, hkWellnessDisclaimer1/2) to all 10 language blocks
+- [x] Fix French wellnessDisclaimer apostrophe (single quotes → double quotes)
+- [x] Generate reviewer package (docs/reviewer-package-v1.0.65.md)
+- [x] Bump version to 1.0.65 (buildNumber 10065, versionCode 65)
+- [x] Update What's New sheet with v1.0.65 entry
+- [x] Update CHANGELOG.md with v1.0.65 entry

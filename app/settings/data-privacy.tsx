@@ -685,7 +685,7 @@ export default function DataPrivacyScreen() {
 
         {/* Footer note */}
         <Text style={[s.footer, { color: colors.muted }]}>
-          {tPrivacy.footerDisclaimer ?? 'VitalSync does not give medical advice. All insights are for informational purposes only. Consult a qualified healthcare professional before making any clinical decisions.'}
+          {tPrivacy.footerDisclaimer ?? 'VitalSync is for personal wellness tracking and educational purposes only. It does not provide medical advice. Always consult a qualified healthcare professional.'}
         </Text>
       </ScrollView>
 

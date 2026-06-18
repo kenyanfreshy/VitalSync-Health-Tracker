@@ -635,6 +635,11 @@ export function PaywallScreen({
           </Pressable>
         </View>
 
+        {/* Wellness disclaimer */}
+        {(pw as any).wellnessDisclaimer ? (
+          <Text style={s.wellnessDisclaimerText}>{(pw as any).wellnessDisclaimer}</Text>
+        ) : null}
+
         {/* Privacy / Terms */}
         <View style={s.legalLinks}>
           <Pressable onPress={() => openLink(LEGAL_LINKS.privacy)}>
@@ -642,7 +647,7 @@ export function PaywallScreen({
           </Pressable>
           <Text style={s.secondarySep}>·</Text>
           <Pressable onPress={() => openLink(LEGAL_LINKS.terms)}>
-            <Text style={s.legalLink}>{pw.termsOfService}</Text>
+            <Text style={s.legalLink}>{pw.termsOfService ?? 'Terms of Use (EULA)'}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -1157,6 +1162,14 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       color: TEXT_MUTED,
       textAlign: 'center',
       lineHeight: 15,
+    },
+    wellnessDisclaimerText: {
+      fontSize: 10,
+      color: TEXT_MUTED,
+      textAlign: 'center',
+      lineHeight: 14,
+      marginBottom: 8,
+      paddingHorizontal: 16,
     },
     secondaryRow: {
       flexDirection: 'row',

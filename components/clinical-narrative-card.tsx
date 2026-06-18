@@ -671,12 +671,12 @@ export function ClinicalNarrativeCard({ data, defaultExpanded = false, overrideE
     const afibCount = recent.filter(r => r.classification === 'AtrialFibrillation').length;
     const lastAfib = lastAfibRecord(recent);
     if (afibCount === 0) {
-      return `EKG: ${recent.length} recording${recent.length !== 1 ? 's' : ''} in 30 days — no AFib detected`;
+      return `EKG: ${recent.length} recording${recent.length !== 1 ? 's' : ''} in 30 days — no Atrial Fibrillation recordings`;
     }
     const lastAfibDate = lastAfib
       ? new Date(lastAfib.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       : null;
-    return `EKG: ${afibCount} AFib episode${afibCount !== 1 ? 's' : ''} in 30 days${lastAfibDate ? `, last ${lastAfibDate}` : ''}`;
+    return `EKG: ${afibCount} Atrial Fibrillation recording${afibCount !== 1 ? 's' : ''} in 30 days${lastAfibDate ? `, last ${lastAfibDate}` : ''}`;
   }, [ekgRecords]);
 
   // Summary counts
@@ -794,7 +794,7 @@ export function ClinicalNarrativeCard({ data, defaultExpanded = false, overrideE
 
           {ekgSummaryLine != null && (
             <GlassCard
-              accentColor={ekgSummaryLine.includes('AFib') ? '#EF4444' : '#22C55E'}
+              accentColor={ekgSummaryLine.includes('Atrial Fibrillation') ? '#EF4444' : '#22C55E'}
               style={{ marginHorizontal: 16, marginBottom: 12, flexDirection: 'row', alignItems: 'center', gap: 8 }}
             >
               <Text style={{ fontSize: 14 }}>&#129719;</Text>
@@ -808,7 +808,7 @@ export function ClinicalNarrativeCard({ data, defaultExpanded = false, overrideE
                 style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                 onPress={() => router.push('/detail/ekg' as never)}
               >
-                <Text style={{ fontSize: 11, color: ekgSummaryLine.includes('AFib') ? '#EF4444' : '#22C55E', fontWeight: '700' }}>View ›</Text>
+                <Text style={{ fontSize: 11, color: ekgSummaryLine.includes('Atrial Fibrillation') ? '#EF4444' : '#22C55E', fontWeight: '700' }}>View ›</Text>
               </Pressable>
             </GlassCard>
           )}

@@ -31,6 +31,7 @@ import {
 import Svg, { Circle, Line, Rect, Text as SvgText } from 'react-native-svg';
 import Reanimated, { useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { WellnessDisclaimerBanner } from '@/components/wellness-disclaimer-banner';
 import { ScreenContainer } from '@/components/screen-container';
 import { useRTL } from '@/hooks/use-rtl';
 import { GlassCard } from '@/components/glass-card';
@@ -509,6 +510,8 @@ export default function AnalyticsScreen() {
   return (
     <ScreenContainer containerClassName="bg-background">
       <ScrollView ref={analyticsScrollRef} onScroll={handleAnalyticsScroll} scrollEventThrottle={16} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+        {/* Wellness disclaimer */}
+        <WellnessDisclaimerBanner />
 
         {/* ─── Header ─────────────────────────────────────────────────────── */}
         <View style={styles.header}>
