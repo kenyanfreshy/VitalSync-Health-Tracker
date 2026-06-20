@@ -41,7 +41,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.66",
+  version: "1.0.67",
   orientation: "portrait",
   newArchEnabled: true,
   icon: "./assets/images/icon.png",
@@ -50,16 +50,12 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: bundleId,
-    buildNumber: "10066",
+    buildNumber: "10067",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleDisplayName: "VitalSync Health Tracker",
       NSFaceIDUsageDescription:
         "VitalSync Health Tracker uses Face ID to protect access to your personal health data.",
-      NSBluetoothAlwaysUsageDescription:
-        "VitalSync Health Tracker uses Bluetooth to sync readings from your glucometer, blood pressure monitor, and smart scale.",
-      NSBluetoothPeripheralUsageDescription:
-        "VitalSync Health Tracker uses Bluetooth to sync readings from your health devices.",
       NSHealthShareUsageDescription:
         "VitalSync Health Tracker reads the following health data from Apple Health to display and track your wellness vitals: blood pressure (systolic and diastolic), heart rate, resting heart rate, heart rate variability (HRV), blood glucose, body mass (weight), body fat percentage, lean body mass, height, step count, oxygen saturation (SpO\u2082), body temperature, respiratory rate, sleep analysis, active energy burned, walking/running distance, cycling distance, workout sessions, and electrocardiogram (EKG) recordings to show heart rhythm history.",
       NSHealthUpdateUsageDescription:
@@ -72,7 +68,7 @@ const config: ExpoConfig = {
         "VitalSync Health Tracker uses on-device speech recognition to support keyboard dictation. No audio is sent to external servers.",
       // Guideline 2.5.4: explicitly declare only the background modes we use.
       // This overrides any 'audio' injected by expo-audio/expo-video plugins.
-      UIBackgroundModes: ["fetch", "bluetooth-central", "bluetooth-peripheral"],
+      UIBackgroundModes: ["fetch"],
       BGTaskSchedulerPermittedIdentifiers: ["com.vitalsync.healthtracker.data.refresh"],
       LSApplicationQueriesSchemes: [
         "x-apple-health",
@@ -93,7 +89,7 @@ const config: ExpoConfig = {
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
     },
-    versionCode: 66,
+    versionCode: 67,
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: bundleId,
@@ -102,10 +98,6 @@ const config: ExpoConfig = {
       "android.permission.BODY_SENSORS",
       "android.permission.BODY_SENSORS_BACKGROUND",
       "android.permission.ACTIVITY_RECOGNITION",
-      "android.permission.BLUETOOTH_SCAN",
-      "android.permission.BLUETOOTH_CONNECT",
-      "android.permission.BLUETOOTH_ADVERTISE",
-      "android.permission.ACCESS_FINE_LOCATION",
       "android.permission.health.READ_HEART_RATE",
       "android.permission.health.READ_HEART_RATE_VARIABILITY",
       "android.permission.health.READ_RESTING_HEART_RATE",
@@ -141,8 +133,7 @@ const config: ExpoConfig = {
       "android.permission.USE_BIOMETRIC",
       "android.permission.USE_FINGERPRINT",
       "android.permission.INTERNET",
-      "android.permission.BLUETOOTH",
-      "android.permission.BLUETOOTH_ADMIN",
+
     ],
     intentFilters: [
       {
@@ -298,15 +289,6 @@ const config: ExpoConfig = {
         ios: {
           useFrameworks: "static",
         },
-      },
-    ],
-    [
-      "react-native-ble-plx",
-      {
-        isBackgroundEnabled: true,
-        modes: ["peripheral", "central"],
-        bluetoothAlwaysPermission:
-          "VitalSync Health Tracker needs Bluetooth to sync with clinical monitors and wearables.",
       },
     ],
     // Guideline 2.5.4 fix: remove 'audio' from UIBackgroundModes injected by expo-audio/expo-video

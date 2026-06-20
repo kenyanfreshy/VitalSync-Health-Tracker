@@ -5,6 +5,18 @@ Build numbers correspond to the `ios.buildNumber` field in `app.config.ts`.
 
 ---
 
+## v1.0.67 (Build 10067) — 2026-06-20
+
+### Bluetooth Removed — Apple Health Integration Only
+- **Complete BLE removal** — all Bluetooth/BLE files deleted: `ble-device-scanner.tsx`, `ble-reading-service.ts`, `bluetooth-manager.ts`, `data-sources.tsx`, `paired-devices-list.tsx`, `ble-gate-sheet.tsx`, `use-ble-health-alerts.ts`, `use-ble-permissions.ts`, `health-alert-monitor.ts`.
+- **react-native-ble-plx removed** from `package.json` and `app.config.ts` plugins.
+- **Bluetooth permissions removed** — `NSBluetoothAlwaysUsageDescription`, `NSBluetoothPeripheralUsageDescription`, `bluetooth-central`, `bluetooth-peripheral` UIBackgroundModes, and Android `BLUETOOTH_SCAN/CONNECT/ADVERTISE/ACCESS_FINE_LOCATION` permissions all removed.
+- **BLE UI removed** from Record, Settings, Dashboard (index), blood-sugar, weight, and vitals log screens.
+- **i18n updated** — `bleError`, `bleErrorMsg`, `syncedViaBle`, `glucometerSource`, `bsPermissionMsg`, `vitalsPermissionMsg`, `feat9ble`, `bluetoothDevices` strings replaced with Apple Health language across all 10 languages. `bleScannerStrings` export block deleted.
+- **Version bump** to 1.0.67 / Build 10067 / versionCode 67.
+
+---
+
 ## v1.0.66 (Build 10066) — 2026-06-18
 
 ### Floating Wellness Disclaimer

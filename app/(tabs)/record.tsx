@@ -50,8 +50,7 @@ import { SectionLabel } from '@/components/dashboard/section-label';
 import { GlassCard } from '@/components/glass-card';
 import { LabTrendMiniChart } from '@/components/dashboard/lab-trend-mini-chart';
 import { HeaderSyncButton } from '@/components/header-sync-button';
-import { BleScannerSheet } from '@/components/ble-device-scanner';
-import { setConnectionStateListener, type BleConnectionState, type ConnectedDevice } from '@/services/bluetooth-manager';
+// BLE removed — Apple Health integration only
 import { loadMedications } from '@/lib/medications/storage';
 import type { Medication } from '@/lib/medications/types';
 import { useUnitPreferences, formatDistance, type DistanceUnit } from '@/hooks/use-unit-preferences';
@@ -530,19 +529,6 @@ export default function RecordScreen() {
   // ── Last-synced relative timestamp (updates every 30s) ───────────────────
   const [lastSyncedLabel, setLastSyncedLabel] = useState<string | null>(null);
 
-  // ─── BLE connection state ────────────────────────────────────────────────
-  const [bleState, setBleState] = useState<BleConnectionState>('idle');
-  const [bleDevice, setBleDevice] = useState<ConnectedDevice | null>(null);
-  const [showBleSheet, setShowBleSheet] = useState(false);
-  const { requirePremium: requireBlePremium, PremiumGateSheet: BleGateSheet } = usePremiumGate();
-  useEffect(() => {
-    const unsub = setConnectionStateListener((state, device) => {
-      setBleState(state);
-      setBleDevice(device);
-    });
-    return () => unsub();
-  }, []);
-
   useEffect(() => {
     function computeLabel() {
       const ts = data?.lastSyncedAt ?? null;
@@ -691,39 +677,6 @@ export default function RecordScreen() {
             )}
           </View>
           <View style={{ paddingTop: 4, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {/* Bluetooth device scanner button */}
-            <Pressable
-              onPress={requireBlePremium(() => {
-                if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setShowBleSheet(true);
-              }, { feature: 'Bluetooth Devices' })}
-              style={({ pressed }) => ({
-                width: 30,
-                height: 30,
-                borderRadius: 15,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: bleState === 'connected'
-                  ? '#22C55E22'
-                  : colors.surface,
-                borderWidth: 0.5,
-                borderColor: bleState === 'connected'
-                  ? '#22C55E66'
-                  : colors.border,
-                opacity: pressed ? 0.7 : 1,
-              })}
-              accessibilityRole="button"
-              accessibilityLabel={bleState === 'connected' ? `Bluetooth connected to ${bleDevice?.name ?? 'device'}. Tap to manage.` : 'Bluetooth device scanner'}
-            >
-              <IconSymbol
-                name="antenna.radiowaves.left.and.right"
-                size={14}
-                color={bleState === 'connected' ? '#22C55E' : colors.muted}
-              />
-              {bleState === 'connected' && (
-                <View style={{ position: 'absolute', top: 2, right: 2, width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#22C55E' }} />
-              )}
-            </Pressable>
             <HeaderSyncButton
               sync={sync}
               onSync={forceSync}
@@ -731,17 +684,6 @@ export default function RecordScreen() {
             />
           </View>
       </View>
-      {/* Bluetooth premium gate */}
-      {BleGateSheet}
-      {/* BLE Device Scanner sheet — opened from header Bluetooth button */}
-      <BleScannerSheet
-        visible={showBleSheet}
-        onDeviceSelected={(_device) => {
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setShowBleSheet(false);
-        }}
-        onClose={() => setShowBleSheet(false)}
-      />
 
       {/* ─── Renal Protocol Banner ───────────────────────────────────────── */}
       {userDietType === 'renal' && (

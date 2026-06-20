@@ -23,9 +23,7 @@ import { useHealth } from '@/lib/health/health-context';
 import { useColors, useLang } from '@/hooks';
 import { kgToLbs, lbsToKg, type WeightRecord } from '@/lib/health/types';
 import { syncWeight, requestDeviceSyncPermissions } from '@/lib/health/device-sync';
-import { BleScannerSheet } from '@/components/ble-device-scanner';
-import { readDeviceByCategory, deduplicateWeight, bleReadSummary } from '@/lib/ble/ble-reading-service';
-import { notifyBleState } from '@/services/bluetooth-manager';
+// BLE removed — Apple Health integration only
 import { logStrings } from '@/lib/i18n';
 import { LineChart, normalizeData } from '@/components/charts/line-chart';
 import { useUnitPreferences } from '@/hooks/use-unit-preferences';
@@ -63,9 +61,7 @@ export default function WeightLogScreen() {
   const [value, setValue] = useState('');
   const [note, setNote] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [bleVisible, setBleVisible] = useState(false);
-  const { requirePremium: requireBlePremium, PremiumGateSheet: BleGateSheet } = usePremiumGate();
-  const [bleConnecting, setBleConnecting] = useState(false);
+
   const [range, setRange] = useState<Range>(30);
 
   // ── Chart data ─────────────────────────────────────────────────────────────
@@ -160,36 +156,7 @@ export default function WeightLogScreen() {
     ]);
   }, [deleteWeight, l]);
 
-  const handleBleDeviceSelected = async (device: import('@/lib/ble/ble-manager').ScannedDevice) => {
-    setBleVisible(false);
-    setBleConnecting(true);
-    notifyBleState('connecting', { id: device.id, name: device.name, category: device.category });
-    try {
-      const result = await readDeviceByCategory(device);
-      if (result.type === 'weight') {
-        notifyBleState('connected', { id: device.id, name: device.name, category: device.category });
-        const newRecords = deduplicateWeight(result.records, records);
-        for (const rec of newRecords) { await addWeight({ ...rec, deviceName: device.name }); }
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Synced via Bluetooth', bleReadSummary(result, device.name));
-      } else if (result.type === 'unsupported') {
-        notifyBleState('idle');
-        Alert.alert('Device Not Supported', result.reason);
-      } else if (result.type === 'no-service') {
-        notifyBleState('error');
-        Alert.alert('No Health Service Found', bleReadSummary(result, device.name));
-      } else {
-        notifyBleState('error');
-        Alert.alert(l.bleError, bleReadSummary(result, device.name));
-      }
-    } catch (_unused) {
-      notifyBleState('error');
-      Alert.alert(l.bleError, l.bleErrorMsg);
-    } finally {
-      setBleConnecting(false);
-      setTimeout(() => notifyBleState('idle'), 3000);
-    }
-  };
+
 
   const s = styles(colors);
   const unitLabel = unit;
@@ -199,14 +166,7 @@ export default function WeightLogScreen() {
 
   return (
     <ScreenContainer>
-      {/* Bluetooth premium gate */}
-      {BleGateSheet}
-      <BleScannerSheet
-        visible={bleVisible}
-        category="scale"
-        onDeviceSelected={handleBleDeviceSelected}
-        onClose={() => setBleVisible(false)}
-      />
+
 
       {/* Header */}
       <View style={s.header}>
@@ -215,17 +175,7 @@ export default function WeightLogScreen() {
         </Pressable>
         <Text style={s.title}>{l.weightTitle}</Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          {/* BT */}
-          <Pressable
-            onPress={requireBlePremium(() => setBleVisible(true), { feature: 'Bluetooth Devices' })}
-            disabled={bleConnecting}
-            style={({ pressed }) => [s.syncBtn, { backgroundColor: '#0A7EA422' }, pressed && { opacity: 0.6 }]}
-          >
-            {bleConnecting
-              ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Text style={[s.syncBtnText, { color: colors.primary }]}>📶 BT</Text>
-            }
-          </Pressable>
+
           {/* Health sync */}
           <Pressable
             onPress={handleDeviceSync}

@@ -36,9 +36,7 @@ import {
   type BloodSugarContext,
 } from '@/lib/health/types';
 import { syncBloodGlucose, requestDeviceSyncPermissions } from '@/lib/health/device-sync';
-import { BleScannerSheet } from '@/components/ble-device-scanner';
-import { readDeviceByCategory, deduplicateBloodSugar, bleReadSummary } from '@/lib/ble/ble-reading-service';
-import { notifyBleState } from '@/services/bluetooth-manager';
+// BLE removed — Apple Health integration only
 import { logStrings, complianceRingStrings, recordsStrings } from '@/lib/i18n';
 import { cancelGlucoseRecheckNotification } from '@/lib/notifications/glucose-recheck';
 import { checkThresholds, dispatchViolationNotifications } from '@/lib/notifications/threshold-checker';
@@ -144,9 +142,7 @@ export default function BloodSugarLogScreen() {
   const [cgmImportCount, setCgmImportCount] = useState<number | null>(null);
   const [glucoseThresholds, setGlucoseThresholds] = useState<GlucoseThresholdConfig>(DEFAULT_GLUCOSE_THRESHOLDS);
   const [chartWidth, setChartWidth] = useState(0);
-  const [bleVisible, setBleVisible] = useState(false);
-  const { requirePremium: requireBlePremium, PremiumGateSheet: BleGateSheet } = usePremiumGate();
-  const [bleConnecting, setBleConnecting] = useState(false);
+
 
   // Tracks which record ID has a pending 2-hour recheck notification
   const [pendingRecheckId, setPendingRecheckId] = useState<string | null>(null);
@@ -196,10 +192,10 @@ export default function BloodSugarLogScreen() {
         await addBloodSugar(rec);
       }
       const sourceName = result.source === 'health-connect' ? l.healthConnectSource : l.glucometerSource;
-      Alert.alert(l.syncedViaBle, l.syncedMsg(newRecords.length, sourceName));
+      Alert.alert(l.importedFromAppleHealth ?? 'Imported from Apple Health', l.syncedMsg(newRecords.length, sourceName));
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        // Immediate glucose threshold check after BLE import
+        // Immediate glucose threshold check after Apple Health import
         checkThresholds()
           .then((violations) => {
             const gv = violations.filter((v) => v.category === 'glucose');
@@ -335,36 +331,7 @@ export default function BloodSugarLogScreen() {
     ]);
   }, [deleteBloodSugar, l]);
 
-  const handleBleDeviceSelected = async (device: import('@/lib/ble/ble-manager').ScannedDevice) => {
-    setBleVisible(false);
-    setBleConnecting(true);
-    notifyBleState('connecting', { id: device.id, name: device.name, category: device.category });
-    try {
-      const result = await readDeviceByCategory(device);
-      if (result.type === 'blood-sugar') {
-        notifyBleState('connected', { id: device.id, name: device.name, category: device.category });
-        const newRecords = deduplicateBloodSugar(result.records, records);
-        for (const rec of newRecords) { await addBloodSugar({ ...rec, deviceName: device.name }); }
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert(l.syncedViaBle, bleReadSummary(result, device.name));
-      } else if (result.type === 'unsupported') {
-        notifyBleState('idle');
-        Alert.alert(l.deviceNotSupported, result.reason);
-      } else if (result.type === 'no-service') {
-        notifyBleState('error');
-        Alert.alert(l.noHealthService, bleReadSummary(result, device.name));
-      } else {
-        notifyBleState('error');
-        Alert.alert(l.bleError, bleReadSummary(result, device.name));
-      }
-    } catch (_unused) {
-      notifyBleState('error');
-      Alert.alert(l.bleError, l.bleErrorMsg);
-    } finally {
-      setBleConnecting(false);
-      setTimeout(() => notifyBleState('idle'), 3000);
-    }
-  };
+
 
   const s = styles(colors);
 
@@ -698,15 +665,7 @@ export default function BloodSugarLogScreen() {
            because PremiumGateSheet is React.ReactElement|null; calling it as a JSX element
            when null causes maybeHijackSafeAreaProvider crash on iOS 26.5 / Hermes) */}
       {A1CGateSheet}
-      {/* Bluetooth premium gate */}
-      {BleGateSheet}
 
-      <BleScannerSheet
-        visible={bleVisible}
-        category={['glucometer', 'cgm']}
-        onDeviceSelected={handleBleDeviceSelected}
-        onClose={() => setBleVisible(false)}
-      />
 
       {/* Header — fixed above the scrollable list */}
       <View style={s.header}>
@@ -715,17 +674,7 @@ export default function BloodSugarLogScreen() {
         </Pressable>
         <Text style={s.title}>{l.bloodSugarTitle}</Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          {/* BT button */}
-          <Pressable
-            onPress={requireBlePremium(() => setBleVisible(true), { feature: 'Bluetooth Devices' })}
-            disabled={bleConnecting}
-            style={({ pressed }) => [s.syncBtn, { backgroundColor: '#0A7EA422' }, pressed && { opacity: 0.6 }]}
-          >
-            {bleConnecting
-              ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Text style={[s.syncBtnText, { color: colors.primary }]}>📶 BT</Text>
-            }
-          </Pressable>
+
           {/* Health sync button */}
           <Pressable
             onPress={handleDeviceSync}

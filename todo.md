@@ -10422,3 +10422,18 @@
 - [x] Add tabMacro + noMacroDataTitle/Body + buildingMacroTitle/Body i18n keys to all 10 language blocks
 - [x] TypeScript check (no errors), version bump to 1.0.66, What's New + CHANGELOG
 - [ ] Commit, EAS build, TestFlight submission
+
+## v1.0.67 — Remove Bluetooth (Apple Review Guideline 1.4.1)
+- [x] Audit all BLE files, components, hooks, services, and string references
+- [x] Delete all BLE files (ble-device-scanner, bluetooth-manager, ble-reading-service, data-sources, paired-devices-list, ble-gate-sheet, use-ble-health-alerts, use-ble-permissions, health-alert-monitor)
+- [x] Remove react-native-ble-plx from package.json
+- [x] Remove BLE state, imports, UI from record.tsx, index.tsx, settings.tsx, blood-sugar.tsx, weight.tsx, vitals.tsx
+- [x] Replace all BLE strings in i18n.ts with Apple Health language (all 10 languages)
+- [x] Remove bleScannerStrings export block from i18n.ts
+- [x] Remove NSBluetoothAlwaysUsageDescription, NSBluetoothPeripheralUsageDescription from app.config.ts
+- [x] Remove bluetooth-central, bluetooth-peripheral from UIBackgroundModes
+- [x] Remove BLUETOOTH_SCAN/CONNECT/ADVERTISE/ACCESS_FINE_LOCATION Android permissions
+- [x] Remove react-native-ble-plx plugin from app.config.ts plugins array
+- [x] Version bump to 1.0.67 / Build 10067 / versionCode 67
+- [x] What's New v1.0.67 entry + CHANGELOG
+- [ ] Commit, EAS build, TestFlight submission

@@ -15,8 +15,7 @@ import * as Haptics from 'expo-haptics';
 import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { GlassCard } from '@/components/glass-card';
-import { BleScannerSheet } from '@/components/ble-device-scanner';
-import { PairedDevicesList } from '@/components/settings/paired-devices-list';
+// BLE removed — Apple Health integration only
 import { KeyRotationSheet } from '@/components/key-rotation-sheet';
 import { EvidenceRefBanner } from '@/components/ui/evidence-ref-banner';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -539,18 +538,7 @@ export default function SettingsScreen() {
   const { store: dsStore, toggleAutoSync } = useDataSources();
   const autoSync = dsStore.autoSyncOnLaunch;
   const { hours: staleThresholdHours, update: updateStaleThreshold } = useStaleThreshold();
-  // ─── Bluetooth Paired Devices ─────────────────────────────────────────────
-  const { requirePremium: requireBlePremium, PremiumGateSheet: BleGateSheet } = usePremiumGate();
-  const [showBleSettingsSheet, setShowBleSettingsSheet] = React.useState(false);
-  const [pairedBleCount, setPairedBleCount] = React.useState(0);
-  const [bleRefreshToken, setBleRefreshToken] = React.useState(0);
-  React.useEffect(() => {
-    secureGetItem('@vsht:pairedBleDevices')
-      .then((raw) => {
-        if (raw) { try { setPairedBleCount(JSON.parse(raw).length); } catch { setPairedBleCount(0); } }
-      })
-      .catch(() => {});
-  }, [showBleSettingsSheet]);
+  // BLE removed — Apple Health integration only
   const [notifications, setNotifications] = useState(false);
   const [labRemindersEnabled, setLabRemindersEnabledState] = useState(true);
 
@@ -2080,21 +2068,7 @@ export default function SettingsScreen() {
             onPress={() => router.push('/settings/pharmacies' as any)}
             rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
           />
-          <SettingsRow
-            icon="antenna.radiowaves.left.and.right"
-            iconColor="#0EA5E9"
-            label={se.bluetoothDevices}
-            subtitle={pairedBleCount > 0 ? `${pairedBleCount} paired device${pairedBleCount !== 1 ? 's' : ''} · tap to manage` : (se.bluetoothDevicesSub ?? 'Scan & pair health devices for auto-sync')}
-            onPress={requireBlePremium(() => setShowBleSettingsSheet(true), { feature: 'Bluetooth Devices' })}
-            rightElement={<IconSymbol name="chevron.right" size={14} color={colors.muted} />}
-          />
-          {pairedBleCount > 0 && (
-            <PairedDevicesList
-              onReconnect={() => setShowBleSettingsSheet(true)}
-              refreshToken={bleRefreshToken}
-              onDeviceForgotten={(count) => setPairedBleCount(count)}
-            />
-          )}
+
 
         </GlassCard>
         <EvidenceRefBanner
@@ -4909,20 +4883,7 @@ export default function SettingsScreen() {
         visible={keyRotationSheetVisible}
         onClose={() => setKeyRotationSheetVisible(false)}
       />
-      {/* Bluetooth premium gate */}
-      {BleGateSheet}
-      {/* Bluetooth Device Scanner sheet — Settings > Health Data > Bluetooth Devices */}
-      <BleScannerSheet
-        visible={showBleSettingsSheet}
-        onDeviceSelected={(_device) => {
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setShowBleSettingsSheet(false);
-          secureGetItem('@vsht:pairedBleDevices')
-            .then((raw) => { if (raw) { try { setPairedBleCount(JSON.parse(raw).length); setBleRefreshToken(t => t + 1); } catch {} } })
-            .catch(() => {});
-        }}
-        onClose={() => { setShowBleSettingsSheet(false); setBleRefreshToken(t => t + 1); }}
-      />
+
     </ScreenContainer>
   );
 

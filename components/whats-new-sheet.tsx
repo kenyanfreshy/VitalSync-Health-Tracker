@@ -91,6 +91,23 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.67 */
+export const whatsNewV1067Strings = {
+  version: "1.0.67",
+  date: "Jun 2026",
+  headline: "Bluetooth Removed · Apple Health Only",
+
+  // New
+  n1Title: "Apple Health Integration Only",
+  n1Desc: "All Bluetooth device connectivity has been removed. VitalSync now imports health data exclusively through Apple Health, providing a simpler and more reliable experience without requiring Bluetooth permissions.",
+
+  // Improved
+  i1Title: "Cleaner Permissions",
+  i1Desc: "Bluetooth permissions (NSBluetoothAlwaysUsageDescription) and background Bluetooth modes have been removed from the app. Only Apple Health, camera, microphone, and notification permissions are requested.",
+  i2Title: "Updated Paywall Features",
+  i2Desc: "The Premium features list now highlights Apple Health integration instead of Bluetooth device sync, accurately reflecting the app's data import capabilities.",
+} as const;
+
 /** Release note content — v1.0.66 */
 export const whatsNewV1066Strings = {
   version: "1.0.66",
@@ -699,6 +716,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1067 = useT(whatsNewV1067Strings);
   const v1066 = useT(whatsNewV1066Strings);
   const v1065 = useT(whatsNewV1065Strings);
   const v1064 = useT(whatsNewV1064Strings);
@@ -720,7 +738,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1066;
+  const latestVersion = v1067;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -850,7 +868,17 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.66 (latest) ── */}
+          {/* ── v1.0.67 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelNew} color={NEW_COLOR} />
+            <ReleaseItem emoji="🏥" title={v1067.n1Title} desc={v1067.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="🔒" title={v1067.i1Title} desc={v1067.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="💎" title={v1067.i2Title} desc={v1067.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.66 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="💬" title={v1066.n1Title} desc={v1066.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

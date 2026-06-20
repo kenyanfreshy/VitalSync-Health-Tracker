@@ -25,9 +25,7 @@ import { useHealth } from '@/lib/health/health-context';
 import { useColors, useLang, useRTL } from '@/hooks';
 import { getBPStatus, getBPStatusLabel, getBPStatusColor, type VitalSignsRecord, type ActivityRecord, type SleepRecord, kgToLbs, lbsToKg } from '@/lib/health/types';
 import { syncVitalSigns, requestDeviceSyncPermissions } from '@/lib/health/device-sync';
-import { BleScannerSheet } from '@/components/ble-device-scanner';
-import { readDeviceByCategory, deduplicateVitalSigns, bleReadSummary } from '@/lib/ble/ble-reading-service';
-import { notifyBleState } from '@/services/bluetooth-manager';
+// BLE removed — Apple Health integration only
 import { logStrings, dictationBoxStrings } from '@/lib/i18n';
 import { parseVitalsTranscript } from '@/lib/scribe/parsers';
 import { useUnitPreferences, cToF, fToC } from '@/hooks/use-unit-preferences';
@@ -268,9 +266,7 @@ export default function VitalsLogScreen() {
   const [steps, setSteps] = useState('');
   const [note, setNote] = useState('');
   const [syncing, setSyncing] = useState(false);
-  const [bleVisible, setBleVisible] = useState(false);
-  const { requirePremium: requireBlePremium, PremiumGateSheet: BleGateSheet } = usePremiumGate();
-  const [bleConnecting, setBleConnecting] = useState(false);
+
   // Local-only parser — no server call
 
   // Date-range filter for history
@@ -587,56 +583,7 @@ export default function VitalsLogScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dictationText, tempUnit, weightUnit]);
 
-  const handleBleDeviceSelected = async (device: import('@/lib/ble/ble-manager').ScannedDevice) => {
-    setBleVisible(false);
-    setBleConnecting(true);
-    notifyBleState('connecting', { id: device.id, name: device.name, category: device.category });
-    try {
-      const result = await readDeviceByCategory(device);
-      if (result.type === 'vital-signs') {
-        notifyBleState('connected', { id: device.id, name: device.name, category: device.category });
-        const newRecords = deduplicateVitalSigns(result.records, records);
-        for (const rec of newRecords) {
-          await addVitalSigns({ ...rec, deviceName: device.name });
-        }
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Synced via Bluetooth', bleReadSummary(result, device.name));
-      } else if (result.type === 'weight') {
-        notifyBleState('connected', { id: device.id, name: device.name, category: device.category });
-        const existingWeight = state.data?.weight ?? [];
-        const newRecords = result.records.filter((r) => !existingWeight.find((e) => e.id === r.id));
-        for (const rec of newRecords) {
-          await addWeight({ ...rec, deviceName: device.name });
-        }
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Synced via Bluetooth', bleReadSummary(result, device.name));
-      } else if (result.type === 'blood-sugar') {
-        notifyBleState('connected', { id: device.id, name: device.name, category: device.category });
-        const existingSugar = state.data?.bloodSugar ?? [];
-        const newRecords = result.records.filter((r) => !existingSugar.find((e) => e.id === r.id));
-        for (const rec of newRecords) {
-          await addBloodSugar({ ...rec, deviceName: device.name });
-        }
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        Alert.alert('Synced via Bluetooth', bleReadSummary(result, device.name));
-      } else if (result.type === 'unsupported') {
-        notifyBleState('idle');
-        Alert.alert('Device Not Supported', result.reason);
-      } else if (result.type === 'no-service') {
-        notifyBleState('error');
-        Alert.alert('No Health Service Found', bleReadSummary(result, device.name));
-      } else {
-        notifyBleState('error');
-        Alert.alert(l.bleError, bleReadSummary(result, device.name));
-      }
-    } catch (_unused) {
-      notifyBleState('error');
-      Alert.alert(l.bleError, l.bleErrorMsg);
-    } finally {
-      setBleConnecting(false);
-      setTimeout(() => notifyBleState('idle'), 3000);
-    }
-  };
+
 
   const s = styles(colors);
 
@@ -653,15 +600,7 @@ export default function VitalsLogScreen() {
     <ScreenContainer>
       {/* Contextual upsell bottom sheet */}
       {UpsellSheet}
-      {/* Bluetooth premium gate */}
-      {BleGateSheet}
 
-      <BleScannerSheet
-        visible={bleVisible}
-        category="bp-monitor"
-        onDeviceSelected={handleBleDeviceSelected}
-        onClose={() => setBleVisible(false)}
-      />
 
       {/* Header */}
       <View style={s.header}>
@@ -670,18 +609,7 @@ export default function VitalsLogScreen() {
         </Pressable>
         <Text style={s.title}>{l.vitalsTitle}</Text>
         <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Pressable
-            onPress={requireBlePremium(() => setBleVisible(true), { feature: 'Bluetooth Devices' })}
-            disabled={bleConnecting}
-            style={({ pressed }) => [s.syncBtn, { backgroundColor: '#0A7EA422' }, pressed && { opacity: 0.6 }]}
-            accessibilityRole="button"
-            accessibilityLabel="Connect Bluetooth device"
-          >
-            {bleConnecting
-              ? <ActivityIndicator size="small" color={colors.primary} />
-              : <Text style={[s.syncBtnText, { color: colors.primary }]}>📶 BT</Text>
-            }
-          </Pressable>
+
           <Pressable
             onPress={handleDeviceSync}
             disabled={syncing}
