@@ -663,13 +663,13 @@ export default function DataPrivacyScreen() {
             ]}
             onPress={() => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              const url = 'https://vitalsyncpersonalwellnesshub.com/article/privacy-policy';
+              const url = 'https://www.apple.com/legal/internet-services/itunes/dev/stdeula/';
               import('expo-web-browser')
                 .then(({ openBrowserAsync }) => openBrowserAsync(url))
                 .catch(() => Linking.openURL(url));
             }}
             accessibilityRole="link"
-            accessibilityLabel="View VitalSync Terms of Use"
+            accessibilityLabel="View VitalSync Terms of Use (EULA)"
           >
             <View style={[s.neverDot, { backgroundColor: colors.primary + '18' }]}>
               <IconSymbol name="doc.text.fill" size={14} color={colors.primary} />
