@@ -1,3 +1,11 @@
+## [1.0.68] - 2026-06-20
+
+### Improved
+- Removed all remaining Bluetooth/BLE references from paywall slides, disclaimer text, onboarding, and all 10 language blocks (Arabic, Swahili, Hindi, Chinese Simplified, Japanese)
+- All Terms of Use (EULA) links across paywall, onboarding, HealthKit Permissions, Data Privacy, and Consent screens now correctly point to the Apple Standard EULA
+- Category manager renamed `bluetooth_devices` → `apple_health_devices` with label "Apple Health"
+- app.config.ts bumped to version 1.0.68 / build 10068
+
 # VitalSync — Changelog
 
 All notable changes to VitalSync: Clinical Hub are documented here.

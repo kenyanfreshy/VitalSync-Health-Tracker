@@ -91,6 +91,19 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.68 */
+export const whatsNewV1068Strings = {
+  version: "1.0.68",
+  date: "Jun 2026",
+  headline: "Apple Health Only · Terms of Use Fix",
+
+  // Improved
+  i1Title: "All Bluetooth References Removed",
+  i1Desc: "The paywall feature list, disclaimer text, onboarding slides, and all 10 language blocks no longer mention Bluetooth or BLE. VitalSync imports health data exclusively through Apple Health.",
+  i2Title: "Terms of Use Links Corrected",
+  i2Desc: "All Terms of Use (EULA) links across the paywall, onboarding, HealthKit Permissions, Data Privacy, and Consent screens now correctly point to the Apple Standard EULA.",
+} as const;
+
 /** Release note content — v1.0.67 */
 export const whatsNewV1067Strings = {
   version: "1.0.67",
@@ -716,6 +729,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1068 = useT(whatsNewV1068Strings);
   const v1067 = useT(whatsNewV1067Strings);
   const v1066 = useT(whatsNewV1066Strings);
   const v1065 = useT(whatsNewV1065Strings);
@@ -738,7 +752,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1067;
+  const latestVersion = v1068;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -868,7 +882,13 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.67 (latest) ── */}
+          {/* ── v1.0.68 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color={IMPROVED_COLOR} />
+            <ReleaseItem emoji="❤️" title={v1068.i1Title} desc={v1068.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📝" title={v1068.i2Title} desc={v1068.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.67 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelNew} color={NEW_COLOR} />
             <ReleaseItem emoji="🏥" title={v1067.n1Title} desc={v1067.n1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
