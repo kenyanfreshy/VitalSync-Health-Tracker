@@ -72,7 +72,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
   "EKG Analysis": "EKG recording analysis and waveform viewer.",
   "Medications Tracker": "Track medications, doses, schedules, and refills.",
   "Appointments Tracker": "Manage medical appointments and reminders.",
-  "Data Sources": "Connect and manage health data sources and BLE devices.",
+  "Data Sources": "Connect and manage health data sources via Apple Health.",
   "Scan a Meal": "Instantly analyze any meal with your camera — get calories, macros, sugar, and glycaemic load in seconds.",
   "Scan Barcode": "Scan any packaged food barcode to instantly log accurate nutrition data from the USDA database.",
   "Bluetooth Devices": "Pair and sync health devices over Bluetooth — glucometers, smart scales, BP monitors, CGMs, and more.",

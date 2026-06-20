@@ -23,7 +23,7 @@ export type UpsellTrigger =
   | "glucose_third_log"
   | "ekg_tap"
   | "pdf_export_tap"
-  | "ble_device_tap"
+  | "apple_health_tap"
   | "insights_tap";
 
 export type UpsellAnalyticsEvent =

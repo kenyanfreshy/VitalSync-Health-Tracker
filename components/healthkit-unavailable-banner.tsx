@@ -118,7 +118,7 @@ export function HealthKitUnavailableBanner({
         <Text style={[styles.body, { color: colors.muted }]}>
           {Platform.OS === 'ios'
             ? 'HealthKit is not available on this device. This typically means the app is running in the iOS Simulator or the HealthKit entitlement is missing from the build. Data entry and manual sync still work normally.'
-            : 'Apple Health is only available on iOS. Use the Data Sources screen to connect a compatible device.'}
+            : 'Apple Health is only available on iOS. Use the Data Sources screen to manage your health data.'}
         </Text>
       </View>
 

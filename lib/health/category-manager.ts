@@ -81,7 +81,7 @@ export type CategoryKey =
   | 'lab_results'
   | 'ekg'
   | 'activity'
-  | 'bluetooth_devices'
+  | 'apple_health_devices'
   | 'smart_reminders'
   | 'weather_insights'
   | 'doctor_appointments'
@@ -287,11 +287,11 @@ export const ALL_CATEGORIES: CategoryMeta[] = [
   },
   // ── Devices ───────────────────────────────────────────────────────────────
   {
-    key: 'bluetooth_devices',
+    key: 'apple_health_devices',
     group: 'devices',
-    label: 'Bluetooth Devices',
-    description: 'Paired BLE health monitors and wearables',
-    icon: 'antenna.radiowaves.left.and.right',
+    label: 'Apple Health',
+    description: 'Health data imported from Apple Health and Apple Watch',
+    icon: 'heart.fill',
     color: '#0A7EA4',
     storageKeys: [],
   },
@@ -327,7 +327,7 @@ export const ALL_CATEGORIES: CategoryMeta[] = [
     key: 'background_sync',
     group: 'system',
     label: 'Background Sync',
-    description: 'Automatic data fetch from HealthKit and connected devices',
+    description: 'Automatic data fetch from Apple Health and HealthKit',
     icon: 'arrow.triangle.2.circlepath',
     color: '#22C55E',
     storageKeys: [

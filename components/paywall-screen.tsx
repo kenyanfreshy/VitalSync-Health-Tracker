@@ -647,7 +647,7 @@ export function PaywallScreen({
           </Pressable>
           <Text style={s.secondarySep}>·</Text>
           <Pressable onPress={() => openLink(LEGAL_LINKS.terms)}>
-            <Text style={s.legalLink}>{pw.termsOfService ?? 'Terms of Use (EULA)'}</Text>
+            <Text style={s.legalLink}>{pw.termsOfService ?? 'Terms of Service (EULA)'}</Text>
           </Pressable>
         </View>
       </ScrollView>

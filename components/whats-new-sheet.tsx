@@ -134,8 +134,8 @@ export const whatsNewV1065Strings = {
   // New
   n1Title: "Wellness Disclaimer Banners",
   n1Desc: "A clear wellness disclaimer banner ('VitalSync is a personal wellness app, not a medical device') now appears at the top of the Record, Correlate, Health Report, and Settings screens, and on the paywall.",
-  n2Title: "Terms of Use (EULA) Link",
-  n2Desc: "The Terms of Service link throughout the app now points to Apple's standard EULA at apple.com/legal/internet-services/itunes/dev/stdeula/ and is labelled 'Terms of Use (EULA)'.",
+  n2Title: "Terms of Service (EULA) Link",
+  n2Desc: "The Terms of Service link throughout the app now points to Apple's standard EULA at apple.com/legal/internet-services/itunes/dev/stdeula/ and is labelled 'Terms of Service (EULA)'.",
 
   // Improved
   i1Title: "Medical Language Remediation",

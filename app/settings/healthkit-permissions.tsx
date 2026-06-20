@@ -1062,16 +1062,16 @@ export default function HealthKitPermissionsScreen() {
           </View>
         )}
 
-        {/* Legal links — Terms of Use (EULA) and Privacy Policy */}
+        {/* Legal links — Terms of Service (EULA) and Privacy Policy */}
         <View style={styles.legalLinksRow}>
           <Pressable
             onPress={() => Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/')}
             style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             accessibilityRole="link"
-            accessibilityLabel={t.hkTermsOfUse ?? 'Terms of Use (EULA)'}
+            accessibilityLabel={t.hkTermsOfUse ?? 'Terms of Service (EULA)'}
           >
             <Text style={[styles.legalLinkText, { color: isDark ? '#60A5FA' : '#2563EB' }]}>
-              {t.hkTermsOfUse ?? 'Terms of Use (EULA)'}
+              {t.hkTermsOfUse ?? 'Terms of Service (EULA)'}
             </Text>
           </Pressable>
           <Text style={[styles.legalLinkSep, { color: isDark ? '#4B5563' : '#9CA3AF' }]}>·</Text>

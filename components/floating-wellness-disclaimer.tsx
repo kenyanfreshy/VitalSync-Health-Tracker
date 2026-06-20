@@ -107,8 +107,8 @@ export function FloatingWellnessDisclaimer({
     hk.hkWellnessNoticeBody ??
     hk.hkWellnessDisclaimer2 ??
     pw.wellnessDisclaimer ??
-    'VitalSync helps you organize and review health information from Apple Health, compatible devices, and personal records. The app is intended for wellness and educational purposes only and does not provide medical advice, diagnoses, treatment recommendations, or disease monitoring.';
-  const termsLabel: string = hk.hkTermsOfUse ?? 'Terms of Use (EULA)';
+    'VitalSync helps you organize and review health information from Apple Health and personal records. The app is intended for wellness and educational purposes only and does not provide medical advice, diagnoses, treatment recommendations, or disease monitoring.';
+  const termsLabel: string = hk.hkTermsOfUse ?? 'Terms of Service (EULA)';
   const privacyLabel: string = hk.hkPrivacyPolicy ?? 'Privacy Policy';
 
   // ── Visibility state ─────────────────────────────────────────────────────
