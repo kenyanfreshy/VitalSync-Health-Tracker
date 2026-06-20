@@ -119,11 +119,8 @@ import ReAnimated, {
   useAnimatedStyle as useRAStyle,
   withTiming as withRATiming,
  Easing } from 'react-native-reanimated';
-// BLE removed — Apple Health integration only
 import { computeTIR, loadGlucoseThresholds, DEFAULT_GLUCOSE_THRESHOLDS, type GlucoseThresholdConfig } from '@/lib/health/glucose-thresholds';
 import { LogAllVitalsSheet } from '@/components/log-all-vitals-sheet';
-
-
 import { WeatherBadge } from '@/components/weather-badge';
 import { ActivityReadinessCard } from '@/components/dashboard/activity-readiness-card';
 import { GlucoseDashboardCard } from '@/components/dashboard/glucose-dashboard-card';
@@ -253,6 +250,1993 @@ function StepRingCell({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targetProgress]);
   return (
+    <TouchableOpacity
+      style={{ flex: 1.4, alignItems: 'center' }}
+      onLongPress={onLongPress}
+      delayLongPress={400}
+      activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`Steps: ${todaySteps ?? 0} of ${stepGoal}. Long press to change goal.`}
+    >
+      <Text style={{ fontSize: 11, color: '#687076', fontWeight: '500', marginBottom: 4 }}>{stepsLabel ?? 'Steps'}</Text>
+      <View ref={ringRef} style={{ alignItems: 'center', justifyContent: 'center', width: 36, height: 36 }}>
+        <Svg width={36} height={36} style={{ position: 'absolute' }}>
+          <Circle cx={18} cy={18} r={R} stroke={borderColor} strokeWidth={STROKE} fill="none" />
+          <Circle
+            cx={18} cy={18} r={R}
+            stroke={stepColor}
+            strokeWidth={STROKE}
+            fill="none"
+            strokeLinecap="round"
+            rotation={-90}
+            origin="18,18"
+            strokeDasharray={dashArray}
+          />
+        </Svg>
+        <Text style={{ fontSize: 9, fontWeight: '700', color: stepColor }}>
+          {todaySteps != null ? (todaySteps >= 1000 ? `${(todaySteps/1000).toFixed(1)}k` : String(todaySteps)) : '—'}
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+}
+
+
+/**
+ * FiberRingCell — SVG arc ring for daily fiber vs. WHO 25g goal (JS-thread animation).
+ */
+function FiberRingCell({
+  todayFiber,
+  borderColor: _borderColor,
+  onPress,
+  onLongPress,
+}: {
+  todayFiber: number | null;
+  borderColor: string;
+  onPress?: () => void;
+  onLongPress?: () => void;
+}) {
+  const ds = useDashboardStrings();
+  const [showFiberTooltip, setShowFiberTooltip] = React.useState(false);
+  const tooltipTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const SIZE = 48;
+  const R = 19;
+  const STROKE = 4.5;
+  const circumference = 2 * Math.PI * R;
+  const FIBRE_GOAL = 25; // WHO recommendation g/day
+  const targetProgress = todayFiber != null ? Math.min(todayFiber / FIBRE_GOAL, 1) : 0;
+  const pct = Math.round(targetProgress * 100);
+  const fiberColor = targetProgress >= 1 ? '#10B981' : targetProgress >= 0.6 ? '#34D399' : targetProgress >= 0.3 ? '#EAB308' : '#6366F1';
+  const trackColor = fiberColor + '28'; // 16% opacity track
+  // Use JS-thread Animated.Value to avoid Reanimated SVG animatedProps crash on native
+  const animProgress = useRef(new Animated.Value(0)).current;
+  const [dashArray, setDashArray] = useState(`0 ${circumference}`);
+  useEffect(() => {
+    animProgress.setValue(0);
+    const listener = animProgress.addListener(({ value }) => {
+      const dash = value * circumference;
+      const gap = circumference - dash;
+      setDashArray(`${dash} ${gap}`);
+    });
+    Animated.timing(animProgress, {
+      toValue: targetProgress,
+      duration: 600,
+      useNativeDriver: false,
+    }).start();
+    return () => animProgress.removeListener(listener);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetProgress]);
+  const handleFiberTap = React.useCallback(() => {
+    if (showFiberTooltip) {
+      // Second tap dismisses tooltip and opens food log
+      if (tooltipTimer.current) clearTimeout(tooltipTimer.current);
+      setShowFiberTooltip(false);
+      onPress?.();
+      return;
+    }
+    // First tap: show tooltip, auto-dismiss after 2.5s then open food log
+    setShowFiberTooltip(true);
+    tooltipTimer.current = setTimeout(() => {
+      setShowFiberTooltip(false);
+      onPress?.();
+    }, 2500);
+  }, [showFiberTooltip, onPress]);
+
+  React.useEffect(() => {
+    return () => { if (tooltipTimer.current) clearTimeout(tooltipTimer.current); };
+  }, []);
+
+  return (
+    <View style={{ flex: 1.4, alignItems: 'center' }}>
+      {/* Inline tooltip callout */}
+      {showFiberTooltip && (
+        <View style={{
+          position: 'absolute',
+          bottom: 52,
+          left: '50%',
+          transform: [{ translateX: -80 }],
+          width: 160,
+          backgroundColor: '#1E293B',
+          borderRadius: 10,
+          paddingHorizontal: 10,
+          paddingVertical: 8,
+          zIndex: 999,
+          shadowColor: '#000',
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
+          shadowOffset: { width: 0, height: 2 },
+          elevation: 8,
+        }}>
+          <Text style={{ fontSize: 11, color: '#F1F5F9', fontWeight: '700', marginBottom: 2 }}>
+            Daily Fiber Ring
+          </Text>
+          <Text style={{ fontSize: 10, color: '#94A3B8', lineHeight: 14 }}>
+            Tracks dietary fiber vs. your {FIBRE_GOAL}g WHO goal. Tap again to log food.
+          </Text>
+          {/* Tooltip arrow */}
+          <View style={{
+            position: 'absolute',
+            bottom: -6,
+            left: '50%',
+            marginLeft: -6,
+            width: 12,
+            height: 12,
+            backgroundColor: '#1E293B',
+            transform: [{ rotate: '45deg' }],
+          }} />
+        </View>
+      )}
+      <TouchableOpacity
+        style={{ alignItems: 'center' }}
+        onPress={handleFiberTap}
+        onLongPress={onLongPress}
+        delayLongPress={400}
+        activeOpacity={0.8}
+        accessibilityRole="button"
+        accessibilityLabel={`Fiber: ${todayFiber ?? 0}g of ${FIBRE_GOAL}g WHO goal. Long-press to edit goal.`}
+      >
+        <Text style={{ fontSize: 11, color: '#687076', fontWeight: '500', marginBottom: 4 }}>Fiber</Text>
+        <View style={{ alignItems: 'center', justifyContent: 'center', width: SIZE, height: SIZE }}>
+          <Svg width={SIZE} height={SIZE} style={{ position: 'absolute' }}>
+            {/* Background track */}
+            <Circle
+              cx={SIZE / 2} cy={SIZE / 2} r={R}
+              stroke={trackColor}
+              strokeWidth={STROKE}
+              fill="none"
+            />
+            {/* Progress arc */}
+            <Circle
+              cx={SIZE / 2} cy={SIZE / 2} r={R}
+              stroke={fiberColor}
+              strokeWidth={STROKE}
+              fill="none"
+              strokeLinecap="round"
+              rotation={-90}
+              origin={`${SIZE / 2},${SIZE / 2}`}
+              strokeDasharray={dashArray}
+            />
+          </Svg>
+          {/* Center label: grams when data present, dash when not */}
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ fontSize: todayFiber != null && todayFiber >= 10 ? 8 : 9, fontWeight: '800', color: fiberColor, lineHeight: 11 }}>
+              {todayFiber != null ? `${todayFiber}g` : '—'}
+            </Text>
+            {todayFiber != null && (
+              <Text style={{ fontSize: 7, fontWeight: '600', color: fiberColor + 'CC', lineHeight: 9 }}>{pct}%</Text>
+            )}
+          </View>
+        </View>
+        <Text style={{ fontSize: 8, color: '#687076', marginTop: 1 }}>/ {FIBRE_GOAL}g {ds.fiberGoalLabel ?? 'goal'}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+// ─── Pulsing Dot ─────────────────────────────────────────────────────────────
+// Small indicator dot that pulses (scale 1→1.3→1) when mounted (tile activated).
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function PulsingDot({ color }: { color: string }) {
+  const scale = useRASV(1);
+  useEffect(() => {
+    scale.value = withRATiming(1.3, { duration: 150 }, () => {
+      scale.value = withRATiming(1, { duration: 150 });
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const dotStyle = useRAStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }), []);
+  return (
+    <ReAnimated.View
+      style={[
+        { position: 'absolute', top: 7, right: 7, width: 5, height: 5, borderRadius: 2.5, backgroundColor: color },
+        dotStyle,
+      ]}
+    />
+  );
+}
+
+// ─── Animated Macro Tile ─────────────────────────────────────────────────────
+// Top-level component so it can use Reanimated hooks safely.
+
+// ─── Animated Prep Check Item ────────────────────────────────────────────────
+// Uses JS-thread Animated (not Reanimated) so it works safely when rendered
+// inside an IIFE or deeply nested inline render function on the Dashboard.
+function PrepCheckItem({
+  item,
+  isDark,
+  onToggle,
+}: {
+  item: { id: string; label: string; checked: boolean };
+  isDark: boolean;
+  onToggle: (id: string) => void;
+}) {
+  const progress = React.useRef(new Animated.Value(item.checked ? 1 : 0)).current;
+  React.useEffect(() => {
+    Animated.timing(progress, {
+      toValue: item.checked ? 1 : 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [item.checked]);
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
+      <TouchableOpacity
+        onPress={() => onToggle(item.id)}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}
+        activeOpacity={0.7}
+      >
+        {/* Checkbox */}
+        <View
+          style={{
+            width: 16, height: 16, borderRadius: 4,
+            borderWidth: 1.5,
+            borderColor: item.checked
+              ? (isDark ? '#4ADE80' : '#16A34A')
+              : (isDark ? '#93C5FD' : '#3B82F6'),
+            backgroundColor: item.checked
+              ? (isDark ? '#16A34A40' : '#DCFCE7')
+              : 'transparent',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {item.checked && (
+            <Text style={{ fontSize: 9, color: isDark ? '#4ADE80' : '#16A34A', fontWeight: '900' }}>✓</Text>
+          )}
+        </View>
+        {/* Label with animated opacity + strikethrough */}
+        <Animated.Text
+          style={{
+            fontSize: 12,
+            flex: 1,
+            color: item.checked
+              ? (isDark ? '#93C5FD60' : '#6B7280')
+              : (isDark ? '#BFDBFE' : '#1E40AF'),
+            textDecorationLine: item.checked ? 'line-through' : 'none',
+            opacity: progress.interpolate({ inputRange: [0, 1], outputRange: [1, 0.45] }),
+          }}
+        >
+          {item.label}
+        </Animated.Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+export default function DashboardScreen() {
+  const colors = useColors();
+  const scheme = useColorScheme() ?? 'light';
+  const isDark = scheme === 'dark';
+  const { preference: _themePreference, colorScheme: resolvedScheme, setPreference: setThemePreference } = useThemeContext();
+  const router = useRouter();
+  const { state, forceSync: healthForceSync, requestPermissions: _requestPermissions, recheckPermissions, dietType: _dietType, updateImmunization, updateAppointment, addVitalSigns, addWeight, addBloodSugar } = useHealth();
+  const auth = useAuth();
+  const { isSyncing, lastGlobalSyncAt } = useDataSources();
+  // Shared weather context — also used by WeatherDashboardCard
+  const { refresh: refreshWeather } = useWeatherContext();
+  // Combined pull-to-refresh: health sync + weather refresh in parallel
+  const forceSync = useCallback(async () => {
+    await Promise.all([healthForceSync(), refreshWeather()]);
+  }, [healthForceSync, refreshWeather]);
+  const { data, isLoading, sync, permissionsGranted } = state;
+  // ─── Language + i18n (hoisted to top to prevent TDZ crash) ──────────────────
+  // IMPORTANT: lang/rawLang/ds must be declared before ANY useMemo/useCallback
+  // that references ds.* — otherwise React Compiler hoisting causes a TDZ crash.
+  const lang = useLang();
+  const rawLang = useRawLang();
+  const isRTL = isRTLLang(rawLang);
+  const hAI = useT(HOME_EN);
+  const h = (STATIC_LANGS.has(rawLang)
+    ? ((homeStrings as unknown as Record<string, typeof homeStrings.en>)[lang] ?? homeStrings.en)
+    : hAI) as unknown as typeof homeStrings.en;
+  const l = ((logStrings as unknown as Record<string, typeof logStrings.en>)[lang] ?? logStrings.en);
+  const ds = useDashboardStrings();
+  const fc = useFoodCameraStrings();
+  // ─────────────────────────────────────────────────────────────────────────────
+  const { weightUnit, tempUnit, glucoseUnit, distanceUnit } = useUnitPreferences();
+  const { goals: macroGoals, saveGoals } = useMacroGoals();
+  const { budgetG: _sugarBudgetG } = useSugarBudget();
+  const { goal: _sleepGoalHrs, setGoal: _setSleepGoalHrs } = useSleepGoal();
+  const { goal: adherenceGoal, setGoal: _setAdherenceGoal } = useAdherenceGoal();
+  // ─── Centralized Nutrition Alignment Engine ────────────────────────────────────────────
+  // Single source of truth for nutrition totals across all log sources.
+  // Deduplicates entries and provides real-time totals.
+  const { goal: weightGoalLbs } = useWeightGoal();
+  const { hours: staleThresholdHours } = useStaleThreshold();
+
+  // ─── Weight goal progress banner ─────────────────────────────────────────
+  const weightGoalBanner = useMemo(() => {
+    if (weightGoalLbs === null) return null;
+    const latest = data?.weight?.slice().sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    )[0];
+    if (!latest) return null;
+    // Use the correct field based on user's unit preference
+    // Weight goal is stored in lbs; convert if user prefers kg
+    const isKg = weightUnit === 'kg';
+    const latestInUnit = isKg ? latest.weightKg : latest.weightLbs;
+    const goalInUnit = isKg ? weightGoalLbs / 2.20462 : weightGoalLbs;
+    const unitLabel = isKg ? 'kg' : 'lbs';
+    const threshold = isKg ? 2.3 : 5; // ~5 lbs in kg
+    const diff = Math.abs(latestInUnit - goalInUnit);
+    if (diff > threshold) return null;
+    const achieved = diff <= (isKg ? 0.25 : 0.5);
+    const direction = latestInUnit > goalInUnit ? 'above' : 'below';
+    return {
+      diff: String(parseFloat(diff.toFixed(isKg ? 2 : 1))),
+      achieved,
+      direction,
+      current: String(parseFloat(latestInUnit.toFixed(isKg ? 1 : 0))),
+      goal: String(parseFloat(goalInUnit.toFixed(isKg ? 1 : 0))),
+      unitLabel,
+    };
+  }, [data?.weight, weightGoalLbs, weightUnit]);
+
+
+  // ─── Medications state (for smart reminders + personal summary) ──────────────
+  const [medications, setMedications] = useState<Medication[]>([]);
+  // snoozeMap: { [reminderId]: snoozeUntilTimestamp } — declared early to avoid TDZ with React Compiler
+  const [snoozedReminderMap, setSnoozedReminderMap] = useState<Record<string, number>>({});
+  // Pharmacy name → {phone, address, hours} lookup map (for refill reminder card)
+  const [pharmacyMap, setPharmacyMap] = useState<Record<string, { phone?: string; address?: string; hours?: string }>>({}); 
+  useFocusEffect(
+    useCallback(() => {
+      loadMedications().then(setMedications).catch(() => {});
+      getAllPharmacies().then(list => {
+        const map: Record<string, { phone?: string; address?: string; hours?: string }> = {};
+        for (const p of list) {
+          if (p.name) map[p.name.toLowerCase().trim()] = { phone: p.phone, address: p.address, hours: p.hours };
+        }
+        setPharmacyMap(map);
+      }).catch(() => {});
+    }, [])
+  );
+
+  // ── Auto-mark missed doses after 2-hour grace period ─────────────────────────
+  // Runs on focus and every 5 minutes while the dashboard is visible.
+  // Any dose scheduled past the user-configured grace period with no log entry gets auto-logged as 'missed'.
+  // Grace period is read from AsyncStorage (default 2h; 0 = Never).
+  useEffect(() => {
+    async function autoMarkMissed() {
+      const rawGrace = await AsyncStorage.getItem('@med_auto_miss_grace_hours').catch(() => null);
+      const graceHours = rawGrace !== null ? Number(rawGrace) : 2;
+      if (graceHours === 0) return; // user disabled auto-marking
+      const MISSED_GRACE_MINUTES = graceHours * 60;
+      const meds = await loadMedications();
+      const todayKey = new Date().toISOString().split('T')[0];
+      const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+      let updated = [...meds];
+      let changed = false;
+      for (const med of meds) {
+        if (med.active === false) continue;
+        for (const t of (med.scheduleTimes ?? [])) {
+          const [hh, mm] = t.split(':').map(Number);
+          const schedMin = hh * 60 + mm;
+          const pastBy = nowMinutes - schedMin;
+          if (pastBy < MISSED_GRACE_MINUTES) continue; // still in grace window
+          const alreadyLogged = (med.doseLogs ?? []).some(
+            l => l.date === todayKey && l.scheduledTime === t
+          );
+          if (alreadyLogged) continue;
+          // Auto-log as missed
+          // logDose, createDoseLog imported at top level
+          const missedLog = createDoseLog(todayKey, t, 'missed');
+          updated = await logDose(updated, med.id, missedLog);
+          changed = true;
+        }
+      }
+      if (changed) setMedications(updated);
+    }
+    autoMarkMissed();
+    const interval = setInterval(autoMarkMissed, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dashScrollRef = useRef<ScrollView>(null);
+  const { showScrollTop: showDashScrollTop, scrollTopOpacity: dashScrollTopOpacity, handleScroll: handleDashScrollTop, scrollToTop: dashScrollToTop } = useScrollToTop(dashScrollRef);
+  // Y-offsets for each section (measured via onLayout on the section View wrappers)
+  const sectionOffsets = useRef<Record<string, number>>({
+    vitals: 0, reminders: 0, nutrition: 0, wellness: 0, clinical: 0, ice: 0,
+  });
+  // X-offsets for each chip in the strip (measured via onLayout on each chip)
+  const _chipOffsets = useRef<Record<string, number>>({
+    vitals: 0, reminders: 0, nutrition: 0, wellness: 0, clinical: 0, ice: 0,
+  });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [activeSection, setActiveSection] = useState<string>('reminders');
+  const SECTION_KEYS_ORDER = ['reminders', 'nutrition', 'wellness', 'clinical', 'ice', 'vitals'] as const;
+  function handleDashScroll(scrollY: number) {
+    const offsets = sectionOffsets.current;
+    // Find the last section whose offset is <= current scroll position + 120px threshold
+    let active = 'reminders';
+    for (const key of SECTION_KEYS_ORDER) {
+      if (offsets[key] <= scrollY + 120) active = key;
+    }
+    setActiveSection(prev => {
+      if (prev === active) return prev;
+      return active;
+    });
+  }
+  // Map from section key → its collapse setter
+  // Populated after the state declarations below; defined here as a ref so
+  // jumpToSection can reference it without a stale closure.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function jumpToSection(key: string) {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    safeSetItem(ACTIVE_SECTION_KEY, key).catch(() => {});
+
+    // Scroll after a short delay so LayoutAnimation has time to expand the section
+    setTimeout(() => {
+      const y = sectionOffsets.current[key] ?? 0;
+      dashScrollRef.current?.scrollTo({ y: Math.max(0, y - 8), animated: true });
+    }, 150);
+  }
+
+
+const ACTIVE_SECTION_KEY = '@vsht:active_section';
+const STEP_GOAL_KEY = '@vsht:daily_step_goal';
+const DEFAULT_STEP_GOAL = 8000;
+const DIST_UNITS_KEY = '@vsht:distance_units';
+const GOAL_REACHED_KEY = '@vsht:step_goal_reached_date';
+const BEST_STREAK_KEY = '@vsht:quick_entry_best_streak';
+const _STREAK_CONFETTI_DATE_KEY = '@vsht:streak_confetti_date';
+const NUDGE_DISMISS_KEY = '@vsht:todays_goal_nudge_dismiss_date';
+const LAST_AI_SCAN_KEY = '@vsht:last_ai_scan_preview';
+const SMART_REMINDER_DISMISSED_KEY = '@vsht:smart_reminder_dismissed_ids';
+const BP_LAST_DISMISSED_KEY = '@vsht:bp_last_dismissed_at';
+const SMART_REMINDER_SNOOZE_KEY = '@vsht:smart_reminder_snooze_map';
+const CONFIRMED_APPT_IDS_KEY = '@vsht:confirmed_appt_ids';
+const SMART_REMINDER_LAST_RESET_DATE_KEY = '@vsht:smart_reminder_last_reset_date';
+// TTL-aware dismissed reminders: stores { id: expiresAtMs } pairs
+const SMART_REMINDER_DISMISSED_TTL_KEY = '@vsht:smart_reminder_dismissed_ttl_v2';
+const DISMISSED_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+// Reason-streak banners stay dismissed for 7 days (until the streak changes)
+const REASON_STREAK_DISMISSED_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const _ACTIVE_NUTR_METRICS_KEY = '@vsht:active_nutr_metrics_v1';
+const LAST_MEAL_LOGGED_KEY = '@vsht:last_meal_logged_ts';
+const SECTION_COLLAPSE_KEY = '@vsht:section_collapse_v1';
+const CLINICAL_TAB_KEY     = '@vsht:clinical_tab_idx_v1';
+const WEEKLY_CHECKIN_DISMISS_KEY = '@vsht:weekly_checkin_dismiss_date';
+const GLUCOSE_CHIP_KEY = '@vitalsync/glucose_chip_enabled';
+const GLUCOSE_REMINDER_MODE_KEY = '@vitalsync/glucose_reminder_mode';
+const TRIAL_BANNER_DISMISSED_DATE_KEY = '@vsht:trial_banner_dismissed_date';
+// Expired-trial banner: stores ISO timestamp of last dismissal; hidden for 7 days after dismiss
+const EXPIRED_BANNER_DISMISSED_AT_KEY = '@vsht:expired_banner_dismissed_at';
+// AsyncStorage key that stores the scheduled notification ID for trial expiry
+const TRIAL_EXPIRY_NOTIF_ID_KEY = '@vsht:trial_expiry_notif_id';
+// Smart Reminders upsell nudge: stores ISO timestamp of last paywall open; card hidden for 24h
+const SMART_REMINDERS_NUDGE_DISMISSED_KEY = '@vsht:smart_reminders_nudge_dismissed_at';
+// Tracks which reason-streak keys have already triggered a local notification
+const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
+
+
+
+  // Incremented each time the user long-presses the ICE Vault Quick-Jump chip
+  // — watched by EmergencyVaultTile to open its edit modal
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [iceEditTrigger, setIceEditTrigger] = useState(0);
+
+  // ─── Inline tab strip index for PERSONAL section ─────────────────────────────
+  const [clinicalTabIdx, setClinicalTabIdx] = useState(0);
+
+  // Restore last-selected clinical tab on mount
+  useEffect(() => {
+    AsyncStorage.getItem(CLINICAL_TAB_KEY).then(v => {
+      if (v != null) {
+        const idx = parseInt(v, 10);
+        if (!isNaN(idx)) setClinicalTabIdx(idx);
+      }
+    }).catch(() => {});
+   
+  }, []);
+
+  // ─── Per-section collapse state (long-press to toggle) ────────────────────────
+  const [clinicalCollapsed, setClinicalCollapsed] = useState(true);
+  const [iceCollapsed, setIceCollapsed] = useState(true);
+  const [vitalsCollapsed, setVitalsCollapsed] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showLogAllVitals, setShowLogAllVitals] = useState(false);
+  const [nutritionCollapsed, setNutritionCollapsed] = useState(true);
+  const [sleepCollapsed, setSleepCollapsed] = useState(true);
+  const [weatherCollapsed, setWeatherCollapsed] = useState(true);
+  // Override for PersonalNarrativeCard (Collapse All / Expand All button)
+  const [narrativeOverride, setNarrativeOverride] = React.useState<boolean | undefined>(undefined);
+
+  // Persist & restore section collapse state
+  useEffect(() => {
+    AsyncStorage.getItem(SECTION_COLLAPSE_KEY).then(v => {
+      if (!v) return;
+      try {
+        const s = JSON.parse(v);
+        if (s.clinical  != null) setClinicalCollapsed(s.clinical);
+        if (s.ice       != null) setIceCollapsed(s.ice);
+        if (s.vitals    != null) setVitalsCollapsed(s.vitals);
+        if (s.nutrition != null) setNutritionCollapsed(s.nutrition);
+        if (s.sleep     != null) setSleepCollapsed(s.sleep);
+        if (s.weather   != null) setWeatherCollapsed(s.weather);
+      } catch (_unused) {}
+    }).catch(() => {});
+   
+  }, []);
+
+  function toggleSection(key: 'clinical' | 'ice' | 'vitals' | 'nutrition' | 'sleep' | 'weather') {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    const next = { clinical: clinicalCollapsed, ice: iceCollapsed, vitals: vitalsCollapsed, nutrition: nutritionCollapsed, sleep: sleepCollapsed, weather: weatherCollapsed };
+    next[key] = !next[key];
+    setClinicalCollapsed(next.clinical);
+    setIceCollapsed(next.ice);
+    setVitalsCollapsed(next.vitals);
+    setNutritionCollapsed(next.nutrition);
+    setSleepCollapsed(next.sleep);
+    setWeatherCollapsed(next.weather);
+    safeSetItem(SECTION_COLLAPSE_KEY, JSON.stringify(next)).catch(() => {});
+  }
+  // ─── Collapse all sections when user navigates away from dashboard ──────────
+  useFocusEffect(
+    React.useCallback(() => {
+      // When screen gains focus: restore persisted state (already handled by useEffect above)
+      return () => {
+        // When screen loses focus: collapse all sections
+        const allCollapsed = { clinical: true, ice: true, vitals: true, nutrition: true, sleep: true, weather: true };
+        setClinicalCollapsed(true);
+        setIceCollapsed(true);
+        setVitalsCollapsed(true);
+        setNutritionCollapsed(true);
+        setSleepCollapsed(true);
+        setWeatherCollapsed(true);
+        safeSetItem(SECTION_COLLAPSE_KEY, JSON.stringify(allCollapsed)).catch(() => {});
+      };
+    }, [])
+  );
+
+  // ─── Auto-expand nutrition tab when user has diet entries ──────────────────
+  useFocusEffect(
+    React.useCallback(() => {
+      const dietEntries = data?.sodiumIntake ?? [];
+      if (dietEntries.length > 0) {
+        setNutritionCollapsed(false);
+        // Persist the expanded state so it stays expanded
+        AsyncStorage.getItem(SECTION_COLLAPSE_KEY).then(v => {
+          try {
+            const s = v ? JSON.parse(v) : {};
+            s.nutrition = false;
+            safeSetItem(SECTION_COLLAPSE_KEY, JSON.stringify(s)).catch(() => {});
+          } catch (_unused) {}
+        }).catch(() => {});
+      }
+    }, [data?.sodiumIntake])
+  );
+
+
+  // ─── Dashboard card order (drag-to-reorder) ─────────────────────────────────
+  const { order: cardOrder, moveCard, resetOrder: resetCardOrder } = useDashboardCardOrder();
+  // ─── Dashboard section visibility ────────────────────────────────────────────
+  const { isVisible: isSectionVisible } = useDashboardVisibility();
+  // Sync weather_section visibility → weatherCollapsed (collapse weather when hidden)
+  useEffect(() => {
+    if (!isSectionVisible('weather_section')) setWeatherCollapsed(true);
+  }, [isSectionVisible]);
+  const [editLayoutMode, setEditLayoutMode] = useState(false);
+  const [editLayoutResetConfirm, setEditLayoutResetConfirm] = useState(false);
+  const [dragState, setDragState] = useState<DragState | null>(null);
+  // Measured heights per card slot index — updated via onHeightMeasured from DraggableCardWrapper
+  const cardHeights = React.useRef<Record<number, number>>({});
+  const editLayoutTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const editLayoutResetTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+  const resetEditLayoutTimer = useCallback(() => {
+    if (editLayoutTimerRef.current) clearTimeout(editLayoutTimerRef.current);
+    editLayoutTimerRef.current = setTimeout(() => setEditLayoutMode(false), 8000);
+  }, []);
+  useEffect(() => {
+    return () => {
+      if (editLayoutTimerRef.current) clearTimeout(editLayoutTimerRef.current);
+      if (editLayoutResetTimerRef.current) clearTimeout(editLayoutResetTimerRef.current);
+    };
+  }, []);
+  const handleCardLongPress = useCallback(() => {
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setEditLayoutMode(true);
+    resetEditLayoutTimer();
+  }, [resetEditLayoutTimer]);
+  const handleMoveCardUp = useCallback((id: DashboardCardId) => {
+    const idx = cardOrder.indexOf(id);
+    if (idx > 0) {
+      moveCard(id, idx - 1);
+      resetEditLayoutTimer();
+      if (Platform.OS !== 'web') {
+        // Medium haptic when card reaches the top position; Light otherwise
+        const willBeFirst = idx - 1 === 0;
+        Haptics.impactAsync(willBeFirst
+          ? Haptics.ImpactFeedbackStyle.Medium
+          : Haptics.ImpactFeedbackStyle.Light);
+      }
+    } else {
+      // Already at top — give a brief Medium bump to signal the boundary
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [cardOrder, moveCard, resetEditLayoutTimer]);
+  const handleMoveCardDown = useCallback((id: DashboardCardId) => {
+    const idx = cardOrder.indexOf(id);
+    if (idx < cardOrder.length - 1) {
+      moveCard(id, idx + 1);
+      resetEditLayoutTimer();
+      if (Platform.OS !== 'web') {
+        // Medium haptic when card reaches the bottom position; Light otherwise
+        const willBeLast = idx + 1 === cardOrder.length - 1;
+        Haptics.impactAsync(willBeLast
+          ? Haptics.ImpactFeedbackStyle.Medium
+          : Haptics.ImpactFeedbackStyle.Light);
+      }
+    } else {
+      // Already at bottom — give a brief Medium bump to signal the boundary
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [cardOrder, moveCard, resetEditLayoutTimer]);
+  const handleResetCardOrder = useCallback(() => {
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    resetCardOrder();
+    setEditLayoutResetConfirm(true);
+    if (editLayoutResetTimerRef.current) clearTimeout(editLayoutResetTimerRef.current);
+    editLayoutResetTimerRef.current = setTimeout(() => setEditLayoutResetConfirm(false), 1800);
+    resetEditLayoutTimer();
+  }, [resetCardOrder, resetEditLayoutTimer]);
+
+  // ─── Meal-log confetti ─────────────────────────────────────────────────────────────────
+  const [showMealConfetti, setShowMealConfetti] = useState(false);
+  const [mealConfettiOrigin, setMealConfettiOrigin] = useState({ x: 0, y: 0 });
+  const macroCardRef = useRef<View>(null);
+
+  // Restore last active Quick-Jump chip on mount
+  useEffect(() => {
+    AsyncStorage.getItem(ACTIVE_SECTION_KEY).then(v => {
+      if (v) setActiveSection(v);
+    }).catch(() => {});
+  }, []);
+
+
+  // Dynamic SMART REMINDERS count
+
+  // ─── WELLNESS section card visibility tracking (drives the badge count) ──────
+  // Each of the 3 WELLNESS cards reports its visibility; we sum them for the badge.
+  const wellnessVisibilityRef = useRef({ lab: true, wins: true, history: false });
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [wellnessCount, setWellnessCount] = useState(2); // lab + wins always visible; history hidden until appointments exist
+  const _updateWellnessCount = useCallback((key: 'lab' | 'wins' | 'history', visible: boolean) => {
+    wellnessVisibilityRef.current = { ...wellnessVisibilityRef.current, [key]: visible };
+    const { lab, wins, history } = wellnessVisibilityRef.current;
+    setWellnessCount([lab, wins, history].filter(Boolean).length);
+  }, []);
+
+
+  // ─── Pin diet card to top ─────────────────────────────────────────────────
+  const PIN_DIET_KEY = '@vitalsync/diet_card_pinned';
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [dietCardPinned, setDietCardPinned] = useState(false);
+  useEffect(() => {
+    AsyncStorage.getItem(PIN_DIET_KEY).then((v) => {
+      if (v === 'true') setDietCardPinned(true);
+    }).catch(() => {});
+  }, []);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function toggleDietPin() {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setDietCardPinned((v) => {
+      const next = !v;
+      safeSetItem(PIN_DIET_KEY, String(next)).catch(() => {});
+      return next;
+    });
+  }
+
+  // ─── User caloric goal + first name (re-read on every tab focus) ───────────
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [goalKcal, setGoalKcal] = useState(2000);
+  const [userFirstName, setUserFirstName] = useState<string | null>(null);
+
+  // ─── First-visit-of-day tracking for "Welcome back" greeting ────────────────────────────
+  // On first tab visit of the day: show "Welcome back, [Name]" for 4 seconds,
+  // then fade to the time-of-day salutation. On subsequent visits: show salutation directly.
+  const LAST_VISIT_KEY = '@vitalsync/last_dashboard_visit_date';
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+  const greetingOpacity = useRef(new Animated.Value(1)).current;
+
+  useFocusEffect(
+    useCallback(() => {
+      const today = new Date().toDateString();
+      Promise.all([
+        loadUserProfile(),
+        AsyncStorage.getItem(LAST_VISIT_KEY),
+      ]).then(([p, lastVisit]) => {
+        if (p.goalKcal != null && p.goalKcal > 0) setGoalKcal(p.goalKcal);
+        setUserFirstName(p.firstName ?? null);
+        const isFirst = lastVisit !== today;
+        if (isFirst) {
+          safeSetItem(LAST_VISIT_KEY, today).catch(() => {});
+          setShowWelcomeBack(true);
+          // After 3.5 s fade out "Welcome back" and show time-of-day greeting
+          const timer = setTimeout(() => {
+            Animated.timing(greetingOpacity, {
+              toValue: 0,
+              duration: 400,
+              useNativeDriver: true,
+            }).start(() => {
+              setShowWelcomeBack(false);
+              Animated.timing(greetingOpacity, {
+                toValue: 1,
+                duration: 400,
+                useNativeDriver: true,
+              }).start();
+            });
+          }, 3500);
+          return () => clearTimeout(timer);
+        } else {
+          setShowWelcomeBack(false);
+          greetingOpacity.setValue(1);
+        }
+      }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  );
+
+  // ─── Greeting text (switches between Welcome back and time-of-day) ─────────────────────────
+  const greetingText = useMemo(() => {
+    if (showWelcomeBack) {
+      const wb = ds.welcomeBack ?? 'Welcome back';
+      return userFirstName ? `${wb}, ${userFirstName}` : wb;
+    }
+    const hour = new Date().getHours();
+    const salutation = hour < 12 ? (ds.greetingMorning ?? 'Good morning') : hour < 17 ? (ds.greetingAfternoon ?? 'Good afternoon') : (ds.greetingEvening ?? 'Good evening');
+    return userFirstName ? `${salutation}, ${userFirstName}` : salutation;
+  }, [showWelcomeBack, userFirstName, ds]);
+
+  // ─── Reload last Smart scan preview when returning from the sodium log screen ─
+  useFocusEffect(
+    useCallback(() => {
+      secureGetItem(LAST_AI_SCAN_KEY).then(v => {
+        if (v) {
+          try { setLastAiScan(JSON.parse(v)); } catch (_unused) {}
+        }
+      }).catch(() => {});
+    }, [])
+  );
+
+  // ─── First-sync import banner (declared early — used in useFocusEffect below) ──
+  // isFirstSync is true only until the first HealthKit sync completes and
+  // the FIRST_SYNC_SEEN_KEY flag is written to AsyncStorage.
+  const [isFirstSync, setIsFirstSync] = useState(false);
+
+  // ─── Fresh vital log detection (auto-select "Last 1 hr" on Personal Narrative) ─
+  // Reads the user-configured window from AsyncStorage (default 15 min, 0 = Off).
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [freshVitalLog, setFreshVitalLog] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      Promise.all([
+        AsyncStorage.getItem('@vsht:last_vital_log_ts'),
+        AsyncStorage.getItem('@vsht:narrative_auto_range_window_ms'),
+      ]).then(([ts, windowStr]) => {
+        if (!ts) { setFreshVitalLog(false); return; }
+        // Parse the user-configured window; default to 15 min if not set
+        const windowMs = windowStr !== null ? Number(windowStr) : 15 * 60 * 1000;
+        if (windowMs === 0) { setFreshVitalLog(false); return; } // feature disabled
+        const elapsed = Date.now() - parseInt(ts, 10);
+        setFreshVitalLog(elapsed < windowMs);
+      }).catch(() => setFreshVitalLog(false));
+    }, [])
+  );
+  // ─── Detect meal-log flag set by AiFoodCameraSheet and fire confetti ───────────────────────
+  useFocusEffect(
+    useCallback(() => {
+      // Do not fire meal confetti during the first-sync window — refs may not
+      // be mounted yet and the animation would be confusing on first launch.
+      if (isFirstSync) return;
+      AsyncStorage.getItem(LAST_MEAL_LOGGED_KEY).then(v => {
+        if (!v) return;
+        const elapsed = Date.now() - parseInt(v, 10);
+        if (elapsed < 8000) {
+          // Meal was logged within the last 8 s (user just returned from food sheet)
+          AsyncStorage.removeItem(LAST_MEAL_LOGGED_KEY).catch(() => {});
+          if (macroCardRef.current) {
+            macroCardRef.current.measure((_x, _y, _w, _h, px, py) => {
+              setMealConfettiOrigin({ x: (px ?? 0) + 80, y: (py ?? 0) + 40 });
+              setShowMealConfetti(true);
+            });
+          } else {
+            // Fallback: use screen center when the ref is not yet attached
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            const { width, height } = require('react-native').Dimensions.get('window');
+            setMealConfettiOrigin({ x: width / 2, y: height * 0.4 });
+            setShowMealConfetti(true);
+          }
+        }
+      }).catch(() => {});
+    }, [isFirstSync, LAST_MEAL_LOGGED_KEY])
+  );
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [permBannerDismissed, setPermBannerDismissed] = useState(false);
+
+  // ─── Re-check health permissions when app returns to foreground ──────────
+  // Covers the case where the user grants/revokes access in iOS Settings and
+  // returns to the app — permission state updates immediately without needing
+  // to exit and re-enter the app.
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { AppState } = require('react-native');
+    let lastState = AppState.currentState;
+    const sub = AppState.addEventListener('change', async (nextState: string) => {
+      if (lastState !== 'active' && nextState === 'active') {
+        // Brief defer so iOS has finished animating the permission sheet
+        await new Promise<void>(resolve => setTimeout(resolve, 600));
+        await recheckPermissions();
+      }
+      lastState = nextState;
+    });
+    return () => sub.remove();
+  }, [recheckPermissions]);
+  // ─── Glucose thresholds (TIR goal etc.) ──────────────────────────────────
+  const [glucoseThresholds, setGlucoseThresholds] = useState<GlucoseThresholdConfig>(DEFAULT_GLUCOSE_THRESHOLDS);
+  useEffect(() => {
+    loadGlucoseThresholds().then(setGlucoseThresholds).catch(() => {});
+  }, []);
+  // ─── HealthKit direct-fetch state (populated after permission grant) ─────
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [hkGlucose, setHkGlucose] = useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [hkWeight, setHkWeight] = useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [hkCalories, setHkCalories] = useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [hkSteps, setHkSteps] = useState<number>(0);
+  // Track whether HealthKit is actually available on this device (real device + entitlement)
+  const [hkAvailable, setHkAvailable] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (Platform.OS !== 'ios') { setHkAvailable(false); return; }
+    isHealthKitAvailable().then(setHkAvailable).catch(() => setHkAvailable(false));
+  }, []);
+  // Only show "Not Connected" banner when HealthKit IS available but permissions not yet granted.
+  // When HealthKit is unavailable (Expo Go / Simulator), the HealthKitUnavailableBanner handles it.
+  const _showHealthBanner = !permissionsGranted && !permBannerDismissed && Platform.OS !== 'web' && hkAvailable === true;
+  // ─── First-launch empty state ─────────────────────────────────────────────
+  // True only when the user has no health records at all (first launch or
+  // after a full data wipe). Hides once any record is present.
+  const hasAnyData = useMemo(() => {
+    if (!data) return false;
+    return (
+      (data.bloodPressure?.length ?? 0) > 0 ||
+      (data.pulse?.length ?? 0) > 0 ||
+      (data.vitalSigns?.length ?? 0) > 0 ||
+      (data.bloodSugar?.length ?? 0) > 0 ||
+      (data.bodyComposition?.length ?? 0) > 0 ||
+      (data.sleep?.length ?? 0) > 0
+    );
+  }, [data]);
+  const showFirstLaunchEmpty = !isLoading && !hasAnyData && permissionsGranted;
+  // ─── Subscription state (for trial banner) ─────────────────────────────────
+  const { trialDaysRemaining, accessState: subAccessState, trialExpiryMs, isPremium: isSmartReminderPremium } = useSubscription();
+  // ─── Scan a Meal premium gate ─────────────────────────────────────────────
+  const { requirePremium: requireScanMealPremium, PremiumGateSheet: ScanMealGateSheet } = usePremiumGate();
+  // ─── Smart Reminders premium gate ────────────────────────────────────────
+  const { requirePremium: requireSmartRemindersPremium, openPaywall: openSmartRemindersPaywall, PremiumGateSheet: SmartRemindersGateSheet } = usePremiumGate();
+  // ─── Bluetooth premium gate ──────────────────────────────────────────────────
+  // Trial banner: dismissed state (keyed to today's date, resets daily)
+  const [trialBannerDismissedDate, setTrialBannerDismissedDate] = useState<string | null>(null);
+  // Expired-trial banner: stores ISO timestamp of dismissal; hidden for 7 days
+  const [expiredBannerDismissedAt, setExpiredBannerDismissedAt] = useState<string | null>(null);
+  // Smart Reminders upsell nudge dismissed timestamp (ISO); card hidden for 24 h after paywall open
+  const [smartRemindersNudgeDismissedAt, setSmartRemindersNudgeDismissedAt] = useState<string | null>(null);
+
+  // ─── First-sync import banner (useEffects — declaration moved above) ─────────
+  useEffect(() => {
+    if (Platform.OS !== 'ios') return;
+    isFirstHealthKitSync().then(setIsFirstSync).catch(() => {});
+  }, []);
+  // When permissions become granted for the first time in this session,
+  // re-check the flag so the banner activates immediately.
+  useEffect(() => {
+    if (!permissionsGranted || Platform.OS !== 'ios') return;
+    isFirstHealthKitSync().then(setIsFirstSync).catch(() => {});
+  }, [permissionsGranted]);
+  // Once the sync finishes, clear the isFirstSync flag in component state
+  // (the banner component itself writes AsyncStorage and animates out).
+  useEffect(() => {
+    if (!isFirstSync) return;
+    if (!sync.isRunning && sync.progress === 1) {
+      // Small delay so the banner can finish its exit animation
+      const t = setTimeout(() => setIsFirstSync(false), 1200);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sync.isRunning, sync.progress]);
+
+
+
+
+
+  // ─── Language picker state
+  const [langPickerVisible, setLangPickerVisible] = useState(false);
+  const [langSearch, setLangSearch] = useState('');
+  const { isTranslating } = useTranslationContext();
+
+  // ─── Action sheet state
+  const [actionSheet, setActionSheet] = useState<{
+    visible: boolean;
+    vitalType: VitalCardType;
+    vitalLabel: string;
+    latestValue: string;
+  }>({ visible: false, vitalType: 'blood-pressure', vitalLabel: '', latestValue: '' });
+
+  function openActionSheet(vitalType: VitalCardType, vitalLabel: string, latestValue: string) {
+    triggerVitalCardActionSheet(vitalType, vitalLabel, latestValue, () =>
+      setActionSheet({ visible: true, vitalType, vitalLabel, latestValue })
+    );
+  }
+
+  // ─── Onboarding gate ────────────────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    Promise.all([
+      hasCompletedOnboarding(),
+      hasAcceptedCurrentConsent(),
+      hasAcceptedGdprConsent(),
+    ])
+      .then(([done, consentCurrent, gdprAccepted]) => {
+        // Show GDPR/CCPA consent banner first if not yet accepted
+        if (!gdprAccepted) {
+          router.replace('/consent' as any);
+          return;
+        }
+        // Route to onboarding if the user has not completed it OR if they
+        // accepted an older consent version that needs re-acknowledgement.
+        if (!done || !consentCurrent) router.replace('/onboarding' as any);
+      })
+      .catch((e) => {
+        // If AsyncStorage is unavailable, skip onboarding rather than crashing.
+        console.warn('[VitalSync] onboarding gate check failed:', e);
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ─── Date range filter ────────────────────────────────────────────────────────────────────────────
+  const [dateRange, setDateRange] = useState<DateRangeDays>(30);
+  const [breakdownVisible, setBreakdownVisible] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(DATE_RANGE_STORAGE_KEY)
+      .then((v) => {
+        if (v) {
+          setDateRange(Number(v) as DateRangeDays);
+        } else {
+          // First launch: default to 30 days and persist so future loads are consistent
+          safeSetItem(DATE_RANGE_STORAGE_KEY, '30').catch(() => {});
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  function handleDateRangeChange(days: DateRangeDays) {
+    setDateRange(days);
+    safeSetItem(DATE_RANGE_STORAGE_KEY, String(days)).catch(() => {});
+  }
+
+  const averages = useMemo(
+    () => computeDashboardAverages(data ?? null, dateRange),
+    [data, dateRange]
+  );
+
+  // ── Weekly caloric average (last 7 days of Smart-scanned nutrition records) ─────────────────
+  const weeklyCalAvg = useMemo(() => {
+    const recs = data?.sodiumIntake ?? [];
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const recent = recs.filter(r => r.calories != null && new Date(r.timestamp).getTime() >= cutoff);
+    if (!recent.length) return null;
+    // Sum calories per day then average across days
+    const byDay = new Map<string, number>();
+    for (const r of recent) {
+      const d = r.timestamp.split('T')[0];
+      byDay.set(d, (byDay.get(d) ?? 0) + (r.calories ?? 0));
+    }
+    const total = Array.from(byDay.values()).reduce((a, b) => a + b, 0);
+    return Math.round(total / byDay.size);
+  }, [data]);
+
+  // ─── Derived vitals ──────────────────────────────────────────────────────────
+
+  const latestBP = useMemo(() => {
+    // Merge HealthKit + manual vitalSigns BP records, return the most recent
+    const hkBP = data?.bloodPressure ?? [];
+    const manualBP = (data?.vitalSigns ?? [])
+      .filter((r) => r.systolic != null || r.diastolic != null)
+      .map((r) => ({ id: r.id, timestamp: r.timestamp, systolic: r.systolic ?? null, diastolic: r.diastolic ?? null }));
+    // Use numeric ms comparison — avoids the HealthKit "+00:00" vs "Z" lexicographic bug
+    const all = [...hkBP, ...manualBP].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    return all.length ? all[all.length - 1] : null;
+  }, [data]);
+
+  const latestPulse = useMemo(() => {
+    // Merge HealthKit + manual vitalSigns pulse records, return the most recent
+    const hkPulse = data?.pulse ?? [];
+    const manualPulse = (data?.vitalSigns ?? [])
+      .filter((r) => r.heartRate !== undefined)
+      .map((r) => ({ id: r.id, timestamp: r.timestamp, bpm: r.heartRate!, hrv: undefined as number | undefined }));
+    // Use numeric ms comparison — avoids the HealthKit "+00:00" vs "Z" lexicographic bug
+    const all = [...hkPulse, ...manualPulse].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    return all.length ? all[all.length - 1] : null;
+  }, [data]);
+
+  const latestBody = useMemo(() => {
+    if (!data?.bodyComposition?.length) return null;
+    return data.bodyComposition[data.bodyComposition.length - 1];
+  }, [data]);
+
+  const latestSleep = useMemo(() => {
+    // Deduplicate sleep records by date: if a user logs sleep via both the Vitals Log
+    // and the dedicated Sleep Log on the same day, keep only the most-recently saved
+    // entry per date, then return the entry from the most recent date.
+    const allSleepRecords = data?.sleep ?? [];
+    if (allSleepRecords.length) {
+      // Group by date (YYYY-MM-DD), keep the record with the latest wakeTime per date
+      const byDate = new Map<string, typeof allSleepRecords[0]>();
+      for (const rec of allSleepRecords) {
+        const dateKey = rec.date ?? rec.wakeTime?.slice(0, 10) ?? '';
+        const existing = byDate.get(dateKey);
+        if (!existing || rec.wakeTime > existing.wakeTime) {
+          byDate.set(dateKey, rec);
+        }
+      }
+      // Return the entry from the most recent date
+      const deduplicated = Array.from(byDate.values()).sort(
+        (a, b) => (b.wakeTime ?? '').localeCompare(a.wakeTime ?? '')
+      );
+      return deduplicated[0] ?? null;
+    }
+    // Fallback: vitalSigns entries with sleep fields (pre-wiring compat)
+    const manualSleep = (data?.vitalSigns ?? [])
+      .filter((r) => r.sleepTotalMinutes !== undefined && r.sleepTotalMinutes > 0)
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    if (!manualSleep.length) return null;
+    const r = manualSleep[0];
+    // Return a shape compatible with SleepRecord so the card can render it
+    return {
+      id: r.id,
+      timestamp: r.timestamp,
+      date: r.timestamp.slice(0, 10),
+      bedtime: r.sleepBedtime ?? r.timestamp,
+      wakeTime: r.sleepWakeTime ?? r.timestamp,
+      totalMinutes: r.sleepTotalMinutes!,
+      efficiency: r.sleepEfficiency ?? 0,
+      deepMinutes: 0,
+      remMinutes: 0,
+      lightMinutes: r.sleepTotalMinutes!,
+      awakeMinutes: 0,
+      source: 'manual',
+    };
+  }, [data]);
+
+  // Latest SpO2 from vitalSigns (most recent entry with spo2 or oxygenSaturation)
+  const latestSpO2Record = useMemo(() => {
+    const records = (data?.vitalSigns ?? [])
+      .filter((r) => (r.spo2 !== undefined && r.spo2 > 0) || (r.oxygenSaturation !== undefined && r.oxygenSaturation > 0))
+      .sort((a, b) => b.timestamp.localeCompare(a.timestamp));
+    return records.length ? records[0] : null;
+  }, [data]);
+  const latestSpO2 = latestSpO2Record ? (latestSpO2Record.spo2 ?? latestSpO2Record.oxygenSaturation ?? null) : null;
+
+  // ─── Last-synced timestamps for each VitalCard ────────────────────────────
+  const bpLastSyncedAt    = latestBP?.timestamp ?? null;
+  const bpIsLive = bpLastSyncedAt ? (Date.now() - new Date(bpLastSyncedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+  const pulseLastSyncedAt = latestPulse?.timestamp ?? null;
+  const hrIsLive = pulseLastSyncedAt ? (Date.now() - new Date(pulseLastSyncedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+  const spo2LastSyncedAt  = latestSpO2Record?.timestamp ?? null;
+  const spo2IsLive = spo2LastSyncedAt ? (Date.now() - new Date(spo2LastSyncedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+  // SleepRecord: for the Quick Entry "last logged" badge, use the wakeTime of the most
+  // recent sleep session. wakeTime is always a real clock time (e.g. "6:30 AM today"),
+  // whereas bedtime may be the previous evening, making the relative label more accurate.
+  // Fall back to bedtime if wakeTime is somehow absent.
+  const sleepLastSyncedAt = latestSleep
+    ? (latestSleep.wakeTime ?? latestSleep.bedtime ?? null)
+    : null;
+  const sleepIsLive = sleepLastSyncedAt ? (Date.now() - new Date(sleepLastSyncedAt).getTime()) < 24 * 60 * 60 * 1000 : false;
+
+  // BP trend: compare last 2 readings
+  const _bpTrend = useMemo(() => {
+    // Use merged BP records (HealthKit + manual) for trend calculation
+    const hkBP = data?.bloodPressure ?? [];
+    const manualBP = (data?.vitalSigns ?? [])
+      .filter((r) => r.systolic != null || r.diastolic != null)
+      .map((r) => ({ id: r.id, timestamp: r.timestamp, systolic: r.systolic ?? null, diastolic: r.diastolic ?? null }));
+    const allBP = [...hkBP, ...manualBP].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    if (allBP.length < 2) return 'stable';
+    const prev = allBP[allBP.length - 2];
+    const curr = allBP[allBP.length - 1];
+    if (curr.systolic == null || prev.systolic == null) return 'stable';
+    const delta = curr.systolic - prev.systolic;
+    if (delta > 3) return 'up';
+    if (delta < -3) return 'down';
+    return 'stable';
+  }, [data]);
+
+  // Weight trend
+  const _weightTrend = useMemo(() => {
+    if (!data?.bodyComposition || data.bodyComposition.length < 2) return 'stable';
+    const prev = data.bodyComposition[data.bodyComposition.length - 2];
+    const curr = data.bodyComposition[data.bodyComposition.length - 1];
+    const delta = curr.weightKg - prev.weightKg;
+    if (delta > 0.2) return 'up';
+    if (delta < -0.2) return 'down';
+    return 'stable';
+  }, [data]);
+
+  // Resting HR trend: today's value vs 7-day average (threshold: 2 bpm to avoid noise)
+  const restingHrTrend = useMemo<'up' | 'down' | 'stable'>(() => {
+    const samples = data?.restingHRSamples ?? [];
+    if (samples.length < 2) return 'stable';
+    // Sort ascending by timestamp
+    const sorted = [...samples].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+    const latest = sorted[sorted.length - 1].bpm;
+    // 7-day average: use up to the last 7 samples (one per day)
+    const window7 = sorted.slice(-7);
+    const avg7 = window7.reduce((s, r) => s + r.bpm, 0) / window7.length;
+    const delta = latest - avg7;
+    if (delta > 2) return 'up';
+    if (delta < -2) return 'down';
+    return 'stable';
+  }, [data?.restingHRSamples]);
+
+  const bpStatus = latestBP
+    ? getBPStatus(latestBP.systolic ?? 0, latestBP.diastolic ?? 0)
+    : null;
+
+  // ─── Daily Readiness Score ──────────────────────────────────────────────────
+  const readiness = useMemo(() => computeReadinessScore(data ?? null), [data]);
+
+  // ─── Readiness trend badge (7-day direction) + yesterday score ───────────────
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [readinessTrend, setReadinessTrend] = useState<'improving' | 'declining' | 'stable' | null>(null);
+  const [yesterdayReadinessScore, setYesterdayReadinessScore] = useState<number | null>(null);
+  useEffect(() => {
+    loadReadinessHistory(7).then(history => {
+      const trend = getReadinessTrend(history, 7);
+      setReadinessTrend(trend);
+      // history is ordered oldest→newest over 7 days; index 5 = yesterday (index 6 = today)
+      const yesterdaySnapshot = history[history.length - 2] ?? null;
+      setYesterdayReadinessScore(yesterdaySnapshot?.total ?? null);
+    }).catch(() => {});
+  }, []);
+
+  // ─── Auto-save readiness snapshot whenever sync completes ────────────────────
+  // isSyncing transitions false → true → false on each sync cycle.
+  // We capture the snapshot on the trailing edge (false after true).
+  const wasSyncingRef = useRef(false);
+  useEffect(() => {
+    if (wasSyncingRef.current && !isSyncing && readiness.hasData) {
+      // Persist today's snapshot and refresh the morning notification body
+      saveReadinessSnapshot(readiness).catch(() => {});
+      scheduleReadinessNotificationWithScore(readiness).catch(() => {});
+      // Refresh trend badge after new snapshot
+      loadReadinessHistory(7).then(h => setReadinessTrend(getReadinessTrend(h, 7))).catch(() => {});
+    }
+    wasSyncingRef.current = isSyncing;
+  }, [isSyncing, readiness]);
+
+  const _latestWeightKg = useMemo(
+    () => data?.bodyComposition?.length
+      ? data.bodyComposition[data.bodyComposition.length - 1].weightKg
+      : null,
+    [data],
+  );
+
+  // ─── Quick-entry last-logged timestamps ──────────────────────────────────
+  // Weight: prefer data.weight (manual entries via /log/weight) over data.bodyComposition
+  // (HealthKit-synced). Take the most recent timestamp across both sources.
+  const _latestWeightTimestamp = useMemo(() => {
+    const manualTs = (data?.weight ?? []).reduce<string | null>((best, r) => {
+      if (!best) return r.timestamp;
+      return r.timestamp > best ? r.timestamp : best;
+    }, null);
+    const hkTs = data?.bodyComposition?.length
+      ? data.bodyComposition
+          .slice()
+          .sort((a, b) => b.timestamp.localeCompare(a.timestamp))[0].timestamp
+      : null;
+    if (!manualTs && !hkTs) return null;
+    if (!manualTs) return hkTs;
+    if (!hkTs) return manualTs;
+    return manualTs > hkTs ? manualTs : hkTs;
+  }, [data]);
+  const latestGlucoseTimestamp = useMemo(
+    () => {
+      const recs = data?.bloodSugar ?? [];
+      return recs.length ? recs[recs.length - 1].timestamp : null;
+    },
+    [data],
+  );
+  // ─── Latest glucose value (mg/dL) from health context — newest-first ─────
+  const _latestGlucoseMgDl = useMemo(() => {
+    const recs = (data?.bloodSugar ?? []).slice().sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    return recs.length ? recs[0].glucoseMgDl : null;
+  }, [data]);
+
+  // ─── Today's TIR (Time-in-Range) for the Dashboard ring ───────────────────
+  const _todayTIR = useMemo(() => {
+    const todayKey = new Date().toISOString().slice(0, 10);
+    const todayRecs = (data?.bloodSugar ?? []).filter(
+      (r) => (r.timestamp ?? '').slice(0, 10) === todayKey
+    );
+    const vals = todayRecs.map((r) => r.glucoseMgDl).filter((v) => v > 0);
+    return computeTIR(vals, glucoseThresholds);
+  }, [data, glucoseThresholds]);
+
+  // ─── Latest weight from health context with unit conversion ──────────────
+  const _latestWeightDisplay = useMemo(() => {
+    const recs = (data?.bodyComposition ?? []).slice().sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    if (!recs.length) return null;
+    const kg = recs[0].weightKg;
+    return weightUnit === 'kg'
+      ? `${kg.toFixed(1)} kg`
+      : `${(kg * 2.20462).toFixed(1)} lbs`;
+  }, [data, weightUnit]);
+
+  // ─── Bump tickerNow on focus so Smart Reminders (including pre-dose vital chips) re-evaluate
+  // immediately when the user returns from a vitals / blood-sugar log screen.
+  // Also detect whether a fresh BP or glucose reading was just logged so we can show
+  // the brief "logged ✓" confirmation chip before the pre-dose chip disappears.
+  const prevBpTsRef = useRef<string | null>(null);
+  const prevGlucoseTsRef = useRef<string | null>(null);
+  useFocusEffect(
+    useCallback(() => {
+      setTickerNow(Date.now());
+      // Detect a newly logged BP or glucose reading (timestamp changed since last focus)
+      const currentBpTs = bpLastSyncedAt;
+      const currentGlucoseTs = latestGlucoseTimestamp;
+      const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
+      const _bpFresh = !!currentBpTs && new Date(currentBpTs) >= todayMidnight && currentBpTs !== prevBpTsRef.current;
+      const _glucoseFresh = !!currentGlucoseTs && new Date(currentGlucoseTs) >= todayMidnight && currentGlucoseTs !== prevGlucoseTsRef.current;
+      prevBpTsRef.current = currentBpTs;
+      prevGlucoseTsRef.current = currentGlucoseTs;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [bpLastSyncedAt, latestGlucoseTimestamp, data])
+  );
+
+  // Latest HRV timestamp (from vitalSigns records that have hrv > 0))
+  const _latestHrvTimestamp = useMemo(() => {
+    const recs = (data?.vitalSigns ?? []).filter(r => (r.hrv ?? 0) > 0);
+    if (!recs.length) return null;
+    return recs.reduce((latest, r) =>
+      new Date(r.timestamp) > new Date(latest) ? r.timestamp : latest,
+      recs[0].timestamp
+    );
+  }, [data]);
+
+  /**
+   * Returns the colour for a quick-entry timestamp based on staleness.
+   * BP/Glucose: amber after 12h, red after 24h.
+   * Weight/Sleep/HRV: amber after 24h, red after 48h.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function timestampColor(isoTimestamp: string | null, thresholdAmberMs: number, thresholdRedMs: number, isDarkMode: boolean): string {
+    if (!isoTimestamp) return isDarkMode ? '#475569' : '#94A3B8'; // muted — not logged
+    const age = Date.now() - new Date(isoTimestamp).getTime();
+    if (age >= thresholdRedMs)   return '#EF4444'; // red
+    if (age >= thresholdAmberMs) return '#F59E0B'; // amber
+    return isDarkMode ? '#22C55E' : '#16A34A';     // green — fresh
+  }
+
+  /**
+   * Counts consecutive calendar days (ending today) on which ALL FIVE vitals
+   * (BP, glucose, weight, sleep, HRV) have at least one logged record.
+   */
+  const quickEntryStreak = useMemo(() => {
+    const dayKey = (ts: string) => {
+      const d = new Date(ts);
+      return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    };
+    const bpDays    = new Set((data?.bloodPressure ?? []).map(r => dayKey(r.timestamp)));
+    const gluDays   = new Set((data?.bloodSugar    ?? []).map(r => dayKey(r.timestamp)));
+    const wtDays    = new Set((data?.bodyComposition ?? []).map(r => dayKey(r.timestamp)));
+    const slpDays   = new Set((data?.sleep ?? []).map(r => dayKey(r.wakeTime)));
+    const hrvDays   = new Set((data?.vitalSigns ?? []).filter(r => (r.hrv ?? 0) > 0).map(r => dayKey(r.timestamp)));
+    let streak = 0;
+    const today = new Date();
+    for (let i = 0; i < 365; i++) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const k = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      if (bpDays.has(k) && gluDays.has(k) && wtDays.has(k) && slpDays.has(k) && hrvDays.has(k)) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }, [data]);
+
+  // ─── 7-day sparkline data ────────────────────────────────────────────────
+  const bpSparkline = useMemo(() => buildSparklineData(data ?? null, 'systolic', 7), [data]);
+  const bpDiastolicSparkline = useMemo(() => buildSparklineData(data ?? null, 'diastolic', 7), [data]);
+  const _hrSparkline = useMemo(() => buildSparklineData(data ?? null, 'bpm', 7), [data]);
+  const hrvSparkline = useMemo(() => buildSparklineData(data ?? null, 'hrv', 7), [data]);
+  // ─── Personal Narrative urgency for Quick-Jump badge ────────────────────
+  const _clinicalNarrativeUrgency = useMemo(() => {
+    if (!data) return 'normal' as const;
+    const events = buildClinicalNarrative(data);
+    const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+    const todayEvents = events.filter(e => new Date(e.timestamp) >= todayStart);
+    return todayEvents.reduce<'normal'|'elevated'|'stage2'|'crisis'>((acc, e) => {
+      const order = ['normal','elevated','stage2','crisis'] as const;
+      // Guard: e.urgency should always be set by buildClinicalNarrative, but
+      // defensive null-coalescing prevents EXC_BAD_ACCESS in Hermes indexOf
+      // if a malformed event object ever reaches this reducer.
+      const urgency = e.urgency ?? 'normal';
+      return order.indexOf(urgency) > order.indexOf(acc) ? urgency : acc;
+    }, 'normal');
+  }, [data]);
+
+  const spo2Sparkline = useMemo(() => buildSparklineData(data ?? null, 'spo2', 7), [data]);
+  const sleepSparkline = useMemo(() => buildSparklineData(data ?? null, 'sleepHrs', 7), [data]);
+  // ─── 30-day resting HR sparkline for Dashboard HR card ───────────────────
+  const restingHrSparkline30d = useMemo(() => buildSparklineData(data ?? null, 'restingBpm', 30), [data]);
+  // ─── 24h / 30d sparkline data for NeoVital range toggle ─────────────────
+  const _hrSparkline24h   = useMemo(() => buildSparklineData(data ?? null, 'bpm', 1), [data]);
+  const _bpSparkline24h   = useMemo(() => buildSparklineData(data ?? null, 'systolic', 1), [data]);
+  const _spo2Sparkline24h = useMemo(() => buildSparklineData(data ?? null, 'spo2', 1), [data]);
+  const _hrvSparkline24h  = useMemo(() => buildSparklineData(data ?? null, 'hrv', 1), [data]);
+  const _hrSparkline30d   = useMemo(() => buildSparklineData(data ?? null, 'bpm', 30), [data]);
+  const _bpSparkline30d   = useMemo(() => buildSparklineData(data ?? null, 'systolic', 30), [data]);
+  const _spo2Sparkline30d = useMemo(() => buildSparklineData(data ?? null, 'spo2', 30), [data]);
+  const _hrvSparkline30d  = useMemo(() => buildSparklineData(data ?? null, 'hrv', 30), [data]);
+
+  // ─── 7-day HRV average for summary card ──────────────────────────────────
+  const hrv7DayAvg = useMemo(() => {
+    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const pulseRecs = data?.pulse ?? [];
+    const vitalRecs = (data?.vitalSigns ?? []).map((r) => ({ hrv: r.hrv ?? null, timestamp: r.timestamp }));
+    const allHrv = [...pulseRecs, ...vitalRecs]
+      .filter((r) => (r.hrv ?? 0) > 0 && new Date(r.timestamp).getTime() >= cutoff)
+      .map((r) => r.hrv as number);
+    if (!allHrv.length) return null;
+    return Math.round(allHrv.reduce((s, v) => s + v, 0) / allHrv.length);
+  }, [data]);
+
+  // ─── Today's steps and active calories (from activity records) ──────────────
+  const todaySteps = useMemo(() => {
+    // Prefer the scalar steps field stored by HealthKit syncAll (most accurate)
+    if (typeof data?.steps === 'number' && data.steps > 0) return data.steps;
+    // Fall back to summing steps across today's activity records (manual entries)
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const recs = (data?.activity ?? []).filter(r => new Date(r.timestamp) >= start);
+    const total = recs.reduce((s, r) => s + (r.steps ?? 0), 0);
+    return total > 0 ? total : null;
+  }, [data?.steps, data?.activity]);
+
+  const todayCalories = useMemo(() => {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const recs = (data?.activity ?? []).filter(r => new Date(r.timestamp) >= start);
+    const total = recs.reduce((s, r) => s + (r.caloriesBurned ?? 0), 0);
+    return total > 0 ? Math.round(total) : null;
+  }, [data]);
+
+  const todayFiber = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const recs = data?.sodiumIntake ?? [];
+    const todayRecs = recs.filter((r: any) => (r.timestamp ?? r.date ?? '').slice(0, 10) === todayStr);
+    if (!todayRecs.length) return null;
+    // SodiumRecord stores fiber as camelCase fiberG; also accept legacy snake_case variants
+    const total = todayRecs.reduce((sum: number, r: any) =>
+      sum + (r.fiberG ?? r.fiber_g ?? r.fiber_g ?? r.dietary_fiber_g ?? 0), 0);
+    return total > 0 ? Math.round(total * 10) / 10 : null;
+  }, [data?.sodiumIntake]);
+
+  const todayDistanceKm = useMemo(() => {
+    const start = new Date(); start.setHours(0, 0, 0, 0);
+    const recs = (data?.activity ?? []).filter(r => new Date(r.timestamp) >= start);
+    const total = recs.reduce((s, r) => s + (r.distanceKm ?? 0), 0);
+    return total > 0 ? Math.round(total * 100) / 100 : null;
+  }, [data]);
+
+  // ─── Daily step goal (configurable, persisted) ──────────────────────────
+  const [stepGoal, setStepGoal] = useState<number>(DEFAULT_STEP_GOAL);
+  const [stepGoalSheetVisible, setStepGoalSheetVisible] = useState(false);
+  const [distanceUnits, setDistanceUnits] = useState<'km'|'mi'>('mi');
+  useEffect(() => {
+    AsyncStorage.getItem(STEP_GOAL_KEY).then(v => {
+      if (v) setStepGoal(parseInt(v, 10) || DEFAULT_STEP_GOAL);
+    }).catch(() => {});
+    AsyncStorage.getItem(DIST_UNITS_KEY).then(v => {
+      if (v === 'mi' || v === 'km') setDistanceUnits(v);
+    }).catch(() => {});
+  }, []);
+  const handleSetStepGoal = useCallback((goal: number) => {
+    setStepGoal(goal);
+    setStepGoalSheetVisible(false);
+    safeSetItem(STEP_GOAL_KEY, String(goal)).catch(() => {});
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, []);
+  const handleToggleDistanceUnits = useCallback(() => {
+    setDistanceUnits(u => {
+      const next = u === 'km' ? 'mi' : 'km';
+      safeSetItem(DIST_UNITS_KEY, next).catch(() => {});
+      if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      return next;
+    });
+  }, []);
+
+  // ─── Best streak persistence & streak confetti ──────────────────────
+  const [bestStreak, setBestStreak] = useState(0);
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [nudgeLoaded, setNudgeLoaded] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [lastAiScan, setLastAiScan] = useState<{ description: string; calories: number | null } | null>(null);
+  const [cameraSheetVisible, setCameraSheetVisible] = useState(false);
+  const [cameraInitialMode, setCameraInitialMode] = useState<'home' | 'plate' | 'barcode' | 'search'>('home');
+  // Pre-fill search query for FiberRingCell long-press (high-fiber nudge)
+  const [fiberSearchPrefill, setFiberSearchPrefill] = useState<string | undefined>(undefined);
+  const [dismissedReminderIds, setDismissedReminderIds] = useState<Set<string>>(new Set());
+  // Timestamp (ms) of the last time the BP reminder was dismissed without logging
+  const [bpLastDismissedAt, setBpLastDismissedAt] = useState<number>(0);
+  // Snooze duration sheet visibility for the glucose smart reminder
+  const [snoozeSheetVisible, setSnoozeSheetVisible] = useState(false);
+  // Component-level snooze handler — must live AFTER setSnoozedReminderMap to avoid TDZ
+  const snoozeGlucoseReminder = useCallback((ms: number) => {
+    const id = 'glucose-smart-reminder-today';
+    const until = Date.now() + ms;
+    setSnoozedReminderMap(prev => {
+      const next = { ...prev, [id]: until };
+      secureSetItem(SMART_REMINDER_SNOOZE_KEY, JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, [setSnoozedReminderMap]);
+  // Live countdown for the glucose snooze badge — updates every 60 s at component scope
+  // (hooks cannot be called inside IIFEs, so this must live here)
+  const GLUCOSE_REMINDER_ID = 'glucose-smart-reminder-today';
+  const glucoseLiveSnoozeUntil = snoozedReminderMap[GLUCOSE_REMINDER_ID] ?? 0;
+  const glucoseLiveMinsLeft = useSnoozeCountdown(glucoseLiveSnoozeUntil);
+  // confirmedApptIds: appointments the user has confirmed attendance for
+  const [confirmedApptIds, setConfirmedApptIds] = useState<Set<string>>(new Set());
+  // expandedPrepChecklists: set of appointment IDs whose prep checklist is expanded on the Smart Reminder card
+  const [expandedPrepChecklists, setExpandedPrepChecklists] = useState<Set<string>>(new Set());
+  // calledRefillIds: med IDs where the user just tapped "Call to Refill" — shows "✓ Called" for 2s
+  const [calledRefillIds, setCalledRefillIds] = useState<Set<string>>(new Set());
+  // Inline reschedule input state for missed-dose cards (cross-platform, replaces Alert.prompt)
+  const [rescheduleInputId, setRescheduleInputId] = useState<string | null>(null);
+  const [rescheduleInputValue, setRescheduleInputValue] = useState<string>('');
+  // Missed-dose reason picker: which card is showing the reason sheet
+  const [missedReasonId, setMissedReasonId] = useState<string | null>(null);
+  // Pending missed-dose data waiting for reason selection
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [pendingMissedDose, setPendingMissedDose] = useState<{ remId: string; medId: string; medName: string; scheduledTime: string } | null>(null);
+  // "Other…" free-text reason input for missed-dose picker
+  const [otherReasonText, setOtherReasonText] = useState<string>('');
+  const [showOtherReasonInput, setShowOtherReasonInput] = useState<boolean>(false);
+  // Reschedule confirmation toast
+  const [rescheduleToastMsg, setRescheduleToastMsg] = useState<string | null>(null);
+  const rescheduleToastOpacity = useRef(new Animated.Value(0)).current;
+  const showRescheduleToast = (msg: string) => {
+    setRescheduleToastMsg(msg);
+    Animated.sequence([
+      Animated.timing(rescheduleToastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(2200),
+      Animated.timing(rescheduleToastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setRescheduleToastMsg(null));
+  };
+  // Live ticker: re-renders reminders every 30 s so countdowns stay accurate
+  const [tickerNow, setTickerNow] = useState(() => Date.now());
+  // Weekly check-in banner: dismissed for the current Monday once user logs any vital
+  const [weeklyCheckinDismissed, setWeeklyCheckinDismissed] = useState(false);
+  // Glucose shortcut chip on streak banner (off by default; enabled in Settings for diabetic users)
+  const [glucoseChipEnabled, setGlucoseChipEnabled] = useState(false);
+  // Personal Narrative time-window state: '1h' | '6h' | 'today' | '7d'
+  const [cnWindow, setCnWindow] = useState<'1h'|'6h'|'today'|'7d'>('today');
+  // Fiber goal editor modal
+  const [fiberGoalEditorVisible, setFiberGoalEditorVisible] = useState(false);
+  const [fiberGoalEditorValue, setFiberGoalEditorValue] = useState('');
+  // Goal editor state — which tile is being long-pressed
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [goalEditorTile, setGoalEditorTile] = useState<{
+    label: string; metricKey: string; goalKey: keyof import('@/hooks/use-macro-goals').MacroGoals | null; unit: string; color: string; currentGoal: number;
+  } | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [goalEditorValue, setGoalEditorValue] = useState('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [goalToastMsg, setGoalToastMsg] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [showNutrLegend, setShowNutrLegend] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [adherenceGoalEditorVisible, setAdherenceGoalEditorVisible] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [adherenceGoalEditorValue, setAdherenceGoalEditorValue] = useState('');
+  const goalToastOpacity = useRef(new Animated.Value(0)).current;
+  const _showGoalToast = (msg: string) => {
+    setGoalToastMsg(msg);
+    Animated.sequence([
+      Animated.timing(goalToastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(2000),
+      Animated.timing(goalToastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
+    ]).start(() => setGoalToastMsg(null));
+  // ─── BLE connection state (for Quick Entry badge) ──────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  }, []);
+
+  const _quickEntryCardRef = useRef<View>(null);
+  const weeklyBannerRef = useRef<ViewShot>(null);
+  const prevStreakRef = useRef<number | null>(null);
+  const milestoneNotifSentRef = useRef<number>(0); // tracks last bestStreak for which notif was sent
+
+  // Load glucose chip preference from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(GLUCOSE_CHIP_KEY).then(v => {
+      if (v !== null) setGlucoseChipEnabled(v === 'true');
+    }).catch(() => {});
+  }, []);
+
+  // Load glucose reminder mode from AsyncStorage on mount (mirrors Settings value)
+  const [glucoseReminderMode, setGlucoseReminderMode] = useState<GlucoseReminderMode>('custom');
+  useEffect(() => {
+    AsyncStorage.getItem(GLUCOSE_REMINDER_MODE_KEY).then(v => {
+      if (v) setGlucoseReminderMode(v as GlucoseReminderMode);
+    }).catch(() => {});
+  }, []);
+
+  // Load AC per-slot time overrides from AsyncStorage on mount
+  const [acSlotTimes, setAcSlotTimes] = useState<AcSlotTimes>(AC_DEFAULT_SLOTS);
+  useEffect(() => {
+    AsyncStorage.getItem(AC_SLOT_TIMES_KEY).then(v => {
+      if (v) {
+        try {
+          const parsed = JSON.parse(v) as AcSlotTimes;
+          if (Array.isArray(parsed) && parsed.length === 3) setAcSlotTimes(parsed);
+        } catch {}
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Load weekly check-in dismiss state — keyed to the Monday of the current week
+  useEffect(() => {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysFromMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - daysFromMon);
+    weekStart.setHours(0, 0, 0, 0);
+    const mondayKey = weekStart.toISOString().slice(0, 10);
+    AsyncStorage.getItem(WEEKLY_CHECKIN_DISMISS_KEY).then(v => {
+      setWeeklyCheckinDismissed(v === mondayKey);
+    }).catch(() => {});
+  }, []);
+
+  // Load trial banner dismissed date from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(TRIAL_BANNER_DISMISSED_DATE_KEY).then(v => {
+      if (v) setTrialBannerDismissedDate(v);
+    }).catch(() => {});
+  }, []);
+
+  // Load expired-trial banner dismissed timestamp from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(EXPIRED_BANNER_DISMISSED_AT_KEY).then(v => {
+      if (v) setExpiredBannerDismissedAt(v);
+    }).catch(() => {});
+  }, []);
+
+  // Load Smart Reminders nudge dismissed timestamp from AsyncStorage on mount
+  useEffect(() => {
+    AsyncStorage.getItem(SMART_REMINDERS_NUDGE_DISMISSED_KEY).then(v => {
+      if (v) setSmartRemindersNudgeDismissedAt(v);
+    }).catch(() => {});
+  }, []);
+  // Schedule (or reschedule) a local push notification at the exact trial expiry moment.
+  // Runs whenever trialExpiryMs changes (e.g. after subscription context loads).
+  // Cancels any previously scheduled notification before creating a new one.
+  useEffect(() => {
+    if (Platform.OS === 'web') return;
+    if (!trialExpiryMs || subAccessState !== 'trial_active') return;
+    const expiryDate = new Date(trialExpiryMs);
+    if (expiryDate.getTime() <= Date.now()) return; // already expired
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const { scheduleNotificationSafe, cancelNotificationSafe, getNotificationsAsync } = await import('@/lib/notifications/safe-notifications');
+        const N = await getNotificationsAsync();
+        if (!N || cancelled) return;
+
+        // Cancel any previously scheduled trial-expiry notification
+        const prevId = await AsyncStorage.getItem(TRIAL_EXPIRY_NOTIF_ID_KEY);
+        if (prevId) {
+          await cancelNotificationSafe(prevId);
+        }
+
+        // Request permission if not already granted
+        const { status } = await N.getPermissionsAsync();
+        if (status !== 'granted') {
+          const { status: newStatus } = await N.requestPermissionsAsync();
+          if (newStatus !== 'granted') return;
+        }
+
+        if (cancelled) return;
+
+        // Schedule the notification at the exact expiry moment
+        const notifId = await scheduleNotificationSafe({
+          content: {
+            title: '🔒 Your VitalSync trial has ended',
+            body: 'Subscribe now to restore full access to all premium health features.',
+            sound: true,
+            data: { action: 'open_paywall' },
+          },
+          trigger: { type: 'date', date: expiryDate } as any,
+        });
+
+        if (notifId && !cancelled) {
+          await safeSetItem(TRIAL_EXPIRY_NOTIF_ID_KEY, notifId);
+        }
+      } catch (_unused) {
+        // Non-fatal — notification scheduling is best-effort
+      }
+    })();
+
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trialExpiryMs, subAccessState]);
+
+  // NOTE: The weekly check-in banner is no longer auto-dismissed when the user logs today.
+  // It now shows every day as a streak card and the "Log now →" chip disappears once logged.
+  // The banner is only dismissed via the ✕ button or by the user tapping dismiss.
+
+  // Fire a "Perfect Week" push notification when the user logs vitals all 7 days
+  useEffect(() => {
+    if (!data) return;
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysFromMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - daysFromMon);
+    weekStart.setHours(0, 0, 0, 0);
+    const daysElapsed = daysFromMon + 1;
+    const dayKey = (ts: string) => ts.slice(0, 10);
+    let daysLogged = 0;
+    for (let i = 0; i < daysElapsed; i++) {
+      const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+      const k = d.toISOString().slice(0, 10);
+      const hasAny = (
+        (data?.vitalSigns    ?? []).some(r => dayKey(r.timestamp) === k) ||
+        (data?.bloodPressure ?? []).some(r => dayKey(r.timestamp) === k) ||
+        (data?.bloodSugar    ?? []).some(r => dayKey(r.timestamp) === k) ||
+        (data?.weight        ?? []).some(r => dayKey(r.timestamp) === k) ||
+        (data?.bodyComposition ?? []).some(r => dayKey(r.timestamp) === k) ||
+        (data?.sleep         ?? []).some(r => dayKey(r.wakeTime) === k)
+      );
+      if (hasAny) daysLogged++;
+    }
+    checkVitalsWeekMilestone(daysLogged, daysElapsed).catch(() => {});
+  }, [data]);
+
+  // Load persisted best streak, nudge dismiss state, and last Smart scan on mount
+  useEffect(() => {
+    AsyncStorage.getItem(BEST_STREAK_KEY).then(v => {
+      if (v) setBestStreak(parseInt(v, 10) || 0);
+    }).catch(() => {});
+    // Load nudge dismiss date — dismissed for today if stored date matches today
+    AsyncStorage.getItem(NUDGE_DISMISS_KEY).then(v => {
+      const today = new Date().toDateString();
+      setNudgeDismissed(v === today);
+      setNudgeLoaded(true);
+    }).catch(() => { setNudgeLoaded(true); });
+    // Load last Smart scan preview
+    secureGetItem(LAST_AI_SCAN_KEY).then(v => {
+      if (v) {
+        try { setLastAiScan(JSON.parse(v)); } catch (_unused) {}
+      }
+    }).catch(() => {});
+  }, []);
+
+  // Load dismissed smart reminder IDs + snooze map from AsyncStorage.
+  // Also perform midnight auto-reset: if the stored last-reset date is before today,
+  // clear the dismissed IDs for daily reminders (vitals + blood sugar) so they
+  // reappear each morning. Appointment and medication dismissals are NOT reset daily.
+  useEffect(() => {
+    const today = new Date().toDateString();
+    Promise.all([
+      AsyncStorage.getItem(SMART_REMINDER_DISMISSED_KEY),
+      AsyncStorage.getItem(SMART_REMINDER_DISMISSED_TTL_KEY),
+      secureGetItem(SMART_REMINDER_SNOOZE_KEY),
+      AsyncStorage.getItem(SMART_REMINDER_LAST_RESET_DATE_KEY),
+      AsyncStorage.getItem(CONFIRMED_APPT_IDS_KEY),
+      AsyncStorage.getItem(BP_LAST_DISMISSED_KEY),
+    ]).then(([dismissedRaw, dismissedTtlRaw, snoozeRaw, lastResetDate, confirmedRaw, bpDismissRaw]) => {
+      if (bpDismissRaw) {
+        const ts = parseInt(bpDismissRaw, 10);
+        if (!isNaN(ts)) setBpLastDismissedAt(ts);
+      }
+      let dismissed: string[] = [];
+      if (dismissedRaw) {
+        try { dismissed = JSON.parse(dismissedRaw); } catch (_unused) {}
+      }
+      // Midnight auto-reset: strip daily reminder IDs if a new day has started
+      const DAILY_REMINDER_IDS = ['vitals-reminder-today', 'blood-sugar-reminder-today'];
+      if (lastResetDate !== today) {
+        dismissed = dismissed.filter(id => !DAILY_REMINDER_IDS.includes(id));
+        safeSetItem(SMART_REMINDER_DISMISSED_KEY, JSON.stringify(dismissed)).catch(() => {});
+        safeSetItem(SMART_REMINDER_LAST_RESET_DATE_KEY, today).catch(() => {});
+      }
+      // Merge TTL-aware dismissed IDs (prune expired ones)
+      const now = Date.now();
+      let ttlMap: Record<string, number> = {};
+      if (dismissedTtlRaw) {
+        try { ttlMap = JSON.parse(dismissedTtlRaw); } catch (_unused) {}
+      }
+      const prunedTtlMap: Record<string, number> = {};
+      for (const [id, expiresAt] of Object.entries(ttlMap)) {
+        if (expiresAt > now) {
+          prunedTtlMap[id] = expiresAt;
+          if (!dismissed.includes(id)) dismissed.push(id);
+        }
+      }
+      // Persist pruned TTL map if any entries were removed
+      if (Object.keys(prunedTtlMap).length !== Object.keys(ttlMap).length) {
+        safeSetItem(SMART_REMINDER_DISMISSED_TTL_KEY, JSON.stringify(prunedTtlMap)).catch(() => {});
+      }
+      setDismissedReminderIds(new Set(dismissed));
+      // Load snooze map and prune expired snoozes
+      if (snoozeRaw) {
+        try {
+          const raw: Record<string, number> = JSON.parse(snoozeRaw);
+          const now = Date.now();
+          const pruned: Record<string, number> = {};
+          for (const [id, until] of Object.entries(raw)) {
+            if (until > now) pruned[id] = until;
+          }
+          setSnoozedReminderMap(pruned);
+        } catch (_unused) {}
+      }
+      // Load confirmed appointment IDs
+      if (confirmedRaw) {
+        try {
+          const arr: string[] = JSON.parse(confirmedRaw);
+          setConfirmedApptIds(new Set(arr));
+        } catch (_unused) {}
+      }
+    }).catch(() => {});
+  }, []);
+
+  // 30-second ticker: keeps reminder countdowns live and auto-dismisses elapsed windows
+  useEffect(() => {
+    const id = setInterval(() => setTickerNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Update best streak and fire confetti when streak increments
+  useEffect(() => {
+    if (quickEntryStreak === 0) { prevStreakRef.current = 0; return; }
+    const prev = prevStreakRef.current;
+    prevStreakRef.current = quickEntryStreak;
+    // Skip confetti/notification on the very first render (prev === null means
+    // this is the initial value set on mount, not a real streak increment).
+    if (prev === null) return;
+    // Update best streak & fire milestone notification
+    if (quickEntryStreak > bestStreak) {
+      const newBest = quickEntryStreak;
+      setBestStreak(newBest);
+      safeSetItem(BEST_STREAK_KEY, String(newBest)).catch(() => {});
+      // Fire milestone notification only once per new best (not on initial load)
+      if (prev !== null && milestoneNotifSentRef.current !== newBest && Platform.OS !== 'web') {
+        milestoneNotifSentRef.current = newBest;
+        (async () => {
+          try {
+            const Notifications = await getNotificationsAsync(); if (!Notifications) return;
+            await scheduleNotification({
+              content: {
+                title: `New record! ${newBest}-day streak 🔥`,
+                body: `You’ve logged all 5 vitals for ${newBest} consecutive days. Keep it up!`,
+                sound: true,
+              },
+              trigger: null, // immediate
+            });
+          } catch (_unused) { /* notifications not permitted */ }
+        })();
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quickEntryStreak]);
+
+  // ─── Goal reached confetti ──────────────────────────────────────────
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [confettiOrigin, setConfettiOrigin] = useState({ x: 0, y: 0 });
+  const stepRingRef = useRef<View>(null);
+  const prevStepsRef = useRef<number | null>(null);
+  useEffect(() => {
+    const prev = prevStepsRef.current;
+    prevStepsRef.current = todaySteps;
+    // Never fire confetti on the very first data arrival (prev === null means
+    // this is the initial mount / first sync — the user has not "crossed" the
+    // goal during this session; they just opened the app with existing data).
+    if (prev === null) return;
+    if (todaySteps == null || todaySteps < stepGoal) return;
+    // Already past goal — check if we just crossed it this session
+    if (prev >= stepGoal) return; // already celebrated
+    // Check if already celebrated today
+    const today = new Date().toDateString();
+    AsyncStorage.getItem(GOAL_REACHED_KEY).then(stored => {
+      if (stored === today) return; // already fired today
+      safeSetItem(GOAL_REACHED_KEY, today).catch(() => {});
+      if (Platform.OS !== 'web') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      // Measure step ring position for confetti origin
+      if (stepRingRef.current) {
+        stepRingRef.current.measureInWindow((x, y, w, h) => {
+          setConfettiOrigin({ x: x + w / 2, y: y + h / 2 });
+          setShowConfetti(true);
+        });
+      } else {
+        // Fallback to center of screen
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const { width, height } = require('react-native').Dimensions.get('window');
+        setConfettiOrigin({ x: width / 2, y: height * 0.35 });
+        setShowConfetti(true);
+      }
+    }).catch(() => {});
+  }, [todaySteps, stepGoal]);
+
+  // ── Reason-streak local notification ──────────────────────────────────────
+  // Fires once per unique reason when the streak first hits 3 consecutive entries.
+  // Uses AsyncStorage to avoid re-firing across sessions.
+  const reasonStreakNotifAlerts = React.useMemo(() => {
+    const allMissedWithNote: { date: string; note: string }[] = [];
+    for (const med of medications) {
+      for (const log of (med.doseLogs ?? [])) {
+        if ((log.status === 'missed' || log.status === 'skipped') && !log.reinstatedAt && log.note) {
+          allMissedWithNote.push({ date: log.date, note: log.note.trim() });
+        }
+      }
+    }
+    allMissedWithNote.sort((a, b) => b.date.localeCompare(a.date));
+    const alerts: { reason: string; count: number }[] = [];
+    const seenReasons = new Set<string>();
+    for (const { note } of allMissedWithNote) {
+      if (seenReasons.has(note)) continue;
+      seenReasons.add(note);
+      let run = 0;
+      for (const entry of allMissedWithNote) {
+        if (entry.note === note) run++;
+        else if (run > 0) break;
+      }
+      if (run >= 3) alerts.push({ reason: note, count: run });
+    }
+    return alerts;
+  }, [medications]);
+
+  useEffect(() => {
+    if (!reasonStreakNotifAlerts.length) return;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(REASON_STREAK_NOTIF_KEY);
+        const sentSet: Record<string, boolean> = raw ? JSON.parse(raw) : {};
+        let changed = false;
+        for (const { reason, count } of reasonStreakNotifAlerts) {
+          const key = `${reason.toLowerCase().trim().slice(0, 60)}_${count}`;
+          if (sentSet[key]) continue;
+          sentSet[key] = true;
+          changed = true;
+          const isRefill = /ran out|refill|supply/i.test(reason);
+          const title = isRefill
+            ? '💊 Refill Reminder'
+            : '⚠️ Missed Dose Pattern';
+          const body = isRefill
+            ? `You've missed doses ${count} times due to "${reason}" — time to refill?`
+            : `You've missed doses ${count} times due to "${reason}" — consider speaking with your doctor.`;
+          await scheduleNotification({
+            content: {
+              title,
+              body,
+              data: { type: 'reason_streak', reason },
+              // Attach "Refill Now" action button for supply-related reason streaks (iOS)
+              ...(isRefill ? { categoryIdentifier: 'reason_streak_refill' } : {}),
+            },
+            trigger: null,
+          });
+        }
+        if (changed) await safeSetItem(REASON_STREAK_NOTIF_KEY, JSON.stringify(sentSet));
+      } catch (_unused) {}
+    })();
+  }, [reasonStreakNotifAlerts]);
+
+  // ── Clear dismissed reason-streak IDs when streak resets ──────────────────
+  // When reasonStreakAlerts changes (e.g., a reason no longer appears 3+ times),
+  // remove the old dismissed IDs from the TTL map so the banner can reappear
+  // for any new streak that forms.
+  const prevReasonStreakKeysRef = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    const currentKeys = new Set(
+      (reasonStreakNotifAlerts ?? []).map(({ reason }: { reason: string }) => `reason-streak-${reason}`)
+    );
+    const prevKeys = prevReasonStreakKeysRef.current;
+    // Find keys that were in the previous streak but are no longer active
+    const removedKeys = [...prevKeys].filter(k => !currentKeys.has(k));
+    if (removedKeys.length > 0) {
+      // Remove from dismissed set and TTL map so they can reappear for new streaks
+      setDismissedReminderIds(prev => {
+        const next = new Set(prev);
+        removedKeys.forEach(k => next.delete(k));
+        safeSetItem(SMART_REMINDER_DISMISSED_KEY, JSON.stringify([...next])).catch(() => {});
+        return next;
+      });
+      AsyncStorage.getItem(SMART_REMINDER_DISMISSED_TTL_KEY).then(raw => {
+        let ttlMap: Record<string, number> = {};
+        if (raw) { try { ttlMap = JSON.parse(raw); } catch (_unused) {} }
+        removedKeys.forEach(k => { delete ttlMap[k]; });
+        safeSetItem(SMART_REMINDER_DISMISSED_TTL_KEY, JSON.stringify(ttlMap)).catch(() => {});
+      }).catch(() => {});
+    }
+    prevReasonStreakKeysRef.current = currentKeys;
+  }, [reasonStreakNotifAlerts]);
+
+  const sleepHours = latestSleep
+    ? (latestSleep.totalMinutes / 60).toFixed(1)
+    : null;
+
+  // lang/rawLang/h/l/ds already declared at top of component (hoisted to prevent TDZ crash)
+
+  function navigate(path: string) {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push(path as never);
+  }
+
+  return (
+    <View style={{ flex: 1 }}>
+    <ScreenContainer containerClassName="bg-background" style={{ backgroundColor: isDark ? '#0D1117' : undefined }}>
+      <ScrollView
+        ref={dashScrollRef}
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        onScroll={(e) => { handleDashScroll(e.nativeEvent.contentOffset.y); handleDashScrollTop(e); }}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={isSyncing}
+            onRefresh={forceSync}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+      >
+         {/* ─── Header ─────────────────────────────────────────────────────── */}
+         <View style={[styles.header, { paddingBottom: 6 }]}>
+           {/* ─── Icon row: Health dot, Sync, Globe, NeoVital, Clinical, Privacy ─── */}
+          <View style={[styles.headerRight, { flex: 1 }]}>
+
             <HeaderSyncButton
               sync={sync}
               onSync={forceSync}
@@ -4214,7 +6198,6 @@ function StepRingCell({
         style={{
           position: 'absolute',
           bottom: 90,
-          left: 20,
           right: 20,
           backgroundColor: isDark ? '#1F2937' : '#111827',
           borderRadius: 10,
@@ -4232,6 +6215,7 @@ function StepRingCell({
         <Text style={{ color: '#FFFFFF', fontSize: 13, fontWeight: '600' }}>{rescheduleToastMsg}</Text>
       </Animated.View>
     )}
+    {/* BLE Device Scanner sheet — opened from header Bluetooth button */}
     {/* Snooze Duration Picker — opened after right-swipe on glucose smart reminder */}
     <SnoozeDurationSheet
       visible={snoozeSheetVisible}
