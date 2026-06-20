@@ -1783,9 +1783,7 @@ const REASON_STREAK_NOTIF_KEY = '@vsht:reason_streak_notif_sent_v1';
       Animated.delay(2000),
       Animated.timing(goalToastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start(() => setGoalToastMsg(null));
-  // ─── BLE connection state (for Quick Entry badge) ──────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  }, []);
+  };
 
   const _quickEntryCardRef = useRef<View>(null);
   const weeklyBannerRef = useRef<ViewShot>(null);
