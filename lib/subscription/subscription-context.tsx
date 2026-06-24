@@ -105,6 +105,9 @@ const STORAGE_KEY_TRIAL_START = "vitalsync.subscription.trialStart";
 const STORAGE_KEY_ACCESS_STATE = "vitalsync.subscription.accessState";
 const STORAGE_KEY_EXPIRY = "vitalsync.subscription.expiryMs";
 const STORAGE_KEY_ACTIVE_PRODUCT = "vitalsync.subscription.activeProductId";
+const STORAGE_KEY_ORIGINAL_PURCHASE_DATE = "vitalsync.subscription.originalPurchaseDateMs";
+const STORAGE_KEY_AUTO_RENEW = "vitalsync.subscription.autoRenewEnabled";
+const STORAGE_KEY_SUB_PLATFORM = "vitalsync.subscription.platform";
 
 const TRIAL_DURATION_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
 
@@ -139,6 +142,16 @@ export interface SubscriptionContextValue {
   subscriptionExpiryMs: number | null;
   /** Active product ID (e.g. 'vitalsync.healthtracker.premium_monthly') or null */
   activeProductId: ProductId | null;
+  /** Original purchase date (ms) — set from StoreKit originalTransactionDateIOS or transactionDate */
+  originalPurchaseDateMs: number | null;
+  /** Whether auto-renew is enabled for the active subscription */
+  autoRenewEnabled: boolean | null;
+  /** Platform of the active subscription ('ios' | 'android') */
+  subscriptionPlatform: 'ios' | 'android' | null;
+  /** True while a restore operation is in progress */
+  isRestoring: boolean;
+  /** Result of the last restore operation: 'success' | 'no_subscription' | null */
+  restoreResult: 'success' | 'no_subscription' | null;
   /** True while loadPersistedState is running — prevents premature paywall gating */
   isLoading: boolean;
   /** Start the 14-day trial (records start time locally) */
@@ -147,6 +160,8 @@ export interface SubscriptionContextValue {
   purchaseSubscription: (productId: ProductId) => Promise<void>;
   /** Restore previous purchases */
   restorePurchases: () => Promise<void>;
+  /** Clear the restore result (call after showing feedback) */
+  clearRestoreResult: () => void;
   /** Reload products from store */
   reloadProducts: () => Promise<void>;
 }
@@ -166,6 +181,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [subscriptionExpiryMs, setSubscriptionExpiryMs] = useState<number | null>(null);
   const [activeProductId, setActiveProductId] = useState<ProductId | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [originalPurchaseDateMs, setOriginalPurchaseDateMs] = useState<number | null>(null);
+  const [autoRenewEnabled, setAutoRenewEnabled] = useState<boolean | null>(null);
+  const [subscriptionPlatform, setSubscriptionPlatform] = useState<'ios' | 'android' | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreResult, setRestoreResult] = useState<'success' | 'no_subscription' | null>(null);
 
   const iapInitialized = useRef(false);
   const purchaseUpdateSub = useRef<ReturnType<typeof purchaseUpdatedListener> | null>(null);
@@ -304,16 +324,22 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const loadPersistedState = useCallback(async () => {
     try {
-        const [storedTrialStart, storedExpiry, storedProductId] = await Promise.all([
+        const [storedTrialStart, storedExpiry, storedProductId, storedOrigDate, storedAutoRenew, storedPlatform] = await Promise.all([
         AsyncStorage.getItem(STORAGE_KEY_TRIAL_START),
         AsyncStorage.getItem(STORAGE_KEY_EXPIRY),
         AsyncStorage.getItem(STORAGE_KEY_ACTIVE_PRODUCT),
+        AsyncStorage.getItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE),
+        AsyncStorage.getItem(STORAGE_KEY_AUTO_RENEW),
+        AsyncStorage.getItem(STORAGE_KEY_SUB_PLATFORM),
       ]);
       const trialStart = storedTrialStart ? parseInt(storedTrialStart, 10) : null;
       const expiry = storedExpiry ? parseInt(storedExpiry, 10) : null;
       if (trialStart) setTrialStartMs(trialStart);
       if (expiry) setSubscriptionExpiryMs(expiry);
       if (storedProductId) setActiveProductId(storedProductId as ProductId);
+      if (storedOrigDate) setOriginalPurchaseDateMs(parseInt(storedOrigDate, 10));
+      if (storedAutoRenew !== null) setAutoRenewEnabled(storedAutoRenew === 'true');
+      if (storedPlatform === 'ios' || storedPlatform === 'android') setSubscriptionPlatform(storedPlatform);
       await evaluateAccess(expiry, trialStart);
       // After local state is resolved, silently verify with the server.
       // This handles reinstalls and device transfers without user interaction.
@@ -365,6 +391,51 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           } else {
             const isYearly = purchase.productId === PRODUCT_IDS.yearly;
             expiryMs = Date.now() + (isYearly ? 365 : 30) * 24 * 60 * 60 * 1000;
+          }
+        }
+
+        // ── Capture StoreKit 2 metadata ──────────────────────────────────────
+        // iOS: prefer expirationDateIOS from StoreKit 2 JWS over our local estimate
+        if (Platform.OS === "ios") {
+          const iosPurchase = purchase as Purchase & {
+            expirationDateIOS?: number | null;
+            originalTransactionDateIOS?: number | null;
+            isAutoRenewing?: boolean;
+            renewalInfoIOS?: { willAutoRenew?: boolean; renewalDate?: number | null } | null;
+          };
+          // Use StoreKit 2 expirationDateIOS if available (more accurate than our local estimate)
+          if (iosPurchase.expirationDateIOS && iosPurchase.expirationDateIOS > Date.now()) {
+            expiryMs = iosPurchase.expirationDateIOS;
+            log(`[Subscription] Using StoreKit 2 expirationDateIOS: ${new Date(expiryMs).toISOString()}`);
+          }
+          // Original purchase date
+          const origDate = iosPurchase.originalTransactionDateIOS ?? purchase.transactionDate ?? null;
+          if (origDate) {
+            setOriginalPurchaseDateMs(origDate);
+            await safeSetItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE, String(origDate));
+            log(`[Subscription] Original purchase date: ${new Date(origDate).toISOString()}`);
+          }
+          // Auto-renew status — prefer renewalInfoIOS.willAutoRenew, fall back to isAutoRenewing
+          const autoRenew = iosPurchase.renewalInfoIOS?.willAutoRenew ?? iosPurchase.isAutoRenewing ?? null;
+          if (autoRenew !== null) {
+            setAutoRenewEnabled(autoRenew);
+            await safeSetItem(STORAGE_KEY_AUTO_RENEW, String(autoRenew));
+            log(`[Subscription] Auto-renew: ${autoRenew}`);
+          }
+          setSubscriptionPlatform('ios');
+          await safeSetItem(STORAGE_KEY_SUB_PLATFORM, 'ios');
+        } else if (Platform.OS === "android") {
+          setSubscriptionPlatform('android');
+          await safeSetItem(STORAGE_KEY_SUB_PLATFORM, 'android');
+          const origDate = purchase.transactionDate ?? null;
+          if (origDate) {
+            setOriginalPurchaseDateMs(origDate);
+            await safeSetItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE, String(origDate));
+          }
+          const autoRenew = (purchase as any).isAutoRenewing ?? null;
+          if (autoRenew !== null) {
+            setAutoRenewEnabled(autoRenew);
+            await safeSetItem(STORAGE_KEY_AUTO_RENEW, String(autoRenew));
           }
         }
 
@@ -580,32 +651,49 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const restorePurchases = useCallback(async () => {
     setPurchaseError(null);
-    setPurchasing(true);
+    setRestoreResult(null);
+    setIsRestoring(true);
+    log("[Subscription] restorePurchases — calling getAvailablePurchases()");
     try {
       const purchases = await getAvailablePurchases();
-      log("[Subscription] Restoring", purchases.length, "purchases");
+      log(`[Subscription] getAvailablePurchases returned ${purchases.length} purchase(s)`);
+      purchases.forEach((p, idx) => {
+        log(`[Subscription]   [${idx}] productId=${p.productId} transactionDate=${p.transactionDate} transactionId=${p.transactionId}`);
+      });
 
-      if (purchases.length === 0) {
-        setPurchaseError("No previous purchases found.");
-        setPurchasing(false);
+      // Filter to known subscription SKUs only
+      const subPurchases = purchases.filter(
+        p => p.productId === PRODUCT_IDS.monthly || p.productId === PRODUCT_IDS.yearly
+      );
+      log(`[Subscription] ${subPurchases.length} subscription purchase(s) found after filtering`);
+
+      if (subPurchases.length === 0) {
+        log("[Subscription] No subscription purchases found — setting restoreResult: no_subscription");
+        setRestoreResult('no_subscription');
+        setIsRestoring(false);
         return;
       }
 
       // Find the most recent subscription purchase
-      const sorted = [...purchases].sort(
+      const sorted = [...subPurchases].sort(
         (a, b) => (b.transactionDate ?? 0) - (a.transactionDate ?? 0),
       );
       const latest = sorted[0];
-      if (latest) {
-        await processPurchase(latest as Purchase);
-      }
+      log(`[Subscription] Restoring latest purchase — productId: ${latest.productId}, transactionDate: ${latest.transactionDate}`);
+      await processPurchase(latest as Purchase);
+      setRestoreResult('success');
+      log("[Subscription] Restore completed successfully");
     } catch (e) {
       logError("[Subscription] Restore failed:", e);
       setPurchaseError("Restore failed. Please try again.");
     } finally {
-      setPurchasing(false);
+      setIsRestoring(false);
     }
   }, [processPurchase]);
+
+  const clearRestoreResult = useCallback(() => {
+    setRestoreResult(null);
+  }, []);
 
   // ── Mount / unmount ─────────────────────────────────────────────────────────
 
@@ -633,9 +721,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     trialDaysRemaining,
     subscriptionExpiryMs,
     activeProductId,
+    originalPurchaseDateMs,
+    autoRenewEnabled,
+    subscriptionPlatform,
+    isRestoring,
+    restoreResult,
     startTrial,
     purchaseSubscription,
     restorePurchases,
+    clearRestoreResult,
     reloadProducts,
   };
 

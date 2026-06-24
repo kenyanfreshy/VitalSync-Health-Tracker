@@ -304,12 +304,19 @@ export default function SettingsScreen() {
     restorePurchases: restoreIAPPurchases,
     activeProductId: subActiveProductId,
     subscriptionExpiryMs: subExpiryMs,
+    originalPurchaseDateMs: subOriginalPurchaseDateMs,
+    autoRenewEnabled: subAutoRenewEnabled,
+    isRestoring: subIsRestoring,
+    restoreResult: subRestoreResult,
+    clearRestoreResult: subClearRestoreResult,
   } = useSubscription();
   // ── Derived plan display info ─────────────────────────────────────────────
-  const activePlanName = subActiveProductId === 'vitalsync.healthtracker.premium_annual' ? 'Annual' :
-    subActiveProductId === 'vitalsync.healthtracker.premium_monthly' ? 'Monthly' : null;
+  // activePlanLabel is resolved after se is declared (line ~1351); use a getter below.
   const renewalDateStr = subExpiryMs
     ? new Date(subExpiryMs).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+    : null;
+  const originalPurchaseDateStr = subOriginalPurchaseDateMs
+    ? new Date(subOriginalPurchaseDateMs).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
   // Stable fallback prices — shown when StoreKit/Play hasn't loaded yet
   const monthlyProduct = subProducts.find((p) => p.id === 'vitalsync.healthtracker.premium_monthly');
@@ -1349,6 +1356,32 @@ export default function SettingsScreen() {
   const rawLang = useRawLang();
   const t = ((settingsStrings as unknown as Record<string, typeof settingsStrings.en>)[lang] ?? settingsStrings.en);
   const se = (settingsExtStrings as unknown as Record<string, typeof settingsExtStrings.en>)[lang] ?? settingsExtStrings.en;
+
+  // ── Subscription plan label (i18n) ───────────────────────────────────────
+  const activePlanLabel =
+    subActiveProductId === 'vitalsync.healthtracker.premium_annual'
+      ? (se.currentPlanAnnual ?? 'VitalSync Premium Annual')
+      : subActiveProductId === 'vitalsync.healthtracker.premium_monthly'
+      ? (se.currentPlanMonthly ?? 'VitalSync Premium Monthly')
+      : (se.currentPlanFree ?? 'Free Plan');
+
+  // ── Restore result feedback ─────────────────────────────────────────────
+  useEffect(() => {
+    if (subRestoreResult === 'success') {
+      Alert.alert(
+        se.restorePurchases ?? 'Restore Purchases',
+        se.restoreSuccessMsg ?? 'Subscription restored successfully.',
+        [{ text: 'OK', onPress: subClearRestoreResult }]
+      );
+    } else if (subRestoreResult === 'no_subscription') {
+      Alert.alert(
+        se.restorePurchases ?? 'Restore Purchases',
+        se.restoreNoSubMsg ?? 'No active subscription found.',
+        [{ text: 'OK', onPress: subClearRestoreResult }]
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subRestoreResult]);
   const dietDesc = useDietDescStrings();
   const isRTL = isRTLLang(rawLang);
   const { isTranslating, clearCache } = useTranslationContext();
@@ -1859,40 +1892,76 @@ export default function SettingsScreen() {
 
         <CollapsibleSection title={se.manageSubscription} sectionKey="subscription" accentColor="#6366F1" keywords={['subscription', 'trial', 'premium', 'billing', 'plan', 'upgrade', 'restore']}>
           <GlassCard accentColor="#6366F1" noPadding style={{ marginHorizontal: 16 }}>
-            {/* Status row */}
-            <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
-              <Text style={{ fontSize: 13, color: colors.muted, marginBottom: 4 }}>{se.subscriptionPlan}</Text>
-              {isPremium ? (
-                <>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#6366F1' }}>
-                    {accessState === 'trial_active'
-                      ? (se.freeTrialDays ?? 'Free Trial — {n} day{s} remaining').replace('{n}', String(trialDaysRemaining)).replace('{s}', trialDaysRemaining === 1 ? '' : 's')
-                      : 'VitalSync Premium Active'}
-                  </Text>
-                  {accessState === 'trial_active' && trialStartMs != null && (
-                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                      Trial started {new Date(trialStartMs).toLocaleDateString()}
-                    </Text>
-                  )}
-                </>
+
+            {/* ── Current Plan card ───────────────────────────────────────────── */}
+            <View style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: colors.muted, letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 8 }}>
+                {se.subscriptionPlan ?? 'Current Plan'}
+              </Text>
+
+              {/* Plan name */}
+              {accessState === 'trial_active' ? (
+                <Text style={{ fontSize: 17, fontWeight: '700', color: '#6366F1', marginBottom: 4 }}>
+                  {(se.freeTrialDays ?? 'Free Trial — {n} day{s} remaining').replace('{n}', String(trialDaysRemaining)).replace('{s}', trialDaysRemaining === 1 ? '' : 's')}
+                </Text>
               ) : (
-                <>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.foreground }}>{t.freeVersionLabel ?? 'Free Version'}</Text>
-                  {accessState === 'expired' ? (
-                    <Text style={{ fontSize: 12, color: colors.error, marginTop: 2 }}>
-                      {t.trialExpiredLabel ?? 'Trial expired — subscribe to restore premium access'}
-                    </Text>
-                  ) : (
-                    <Text style={{ fontSize: 12, color: colors.muted, marginTop: 2 }}>
-                      {subProductsLoading
-                        ? (t.loadingPlansLabel ?? 'Loading plans…')
-                        : (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes 14-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
-                    </Text>
-                  )}
-                </>
+                <Text style={{ fontSize: 17, fontWeight: '700', color: accessState === 'subscribed' ? '#6366F1' : colors.foreground, marginBottom: 4 }}>
+                  {activePlanLabel}
+                </Text>
+              )}
+
+              {/* Status row */}
+              {accessState === 'subscribed' && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: '#22C55E', marginRight: 5 }} />
+                  <Text style={{ fontSize: 13, color: '#22C55E', fontWeight: '600' }}>
+                    {se.statusActive ?? 'Active'}
+                  </Text>
+                </View>
+              )}
+              {accessState === 'expired' && (
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
+                  <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: colors.error, marginRight: 5 }} />
+                  <Text style={{ fontSize: 13, color: colors.error, fontWeight: '600' }}>
+                    {se.statusExpired ?? 'Expired'}
+                  </Text>
+                </View>
+              )}
+
+              {/* Renewal date */}
+              {accessState === 'subscribed' && renewalDateStr && (
+                <Text style={{ fontSize: 13, color: colors.muted, marginTop: 3 }}>
+                  {se.renewsLabel ?? 'Renews'}: {renewalDateStr}
+                </Text>
+              )}
+
+              {/* Original purchase date */}
+              {originalPurchaseDateStr && accessState === 'subscribed' && (
+                <Text style={{ fontSize: 13, color: colors.muted, marginTop: 2 }}>
+                  {se.purchasedLabel ?? 'Purchased'}: {originalPurchaseDateStr}
+                </Text>
+              )}
+
+              {/* Auto-renew status */}
+              {subAutoRenewEnabled !== null && accessState === 'subscribed' && (
+                <Text style={{ fontSize: 13, color: colors.muted, marginTop: 2 }}>
+                  {se.autoRenewLabel ?? 'Auto-Renew'}: {subAutoRenewEnabled ? (se.autoRenewOn ?? 'On') : (se.autoRenewOff ?? 'Off')}
+                </Text>
+              )}
+
+              {/* Free version sub-label */}
+              {!isPremium && accessState !== 'trial_active' && (
+                <Text style={{ fontSize: 12, color: accessState === 'expired' ? colors.error : colors.muted, marginTop: 4 }}>
+                  {accessState === 'expired'
+                    ? (t.trialExpiredLabel ?? 'Trial expired — subscribe to restore premium access')
+                    : subProductsLoading
+                    ? (t.loadingPlansLabel ?? 'Loading plans…')
+                    : (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes 14-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
+                </Text>
               )}
             </View>
-            {/* Upgrade / Start Trial row — hidden when already subscribed */}
+
+            {/* ── Upgrade / Start Trial ───────────────────────────────────────────── */}
             {!isPremium && (
               <TouchableOpacity
                 style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
@@ -1905,50 +1974,51 @@ export default function SettingsScreen() {
                 <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
               </TouchableOpacity>
             )}
-            {/* Manage subscription — with confirmation alert */}
+
+            {/* ── Open Apple/Google subscription management ───────────────────────── */}
             <TouchableOpacity
               style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               onPress={() => {
-                const openManage = () => {
-                  if (Platform.OS === 'ios') {
-                    Linking.openURL('itms-apps://apps.apple.com/account/subscriptions').catch(() =>
-                      Linking.openURL('https://apps.apple.com/account/subscriptions')
-                    );
-                  } else {
-                    Linking.openURL('https://play.google.com/store/account/subscriptions');
-                  }
-                };
-                Alert.alert(
-                  'Manage Subscription',
-                  `You'll be taken to your ${Platform.OS === 'ios' ? 'App Store' : 'Google Play'} account to manage or cancel your subscription.`,
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { text: 'Continue', onPress: openManage },
-                  ]
-                );
+                if (Platform.OS === 'ios') {
+                  Linking.openURL('itms-apps://apps.apple.com/account/subscriptions').catch(() =>
+                    Linking.openURL('https://apps.apple.com/account/subscriptions')
+                  );
+                } else {
+                  Linking.openURL('https://play.google.com/store/account/subscriptions');
+                }
               }}
               activeOpacity={0.7}
             >
-              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.manageSubscription}</Text>
+              <Text style={{ fontSize: 15, color: colors.foreground }}>
+                {se.openAppleSubscriptions ?? 'Manage in App Store'}
+              </Text>
               <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
             </TouchableOpacity>
-            {/* Active plan + renewal date — shown when subscribed */}
-            {accessState === 'subscribed' && (activePlanName || renewalDateStr) && (
-              <View style={{ paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 13, color: colors.muted }}>
-                  {[activePlanName, renewalDateStr ? `Renews ${renewalDateStr}` : null].filter(Boolean).join(' · ')}
-                </Text>
-              </View>
-            )}
-            {/* Restore purchases */}
+
+            {/* ── Restore purchases ─────────────────────────────────────────────────────── */}
             <TouchableOpacity
               style={{ paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
-              onPress={async () => { await restoreIAPPurchases(); }}
-              activeOpacity={0.7}
+              onPress={async () => {
+                if (!subIsRestoring) {
+                  await restoreIAPPurchases();
+                }
+              }}
+              activeOpacity={subIsRestoring ? 1 : 0.7}
+              disabled={subIsRestoring}
             >
-              <Text style={{ fontSize: 15, color: colors.foreground }}>{se.restorePurchases}</Text>
-              <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>
+              {subIsRestoring ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <ActivityIndicator size="small" color="#6366F1" />
+                  <Text style={{ fontSize: 15, color: '#6366F1' }}>
+                    {se.restoringLabel ?? 'Restoring…'}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={{ fontSize: 15, color: colors.foreground }}>{se.restorePurchases ?? 'Restore Purchases'}</Text>
+              )}
+              {!subIsRestoring && <Text style={{ fontSize: 18, color: colors.muted }}>›</Text>}
             </TouchableOpacity>
+
           </GlassCard>
         </CollapsibleSection>
 

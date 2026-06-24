@@ -91,6 +91,20 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.71 */
+export const whatsNewV1071Strings = {
+  version: "1.0.71",
+  date: "Jun 2026",
+  headline: "Subscription Management Rebuilt",
+  // Fixed
+  f1Title: "Restore Purchases Now Works",
+  f1Desc: "Tapping \"Restore Purchases\" now immediately contacts the App Store, shows a loading indicator, and displays a success or informative message when complete.",
+  f2Title: "Current Plan Section Added",
+  f2Desc: "The Manage Subscription screen now shows your plan name (Monthly / Annual / Free), status (Active / Expired), renewal date, original purchase date, and auto-renew status.",
+  f3Title: "Manage in App Store Button",
+  f3Desc: "A direct \"Manage in App Store\" button opens Apple\u2019s native subscription management screen so you can cancel or change your plan without leaving the app.",
+} as const;
+
 /** Release note content — v1.0.70 */
 export const whatsNewV1070Strings = {
   version: "1.0.70",
@@ -755,6 +769,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1071 = useT(whatsNewV1071Strings);
   const v1070 = useT(whatsNewV1070Strings);
   const v1069 = useT(whatsNewV1069Strings);
   const v1068 = useT(whatsNewV1068Strings);
@@ -780,7 +795,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1070;
+  const latestVersion = v1071;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -910,7 +925,14 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.70 (latest) ── */}
+          {/* ── v1.0.71 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color="#F87171" />
+            <ReleaseItem emoji="🔄" title={v1071.f1Title} desc={v1071.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="💳" title={v1071.f2Title} desc={v1071.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="⚙️" title={v1071.f3Title} desc={v1071.f3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.70 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
             <ReleaseItem emoji="📋" title={v1070.c1Title} desc={v1070.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

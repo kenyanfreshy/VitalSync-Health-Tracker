@@ -10445,3 +10445,19 @@
 - [x] Version bump to 1.0.70 / Build 10070 / versionCode 70
 - [x] CHANGELOG + What's New v1.0.70 entry
 - [x] Commit and push
+
+## v1.0.71 — Subscription Management Screen Fixes
+- [x] Restore Purchases: loading indicator while restoring
+- [x] Restore Purchases: success Alert when subscription found
+- [x] Restore Purchases: informative Alert when no subscription found
+- [x] Restore Purchases: diagnostic logging throughout flow
+- [x] Restore Purchases: refresh subscription status after restore
+- [x] Current Plan section: plan name (Monthly / Annual / Free)
+- [x] Current Plan section: status indicator (Active / Expired)
+- [x] Current Plan section: renewal date from StoreKit 2
+- [x] Current Plan section: original purchase date
+- [x] Current Plan section: auto-renew status (On / Off)
+- [x] Manage in App Store button (direct deep link, no confirmation alert)
+- [x] Full i18n: 14 new strings across all 10 languages
+- [x] Version bump to 1.0.71 / Build 10071 / versionCode 71
+- [x] CHANGELOG and What's New updated

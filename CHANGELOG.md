@@ -1,3 +1,16 @@
+## [1.0.71] - 2026-06-23
+### Fixed — Subscription Management Screen
+- **Restore Purchases now works**: Tapping "Restore Purchases" calls `getAvailablePurchases()` immediately, filters to known subscription SKUs, and processes the most recent purchase. A loading spinner replaces the row label while restoration is in progress.
+- **Success / no-subscription feedback**: An Alert is shown after restore completes — "Subscription restored successfully." if a subscription was found, or an informative message if none was found.
+- **Current Plan section added**: The Manage Subscription screen now shows a dedicated "Current Plan" card with: plan name (VitalSync Premium Monthly / Annual / Free Plan), status indicator (Active / Expired), renewal date, original purchase date, and auto-renew status (On / Off). All values are read directly from the StoreKit 2 transaction receipt.
+- **StoreKit 2 expiry date**: `processPurchase` now reads `expirationDateIOS` from the StoreKit 2 JWS payload for a more accurate renewal date.
+- **"Manage in App Store" button**: Opens `itms-apps://apps.apple.com/account/subscriptions` directly so users can cancel or change their subscription without friction.
+- **Diagnostic logging**: Full logging added to `restorePurchases` — number of purchases returned, each productId + transactionDate, and the selected restore candidate.
+- **Full i18n**: All 14 new strings translated across all 10 languages (EN, ES, FR, DE, ZH, PT, AR, SW, HI, JA).
+- **Version bump**: 1.0.71 / Build 10071 / versionCode 71.
+
+---
+
 ## [1.0.70] - 2026-06-23
 
 ### Changed — Personal Health Report Print Output
