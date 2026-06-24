@@ -1,3 +1,15 @@
+## [1.0.69] - 2026-06-23
+
+### Fixed — Apple Guideline 2.1(b) — StoreKit Purchase Sheet Not Appearing
+- **Root cause (critical)**: `requestPurchase` was called with a flat `{ sku: productId }` object inside the `request` field. react-native-iap v15 requires a platform-specific shape: `{ request: { apple: { sku } }, type: 'subs' }` on iOS and `{ request: { google: { skus: [] } }, type: 'subs' }` on Android. The malformed call caused an "Invalid request for iOS. The `sku` property is required." error that was silently caught, so the StoreKit sheet never appeared.
+- **Secondary bug**: `handleStartTrial` in `paywall-screen.tsx` silently fell back to `startTrial()` (local trial only) when `products.length === 0`, bypassing StoreKit entirely. This path is now blocked on native platforms — an error message is shown instead.
+- **Diagnostic logging**: comprehensive `[Subscription]` log lines added throughout `initIAP`, `reloadProducts`, and `purchaseSubscription` to surface StoreKit errors in the Xcode console.
+- **Visible error on product load failure**: `productsLoadError` state added to context; paywall now renders a red error message and a "Retry Loading Prices" button after 3 failed product-fetch attempts instead of silently showing fallback prices.
+- **Web stub updated**: `fetchProducts`, `Purchase`, and `ProductSubscription` exports added to `lib/stubs/react-native-iap.web.ts`.
+- **Version bump**: 1.0.69 / Build 10069 / versionCode 69.
+
+---
+
 ## [1.0.68] - 2026-06-20
 
 ### Improved

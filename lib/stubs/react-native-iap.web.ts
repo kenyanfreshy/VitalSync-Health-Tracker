@@ -14,6 +14,7 @@ export const endConnection = async () => undefined;
 export const clearTransactionIOS = async () => undefined;
 export const getProducts = async () => [];
 export const getSubscriptions = async () => [];
+export const fetchProducts = async () => [];
 export const requestPurchase = async () => undefined;
 export const requestSubscription = async () => undefined;
 export const restorePurchases = async () => [];
@@ -25,6 +26,8 @@ export const purchaseUpdatedListener = (_cb: unknown) => ({ remove: () => {} });
 export const purchaseErrorListener = (_cb: unknown) => ({ remove: () => {} });
 
 export type ProductPurchase = Record<string, unknown>;
+export type Purchase = Record<string, unknown>;
 export type PurchaseError = { code: string; message: string };
 export type Subscription = Record<string, unknown>;
+export type ProductSubscription = Record<string, unknown>;
 export type Product = Record<string, unknown>;

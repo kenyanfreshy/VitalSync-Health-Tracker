@@ -103,6 +103,7 @@ export function PaywallScreen({
   const {
     products,
     productsLoading,
+    productsLoadError,
     purchasing,
     purchaseError,
     startTrial,
@@ -179,24 +180,30 @@ export function PaywallScreen({
       return;
     }
 
+    // Web: no StoreKit available — start local trial directly
+    if (Platform.OS === "web") {
+      await startTrial();
+      if (isMounted.current) onSuccess?.(selectedPlan as ProductId);
+      return;
+    }
+
     if (trialStartMs) {
+      // User already started a trial — go straight to purchase
       await purchaseSubscription(selectedPlan as ProductId);
       if (isMounted.current) onSuccess?.(selectedPlan as ProductId);
       return;
     }
 
-    if (Platform.OS === "web" || products.length === 0) {
-      await startTrial();
-      if (isMounted.current) onSuccess?.(selectedPlan as ProductId);
-      return;
-    }
-
+    // First-time purchase: initiate StoreKit purchase sheet.
+    // purchaseSubscription guards against empty products and sets purchaseError.
     await purchaseSubscription(selectedPlan as ProductId);
     if (accessStateRef.current !== "subscribed") {
-      await startTrial();
+      // Purchase was cancelled or failed — do not start trial automatically.
+      // The user must complete the purchase to get access.
+      return;
     }
     if (isMounted.current) onSuccess?.(selectedPlan as ProductId);
-  }, [trialStartMs, selectedPlan, products.length, purchaseSubscription, startTrial, onSuccess, onDismiss]);
+  }, [trialStartMs, selectedPlan, purchaseSubscription, startTrial, onSuccess, onDismiss]);
 
   // ── Restore ───────────────────────────────────────────────────────────────
   const handleRestore = useCallback(async () => {
@@ -572,7 +579,19 @@ export function PaywallScreen({
           ))}
         </View>
 
-        {/* Error */}
+        {/* Products load error — shown when StoreKit fails to return products after 3 retries */}
+        {productsLoadError && !purchaseError ? (
+          <>
+            <Text style={s.errorText}>{productsLoadError}</Text>
+            <Pressable
+              style={({ pressed }) => [s.retryLoadButton, pressed && { opacity: 0.7 }]}
+              onPress={() => reloadProducts()}
+            >
+              <Text style={s.retryLoadButtonText}>Retry Loading Prices</Text>
+            </Pressable>
+          </>
+        ) : null}
+        {/* Purchase error */}
         {purchaseError ? (
           <Text style={s.errorText}>{purchaseError}</Text>
         ) : null}
@@ -1105,6 +1124,22 @@ function makeStyles(colors: ReturnType<typeof useColors>, insets: { top: number;
       fontSize: 12,
       color: '#F87171',
       textAlign: 'center',
+      marginBottom: 4,
+    },
+    retryLoadButton: {
+      backgroundColor: 'transparent',
+      borderRadius: 10,
+      paddingVertical: 8,
+      paddingHorizontal: 16,
+      alignItems: 'center' as const,
+      borderWidth: 1,
+      borderColor: '#F87171',
+      marginBottom: 8,
+    },
+    retryLoadButtonText: {
+      fontSize: 13,
+      fontWeight: '600' as const,
+      color: '#F87171',
     },
     // CTA button
     ctaButton: {

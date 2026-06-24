@@ -11,6 +11,21 @@
  *
  * Product IDs:
  *  iOS/Android: vitalsync.healthtracker.premium_monthly, vitalsync.healthtracker.premium_annual
+ *
+ * ─── FIX HISTORY ────────────────────────────────────────────────────────────
+ * v1.0.69 — Guideline 2.1(b) fix: requestPurchase was called with a flat
+ *   { sku } object instead of the platform-specific { apple: { sku } } /
+ *   { google: { skus: [] } } shape required by react-native-iap v15.
+ *   This caused requestPurchase to throw "Invalid request for iOS. The `sku`
+ *   property is required." silently (caught by the outer try/catch), so the
+ *   StoreKit purchase sheet never appeared.
+ *
+ *   Additional fixes:
+ *   - purchaseSubscription now guards against calling requestPurchase when
+ *     products.length === 0 (returns a visible error instead of a silent throw)
+ *   - productsLoadError state exposed in context so the paywall can render a
+ *     visible error + retry button instead of silently falling back to startTrial
+ *   - Diagnostic logging added throughout the purchase path
  */
 
 import React, {
@@ -104,6 +119,12 @@ export interface SubscriptionContextValue {
   products: ProductSubscription[];
   /** Whether products are loading */
   productsLoading: boolean;
+  /**
+   * Non-null when product loading has permanently failed (after 3 retries).
+   * The paywall should display this message and offer a retry button.
+   * A null value means either loading succeeded or loading is still in progress.
+   */
+  productsLoadError: string | null;
   /** Whether a purchase is in progress */
   purchasing: boolean;
   /** Last purchase/restore error message */
@@ -138,6 +159,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [accessState, setAccessState] = useState<AccessState>("loading");
   const [products, setProducts] = useState<ProductSubscription[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [productsLoadError, setProductsLoadError] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [trialStartMs, setTrialStartMs] = useState<number | null>(null);
@@ -396,13 +418,14 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       // Listen for purchase updates
       purchaseUpdateSub.current = purchaseUpdatedListener(
         async (purchase: Purchase) => {
+          log("[Subscription] purchaseUpdatedListener fired — productId:", purchase.productId);
           await processPurchase(purchase);
           setPurchasing(false);
         },
       );
 
       purchaseErrorSub.current = purchaseErrorListener((err: PurchaseError) => {
-        logError("[Subscription] Purchase error:", err);
+        logError("[Subscription] purchaseErrorListener fired — code:", err.code, "message:", err.message);
         if ((err.code as string) !== "E_USER_CANCELLED" && (err.code as string) !== "user-cancelled") {
           setPurchaseError(err.message || "Purchase failed. Please try again.");
         }
@@ -430,23 +453,46 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
   const reloadProducts = useCallback(async (retryCount = 0) => {
     setProductsLoading(true);
+    if (retryCount === 0) setProductsLoadError(null);
     try {
+      log(`[Subscription] fetchProducts attempt ${retryCount + 1}/3 — SKUs: ${PRODUCT_IDS.monthly}, ${PRODUCT_IDS.yearly} — platform: ${Platform.OS}`);
       const subs = (await fetchProducts({
         skus: [PRODUCT_IDS.monthly, PRODUCT_IDS.yearly],
         type: 'subs',
       })) as ProductSubscription[];
+      const productSummary = subs.map(p => `${p.id} (${(p as any).localizedPrice ?? 'no price'})`).join(', ');
+      log(`[Subscription] fetchProducts returned ${subs.length} product(s): ${productSummary || '(none)'}`);
       setProducts(subs);
-      log("[Subscription] Loaded", subs.length, "products");
-      // Auto-retry up to 2 times if StoreKit returns empty (e.g. sandbox delay)
-      if (subs.length === 0 && retryCount < 2) {
-        log(`[Subscription] Products empty, retrying (${retryCount + 1}/2)…`);
-        setTimeout(() => reloadProducts(retryCount + 1), 3000);
+      if (subs.length === 0) {
+        if (retryCount < 2) {
+          log(`[Subscription] Products empty — retrying in 3s (attempt ${retryCount + 2}/3)…`);
+          setTimeout(() => reloadProducts(retryCount + 1), 3000);
+        } else {
+          warn(
+            "[Subscription] Products still empty after 3 attempts.\n" +
+            "Possible causes:\n" +
+            "  1. Products not yet approved in App Store Connect (status must be 'Ready to Submit')\n" +
+            "  2. Sandbox tester account not configured in App Store Connect → Users and Access → Sandbox\n" +
+            "  3. In-App Purchases capability not enabled for bundle ID com.vitalsync.healthtracker\n" +
+            "  4. Product IDs in App Store Connect do not match: vitalsync.healthtracker.premium_monthly / vitalsync.healthtracker.premium_annual\n" +
+            "  5. Device is not signed in to a sandbox Apple ID in Settings → App Store"
+          );
+          setProductsLoadError(
+            "Unable to load subscription options. Please check your internet connection and try again. " +
+            "If the issue persists, ensure you are signed in to a sandbox Apple ID in Settings → App Store."
+          );
+        }
+      } else {
+        setProductsLoadError(null);
       }
     } catch (e) {
-      logError("[Subscription] Failed to load products:", e);
-      // Retry on error too
+      const msg = e instanceof Error ? e.message : String(e);
+      logError(`[Subscription] fetchProducts threw on attempt ${retryCount + 1}:`, msg, e);
       if (retryCount < 2) {
+        log(`[Subscription] Retrying product load in 3s (attempt ${retryCount + 2}/3)…`);
         setTimeout(() => reloadProducts(retryCount + 1), 3000);
+      } else {
+        setProductsLoadError(`Failed to load subscription options: ${msg}`);
       }
     } finally {
       setProductsLoading(false);
@@ -472,23 +518,62 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [persistAccessState]);
 
   // ── Purchase subscription ───────────────────────────────────────────────────
-
+  //
+  // FIX (v1.0.69): react-native-iap v15 requires platform-specific request shape:
+  //
+  //   iOS:     { request: { apple: { sku: productId } }, type: 'subs' }
+  //   Android: { request: { google: { skus: [productId] } }, type: 'subs' }
+  //
+  // The previous call was:
+  //   requestPurchase({ request: { sku: productId }, type: "subs" } as any)
+  //
+  // This caused requestPurchase to look for request.apple.sku (undefined) and
+  // throw "Invalid request for iOS. The `sku` property is required." — which was
+  // caught and set as purchaseError, but the StoreKit sheet never appeared.
+  //
   const purchaseSubscription = useCallback(
     async (productId: ProductId) => {
       setPurchaseError(null);
       setPurchasing(true);
+      log(`[Subscription] purchaseSubscription — productId: ${productId}, platform: ${Platform.OS}`);
+      log(`[Subscription] Products loaded: ${products.length} — [${products.map(p => p.id).join(', ')}]`);
+
+      // Guard: if products haven't loaded, abort with a visible error instead of
+      // silently throwing inside requestPurchase (which would never show the sheet)
+      if (products.length === 0) {
+        warn("[Subscription] purchaseSubscription called with no products loaded — aborting");
+        setPurchaseError(
+          "Subscription options are not loaded yet. Please wait a moment and try again."
+        );
+        setPurchasing(false);
+        return;
+      }
+
       try {
-        await requestPurchase({ request: { sku: productId }, type: "subs" } as any);
-        // Result handled by purchaseUpdatedListener
+        // Build the correct platform-specific request shape for react-native-iap v15.
+        // See: https://github.com/dooboolab-community/react-native-iap#requestpurchase
+        const purchaseRequest =
+          Platform.OS === "ios"
+            ? { request: { apple: { sku: productId } }, type: "subs" as const }
+            : { request: { google: { skus: [productId] } }, type: "subs" as const };
+
+        log(`[Subscription] Calling requestPurchase — payload: ${JSON.stringify(purchaseRequest)}`);
+        await requestPurchase(purchaseRequest as any);
+        // Successful result is delivered via purchaseUpdatedListener, not the return value.
+        log("[Subscription] requestPurchase resolved — StoreKit sheet should have appeared");
       } catch (e) {
         const err = e as PurchaseError;
-        if ((err.code as string) !== "E_USER_CANCELLED" && (err.code as string) !== "user-cancelled") {
+        const code = (err.code as string) ?? "";
+        logError(`[Subscription] requestPurchase threw — code: ${code}, message: ${err.message}`, e);
+        if (code !== "E_USER_CANCELLED" && code !== "user-cancelled") {
           setPurchaseError(err.message || "Purchase failed. Please try again.");
+        } else {
+          log("[Subscription] User cancelled the purchase sheet");
         }
         setPurchasing(false);
       }
     },
-    [],
+    [products],
   );
 
   // ── Restore purchases ───────────────────────────────────────────────────────
@@ -540,6 +625,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     isLoading,
     products,
     productsLoading,
+    productsLoadError,
     purchasing,
     purchaseError,
     trialStartMs,
