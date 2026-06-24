@@ -1,3 +1,13 @@
+## [1.0.70] - 2026-06-23
+
+### Changed — Personal Health Report Print Output
+- **Food logs removed from print**: The Sodium/DASH table no longer includes the "Meal Context" and "Food Description" columns. The summary statistics (average sodium, Na:K ratio, and correlation insights) are retained.
+- **Medical References section removed**: The peer-reviewed literature citation block (PubMed citations, NeoVital/NeoSleep methodology references) no longer appears in the printed report.
+- **Meal IQ Insights excluded by default**: The Meal IQ section is now off by default in the report configuration (`includeMealIQ` defaults to `false`). Users can still enable it via the toggle on the Report screen.
+- **Version bump**: 1.0.70 / Build 10070 / versionCode 70.
+
+---
+
 ## [1.0.69] - 2026-06-23
 
 ### Fixed — Apple Guideline 2.1(b) — StoreKit Purchase Sheet Not Appearing

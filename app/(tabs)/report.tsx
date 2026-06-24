@@ -145,7 +145,7 @@ export default function ReportScreen() {
     loadA1CSnapshots().then(setA1CSnapshots).catch(() => {});
   }, []);
   const [includeConditionTimeline, setIncludeConditionTimeline] = useState(true);
-  const [includeMealIQ, setIncludeMealIQ] = useState(true);
+  const [includeMealIQ, setIncludeMealIQ] = useState(false);
   const [includeMedications, setIncludeMedications] = useState(true);
   const [includeEKG, setIncludeEKG] = useState(true);
   const [ekgRecords, setEKGRecords] = React.useState<EKGRecord[]>([]);

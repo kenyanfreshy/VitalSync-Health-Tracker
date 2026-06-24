@@ -91,6 +91,20 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.70 */
+export const whatsNewV1070Strings = {
+  version: "1.0.70",
+  date: "Jun 2026",
+  headline: "Cleaner Health Reports · No Food Logs or Citations",
+  // Changed
+  c1Title: "Food Logs Removed from Printed Report",
+  c1Desc: "The Sodium/DASH table in your health report no longer includes Meal Context or Food Description columns. Sodium and Na:K summary stats are still shown.",
+  c2Title: "Medical References Section Removed",
+  c2Desc: "PubMed citations and methodology references no longer appear in the printed report, keeping it concise and focused on your health data.",
+  c3Title: "Meal IQ Off by Default",
+  c3Desc: "The Meal IQ Insights section is now excluded from reports by default. You can still enable it via the toggle on the Report screen.",
+} as const;
+
 /** Release note content — v1.0.69 */
 export const whatsNewV1069Strings = {
   version: "1.0.69",
@@ -741,6 +755,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1070 = useT(whatsNewV1070Strings);
   const v1069 = useT(whatsNewV1069Strings);
   const v1068 = useT(whatsNewV1068Strings);
   const v1067 = useT(whatsNewV1067Strings);
@@ -765,7 +780,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1069;
+  const latestVersion = v1070;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -895,7 +910,14 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.69 (latest) ── */}
+          {/* ── v1.0.70 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
+            <ReleaseItem emoji="📋" title={v1070.c1Title} desc={v1070.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📚" title={v1070.c2Title} desc={v1070.c2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🥗" title={v1070.c3Title} desc={v1070.c3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.69 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelFixed} color="#F87171" />
             <ReleaseItem emoji="💳" title={v1069.f1Title} desc={v1069.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

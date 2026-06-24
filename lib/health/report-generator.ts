@@ -11,7 +11,6 @@ import { runCorrelationEngine } from './correlation-engine';
 import { getAbnormalAnalytes } from './lab-types';
 import { VITALSYNC_LOGO_B64 } from './report-logo';
 import { aggregateHrTo4HourBuckets, aggregatedToPulseRecords } from './hr-aggregation';
-import { CORRELATION_REFS, REPORT_METRIC_REFS, getRefsForCategories, getRefsForMetrics } from './peer-review-refs';
 import { getRestingHRReferenceRange, type UserProfile } from '@/lib/user-profile';
 
 export interface ReportConfig {
@@ -273,8 +272,6 @@ export interface ReportLabels {
   nakRatioAnalysis: string;
   sodiumMg: string;
   potassiumMg: string;
-  mealContext: string;
-  foodDescription: string;
   // Medication extra
   medReinstated: string;
   medNoChange: string;
@@ -551,8 +548,6 @@ export const DEFAULT_REPORT_LABELS: ReportLabels = {
   nakRatioAnalysis: 'Na:K RATIO ANALYSIS (INTERSALT MODEL)',
   sodiumMg: 'Sodium (mg)',
   potassiumMg: 'Potassium (mg)',
-  mealContext: 'Meal Context',
-  foodDescription: 'Food Description',
   // Medication extra
   medReinstated: 'Reinstated',
   medNoChange: 'No change',
@@ -2445,7 +2440,7 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
     </div>` : ''}
 
     <table class="bp-table" style="margin-top:16px;">
-      <thead><tr><th>${L.date}</th><th>${L.sodiumMg}</th><th>${L.potassiumMg}</th><th>Na:K</th><th>${L.mealContext}</th><th>${L.foodDescription}</th></tr></thead>
+      <thead><tr><th>${L.date}</th><th>${L.sodiumMg}</th><th>${L.potassiumMg}</th><th>Na:K</th></tr></thead>
       <tbody>
         ${recent.map(r => {
           const nak = r.potassiumMg ? (r.sodiumMg / r.potassiumMg).toFixed(2) : '—';
@@ -2455,8 +2450,6 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
             <td>${r.sodiumMg.toLocaleString()}</td>
             <td>${r.potassiumMg ? r.potassiumMg.toLocaleString() : '—'}</td>
             <td style="color:${nakColor};font-weight:700;">${nak}</td>
-            <td>${r.mealContext.charAt(0).toUpperCase() + r.mealContext.slice(1)}</td>
-            <td>${r.foodDescription ?? '—'}</td>
           </tr>`;
         }).join('')}
       </tbody>
@@ -2775,7 +2768,8 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
 
   ${(() => {
     // ── Meal IQ Insights Section ───────────────────────────────────────────
-    if (config.includeMealIQ === false) return '';
+    if (config.includeMealIQ !== true) return '';
+    
     const mealIQRecords = (data.mealIQAnalyzes ?? []).filter(r => {
       const d = new Date(r.analyzedAt);
       return d >= dateRange.start && d <= dateRange.end;
@@ -3251,56 +3245,7 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
   </div>`;
   })()}
 
-  ${(() => {
-    // Collect all categories from the correlation insights + all metric refs + nutrition refs
-    const allCategories = Object.keys(CORRELATION_REFS);
-    const correlationRefs = getRefsForCategories(allCategories);
-    const metricKeys = Object.keys(REPORT_METRIC_REFS);
-    const metricRefs = getRefsForMetrics(metricKeys);
-    // Merge and deduplicate by pmid/id
-    const seen = new Set<string>();
-    const reportRefs = [...correlationRefs, ...metricRefs].filter(ref => {
-      const key = ref.pmid || ref.id;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-    if (!reportRefs.length) return '';
-    const refRows = reportRefs.map((ref, idx) => `
-      <div style="margin-bottom:10px;padding-left:24px;position:relative;">
-        <span style="position:absolute;left:0;top:0;font-weight:700;color:#6366F1;">[${idx + 1}]</span>
-        <span style="font-size:10px;color:#1E293B;line-height:1.5;">${ref.fullRef}</span><br>
-        <span style="font-size:9px;color:#64748B;font-style:italic;">${ref.summary}</span>
-        ${ref.url ? `<br><a href="${ref.url}" style="font-size:9px;color:#6366F1;">PubMed: ${ref.pmid || 'N/A'}</a>` : ''}
-      </div>
-    `).join('');
-
-    // NeoVital graph and NeoSleep methodology references
-    const neoVitalRef = config.includeNeoVitalGraph !== false ? `
-      <div style="margin-bottom:10px;padding-left:24px;position:relative;margin-top:16px;">
-        <span style="position:absolute;left:0;top:0;font-weight:700;color:#4A9ECC;">[NV]</span>
-        <span style="font-size:10px;color:#1E293B;line-height:1.5;"><strong>NeoVital Monitor — Oscillating Vital Signs Graph</strong></span><br>
-        <span style="font-size:9px;color:#64748B;font-style:italic;">Multi-axis normalized trend visualization displaying HR, BP, SpO\u2082, blood glucose, and weight over 30/90-day windows. Each metric is independently normalized to its own physiological scale. Methodology grounded in: Clifton DA et al. (2012) Predictive monitoring of mobile patients by combining clinical observations with data from wearable sensors. IEEE J Biomed Health Inform. PMID: 23008264. Tarassenko L et al. (2014) Integrated monitoring and analysis for early warning of patient deterioration. Br J Anaesth. PMID: 24907243.</span>
-      </div>
-    ` : '';
-
-    const neoSleepRef = `
-      <div style="margin-bottom:10px;padding-left:24px;position:relative;">
-        <span style="position:absolute;left:0;top:0;font-weight:700;color:#7C3AED;">[NS]</span>
-        <span style="font-size:10px;color:#1E293B;line-height:1.5;"><strong>NeoSleep — Sleep Architecture Analysis</strong></span><br>
-        <span style="font-size:9px;color:#64748B;font-style:italic;">Sleep stage duration, efficiency, and circadian alignment metrics displayed in this report follow AASM (American Academy of Sleep Medicine) scoring criteria. References: Berry RB et al. (2012) AASM Manual for the Scoring of Sleep and Associated Events v2.0. Buysse DJ et al. (1989) The Pittsburgh Sleep Quality Index. Psychiatry Res. PMID: 2748771. Ohayon MM et al. (2004) Meta-analysis of quantitative sleep parameters from childhood to old age. Sleep. PMID: 15164913.</span>
-      </div>
-    `;
-
-    return `
-    <div style="page-break-inside:avoid;margin:24px 0 16px;padding:20px 24px;background:#F8FAFC;border-radius:12px;border:1px solid #E2E8F0;">
-      <div style="font-size:13px;font-weight:800;color:#6366F1;letter-spacing:0.8px;margin-bottom:14px;text-transform:uppercase;">Medical References</div>
-      <div style="font-size:9px;color:#94A3B8;font-style:italic;margin-bottom:12px;">All health metrics, correlation insights, and nutritional analyzes in this report are grounded in peer-reviewed literature. Citations are indexed in PubMed (NCBI) and follow Vancouver/ICMJE format.</div>
-      ${refRows}
-      ${neoVitalRef}
-      ${neoSleepRef}
-    </div>`;
-  })()}
+  ${''}
 
   <div class="footer">
     ${L.footerText}<br>

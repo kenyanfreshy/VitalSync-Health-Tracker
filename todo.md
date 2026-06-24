@@ -10437,3 +10437,11 @@
 - [x] Version bump to 1.0.67 / Build 10067 / versionCode 67
 - [x] What's New v1.0.67 entry + CHANGELOG
 - [ ] Commit, EAS build, TestFlight submission
+
+## v1.0.70 — Print Report: Remove Food Logs & Medical References
+- [x] Set includeMealIQ default to false in report.tsx (exclude Meal IQ from print by default)
+- [x] Remove raw food log table (Meal Context + Food Description columns) from Sodium/DASH section in report-generator.ts
+- [x] Remove entire Medical References section from report-generator.ts
+- [ ] Version bump to 1.0.70 / Build 10070 / versionCode 70
+- [ ] CHANGELOG + What's New v1.0.70 entry
+- [ ] Commit and push
