@@ -10442,6 +10442,6 @@
 - [x] Set includeMealIQ default to false in report.tsx (exclude Meal IQ from print by default)
 - [x] Remove raw food log table (Meal Context + Food Description columns) from Sodium/DASH section in report-generator.ts
 - [x] Remove entire Medical References section from report-generator.ts
-- [ ] Version bump to 1.0.70 / Build 10070 / versionCode 70
-- [ ] CHANGELOG + What's New v1.0.70 entry
-- [ ] Commit and push
+- [x] Version bump to 1.0.70 / Build 10070 / versionCode 70
+- [x] CHANGELOG + What's New v1.0.70 entry
+- [x] Commit and push
