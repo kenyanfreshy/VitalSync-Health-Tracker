@@ -113,6 +113,9 @@ export function PaywallScreen({
     accessState,
     trialStartMs,
     trialDaysRemaining,
+    hasIntroOffer,
+    introOfferLabel,
+    introOfferDays,
   } = useSubscription();
 
   const [selectedPlan, setSelectedPlan] = useState<PlanSelection>(PRODUCT_IDS.yearly);
@@ -159,17 +162,51 @@ export function PaywallScreen({
   const monthlyLabel = productsLoading ? FALLBACK_MONTHLY_LABEL : `${monthlyPrice}/month`;
 
   // ── Disclosure text (Apple 3.1.2(c)) ─────────────────────────────────────
+  // IMPORTANT: Only mention free trial in disclosure when StoreKit confirms
+  // introductory offer eligibility for this Apple ID (hasIntroOffer === true).
   const selectedLabel = selectedPlan === PRODUCT_IDS.yearly ? yearlyLabel : monthlyLabel;
-  const disclosureText = selectedPlan === FREE_PLAN_ID
-    ? ((pw as any).freePlanDisclosure ?? 'Free plan includes basic logging with limited history.')
-    : ((pw as any).trialDisclosure ?? `After the 14-day free trial, your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`).replace('{price}', selectedLabel);
+  const disclosureText = (() => {
+    if (selectedPlan === FREE_PLAN_ID) {
+      return (pw as any).freePlanDisclosure ?? 'Free plan includes basic logging with limited history.';
+    }
+    if (hasIntroOffer && introOfferDays) {
+      // StoreKit confirmed a free trial is available — show trial disclosure
+      const trialDisclosure = (pw as any).trialDisclosure
+        ?? `After the ${introOfferDays}-day free trial, your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`;
+      return trialDisclosure.replace('{price}', selectedLabel).replace('{days}', String(introOfferDays));
+    }
+    // No introductory offer available — show standard subscription disclosure
+    return (pw as any).subscribeDisclosure
+      ?? `Your subscription automatically renews at ${selectedLabel} unless canceled at least 24 hours before renewal. Manage in App Store Settings.`;
+  })();
 
   // ── CTA label ─────────────────────────────────────────────────────────────
-  const ctaLabel = selectedPlan === FREE_PLAN_ID
-    ? ((pw as any).continueWithFree ?? 'Continue with Free Plan')
-    : selectedPlan === PRODUCT_IDS.yearly
-      ? ((pw as any).continueWithAnnual ?? 'Start 14-Day Free Trial')
-      : ((pw as any).continueWithMonthly ?? 'Unlock Premium Features');
+  // IMPORTANT: Only show trial copy when StoreKit confirms introductory offer
+  // eligibility (hasIntroOffer === true). Otherwise show direct subscribe copy.
+  // This prevents the Apple reviewer mismatch where the paywall says
+  // "14-Day Free Trial" but the StoreKit sheet shows no trial.
+  const ctaLabel = (() => {
+    if (selectedPlan === FREE_PLAN_ID) {
+      return (pw as any).continueWithFree ?? 'Continue with Free Plan';
+    }
+    if (selectedPlan === PRODUCT_IDS.yearly) {
+      if (hasIntroOffer && introOfferDays) {
+        // StoreKit confirmed trial eligibility — show trial CTA
+        const trialCta = (pw as any).continueWithAnnual;
+        if (trialCta) return trialCta.replace('{days}', String(introOfferDays));
+        return `Start ${introOfferDays}-Day Free Trial`;
+      }
+      // No trial available — show direct subscribe CTA
+      return (pw as any).subscribeAnnual ?? `Subscribe — ${yearlyLabel}`;
+    }
+    // Monthly plan
+    if (hasIntroOffer && introOfferDays) {
+      const trialCta = (pw as any).continueWithMonthlyTrial;
+      if (trialCta) return trialCta.replace('{days}', String(introOfferDays));
+      return `Start ${introOfferDays}-Day Free Trial`;
+    }
+    return (pw as any).continueWithMonthly ?? 'Unlock Premium Features';
+  })();
 
   // ── Handle primary CTA ────────────────────────────────────────────────────
   const handleStartTrial = useCallback(async () => {
@@ -468,7 +505,11 @@ export function PaywallScreen({
                 <Text style={s.planPeriodUnit}>/yr</Text>
               </Text>
             )}
-            <Text style={s.trialSubText}>{(pw as any).introFreeTrial ?? '14-day free trial'}</Text>
+            {hasIntroOffer && introOfferDays && (
+              <Text style={s.trialSubText}>
+                {((pw as any).introFreeTrial ?? '{days}-day free trial').replace('{days}', String(introOfferDays))}
+              </Text>
+            )}
             <Text style={s.savingText}>Save ~17%</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}
@@ -496,7 +537,11 @@ export function PaywallScreen({
                 <Text style={s.planPeriodUnit}>/mo</Text>
               </Text>
             )}
-            <Text style={s.trialSubText}>{(pw as any).introFreeTrial ?? '14-day free trial'}</Text>
+            {hasIntroOffer && introOfferDays && (
+              <Text style={s.trialSubText}>
+                {((pw as any).introFreeTrial ?? '{days}-day free trial').replace('{days}', String(introOfferDays))}
+              </Text>
+            )}
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.monthly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.monthly && <View style={s.radioInner} />}
             </View>

@@ -164,6 +164,22 @@ export interface SubscriptionContextValue {
   clearRestoreResult: () => void;
   /** Reload products from store */
   reloadProducts: () => Promise<void>;
+  /**
+   * True when StoreKit confirms an introductory offer (free trial) is available
+   * for the selected annual product. Derived from the loaded product object.
+   * The paywall MUST only show trial copy when this is true.
+   */
+  hasIntroOffer: boolean;
+  /**
+   * Human-readable trial label from StoreKit, e.g. "14-day free trial".
+   * Null when no introductory offer is available for this Apple ID.
+   */
+  introOfferLabel: string | null;
+  /**
+   * Number of trial days from StoreKit, e.g. 14.
+   * Null when no introductory offer is available.
+   */
+  introOfferDays: number | null;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextValue | null>(null);
@@ -198,6 +214,57 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     ? Math.max(0, Math.ceil((trialExpiryMs - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
   const isPremium = accessState === "trial_active" || accessState === "subscribed";
+
+  // ── Introductory offer eligibility (derived from loaded products) ────────────
+  // Read from the annual product first; fall back to monthly.
+  // Uses both the legacy introductoryPricePaymentModeIOS field and the newer
+  // subscriptionOffers array (react-native-iap v15 cross-platform API).
+  const _introProduct =
+    products.find(p => p.id === PRODUCT_IDS.yearly) ??
+    products.find(p => p.id === PRODUCT_IDS.monthly) ??
+    null;
+
+  const _hasIntroOffer = (() => {
+    if (!_introProduct) return false;
+    const p = _introProduct as any;
+    // react-native-iap v15 standardized API: subscriptionOffers array
+    if (Array.isArray(p.subscriptionOffers)) {
+      const introOffer = (p.subscriptionOffers as Array<{type: string; paymentMode?: string}>)
+        .find(o => o.type === 'introductory' && o.paymentMode === 'free-trial');
+      if (introOffer) return true;
+    }
+    // Legacy iOS-specific field
+    if (p.introductoryPricePaymentModeIOS === 'free-trial') return true;
+    return false;
+  })();
+
+  const _introOfferDays = (() => {
+    if (!_hasIntroOffer || !_introProduct) return null;
+    const p = _introProduct as any;
+    // Try subscriptionOffers first
+    if (Array.isArray(p.subscriptionOffers)) {
+      const introOffer = (p.subscriptionOffers as Array<{type: string; paymentMode?: string; period?: {unit: string; value?: number}; periodCount?: number; numberOfPeriodsIOS?: number}>)
+        .find(o => o.type === 'introductory' && o.paymentMode === 'free-trial');
+      if (introOffer) {
+        const periodCount = introOffer.numberOfPeriodsIOS ?? introOffer.periodCount ?? 1;
+        const unit = introOffer.period?.unit ?? 'day';
+        if (unit === 'day') return periodCount;
+        if (unit === 'week') return periodCount * 7;
+        if (unit === 'month') return periodCount * 30;
+      }
+    }
+    // Legacy: introductoryPriceNumberOfPeriodsIOS + introductoryPriceSubscriptionPeriodIOS
+    const numPeriods = parseInt(p.introductoryPriceNumberOfPeriodsIOS ?? '14', 10);
+    const periodUnit = (p.introductoryPriceSubscriptionPeriodIOS ?? 'DAY').toUpperCase();
+    if (periodUnit === 'DAY') return numPeriods;
+    if (periodUnit === 'WEEK') return numPeriods * 7;
+    if (periodUnit === 'MONTH') return numPeriods * 30;
+    return 14; // safe fallback
+  })();
+
+  const _introOfferLabel = _hasIntroOffer && _introOfferDays
+    ? `${_introOfferDays}-day free trial`
+    : null;
 
   // ── Persist access state ────────────────────────────────────────────────────
 
@@ -726,6 +793,9 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     subscriptionPlatform,
     isRestoring,
     restoreResult,
+    hasIntroOffer: _hasIntroOffer,
+    introOfferLabel: _introOfferLabel,
+    introOfferDays: _introOfferDays,
     startTrial,
     purchaseSubscription,
     restorePurchases,

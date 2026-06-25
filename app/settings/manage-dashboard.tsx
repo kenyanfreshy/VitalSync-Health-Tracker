@@ -30,6 +30,7 @@ import { useColors, useLang } from '@/hooks';
 import { useDashboardVisibility, type DashboardSectionId } from '@/hooks/use-dashboard-visibility';
 import { useDashboardCardOrder, type DashboardCardId } from '@/hooks/use-dashboard-card-order';
 import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
+import { useSubscription } from '@/lib/subscription/subscription-context';
 import { settingsExtStrings } from '@/lib/i18n';
 
 // ─── Section metadata ─────────────────────────────────────────────────────────
@@ -145,6 +146,7 @@ export default function ManageDashboardScreen() {
   const lang = useLang();
   const t = ((settingsExtStrings as unknown as Record<string, typeof settingsExtStrings.en>)[lang] ?? settingsExtStrings.en);
   const { isPremium: isDashPremium, openPaywall: openDashPaywall } = usePremiumGate();
+  const { hasIntroOffer, introOfferDays } = useSubscription();
 
   const { visibility, hydrated: visHydrated, setCardVisible, resetVisibility } = useDashboardVisibility();
   const { order, moveCard, resetOrder, hydrated: orderHydrated } = useDashboardCardOrder();
@@ -230,7 +232,11 @@ export default function ManageDashboardScreen() {
                 <Text style={{ fontSize: 18 }}>🔒</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: '#6366F1', fontWeight: '700', fontSize: 13 }}>{t.dashCustomPremiumTitle ?? 'Dashboard Customisation — Premium'}</Text>
-                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>{t.unlockReorderingNote ?? 'Unlock full reordering and card management with a free trial.'}</Text>
+                  <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>
+                    {hasIntroOffer && introOfferDays
+                      ? (t.unlockReorderingNote ?? 'Unlock full reordering and card management with a {days}-day free trial.').replace('{days}', String(introOfferDays))
+                      : (t.unlockReorderingNoteNoTrial ?? 'Unlock full reordering and card management with VitalSync Premium.')}
+                  </Text>
                 </View>
                 <Text style={{ color: '#6366F1', fontSize: 16 }}>›</Text>
               </TouchableOpacity>

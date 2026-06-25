@@ -68,6 +68,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
 import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
+import { useSubscription } from '@/lib/subscription/subscription-context';
 import { Linking } from 'react-native';
 import { CORRELATION_REFS, getRefsForCategories, type PeerRef } from '@/lib/health/peer-review-refs';
 
@@ -184,6 +185,10 @@ export default function AnalyticsScreen() {
   const { showScrollTop: showAnalyticsScrollTop, scrollTopOpacity: analyticsScrollTopOpacity, handleScroll: handleAnalyticsScroll, scrollToTop: analyticsScrollToTop } = useScrollToTop(analyticsScrollRef);
   const colors = useColors();
   const { isPremium: isAnalyticsPremium, openPaywall: openAnalyticsPaywall } = usePremiumGate();
+  const { hasIntroOffer, introOfferDays } = useSubscription();
+  const analyticsCta = hasIntroOffer && introOfferDays
+    ? (cs.premiumCta ?? `Start ${introOfferDays}-Day Free Trial`).replace('{days}', String(introOfferDays))
+    : (cs.subscribeToPremium ?? 'Subscribe to Premium');
   const scheme = useColorScheme() ?? 'light';
   const isDark = scheme === 'dark';
   const lang = useLang();
@@ -537,7 +542,7 @@ export default function AnalyticsScreen() {
               <Text style={{ color: '#6366F1', fontWeight: '700', fontSize: 14, marginBottom: 4 }}>{cs.premiumFeatureTitle ?? '🔒 Premium Feature'}</Text>
               <Text style={{ color: colors.muted, fontSize: 13, lineHeight: 18 }}>{cs.premiumFeatureSub ?? 'Advanced correlations between your vitals, nutrition, sleep, and activity are available with VitalSync Premium.'}</Text>
               <TouchableOpacity onPress={openAnalyticsPaywall} style={{ marginTop: 10, backgroundColor: '#6366F1', borderRadius: 10, paddingVertical: 10, alignItems: 'center' }}>
-                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>{cs.premiumCta ?? 'Start 14-Day Free Trial'}</Text>
+                <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>{analyticsCta}</Text>
               </TouchableOpacity>
             </View>
           )}

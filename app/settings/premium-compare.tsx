@@ -172,7 +172,7 @@ export default function PremiumCompareScreen() {
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
   const router = useRouter();
-  const { isPremium } = useSubscription();
+  const { isPremium, hasIntroOffer, introOfferDays } = useSubscription();
   const { requirePremium, PremiumGateSheet } = usePremiumGate();
 
   // ── i18n ──────────────────────────────────────────────────────────────────
@@ -292,14 +292,20 @@ export default function PremiumCompareScreen() {
               style={[styles.ctaBtn, { backgroundColor: colors.primary }]}
             >
               <Text style={styles.ctaBtnText}>
-                {pw.startTrial ?? t.startTrialBtn}
+                {hasIntroOffer && introOfferDays
+                  ? (pw.startTrial
+                      ? pw.startTrial.replace('{days}', String(introOfferDays))
+                      : `Start ${introOfferDays}-Day Free Trial`)
+                  : (pw.subscribeToPremium ?? 'Subscribe to Premium')}
               </Text>
             </TouchableOpacity>
-            <Text style={[styles.ctaNote, { color: colors.muted }]}>
-              {pw.noPaymentDuringTrial
-                ? `${pw.noPaymentDuringTrial} · ${pw.cancelAnytime ?? ''}`
-                : t.noPaymentNote}
-            </Text>
+            {hasIntroOffer && introOfferDays && (
+              <Text style={[styles.ctaNote, { color: colors.muted }]}>
+                {pw.noPaymentDuringTrial
+                  ? `${pw.noPaymentDuringTrial} · ${pw.cancelAnytime ?? ''}`
+                  : t.noPaymentNote}
+              </Text>
+            )}
           </View>
         )}
 

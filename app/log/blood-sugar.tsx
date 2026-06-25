@@ -52,6 +52,7 @@ import {
 } from '@/lib/health/glucose-thresholds';
 import { useUpsell } from '@/hooks/use-upsell';
 import { usePremiumGate } from '@/lib/subscription/use-premium-gate';
+import { useSubscription } from '@/lib/subscription/subscription-context';
 
 const RECHECK_STORAGE_KEY = '@vsht:glucose_recheck';
 const UNITS_KEY = '@vitalsync/profile_units';
@@ -80,6 +81,10 @@ export default function BloodSugarLogScreen() {
   const rs = ((recordsStrings as unknown as Record<string, typeof recordsStrings.en>)[lang] ?? recordsStrings.en);
   const { checkAndShow: checkUpsell, UpsellSheet } = useUpsell();
   const { isPremium: isA1CPremium, requirePremium: requireA1CPremium, PremiumGateSheet: A1CGateSheet } = usePremiumGate();
+  const { hasIntroOffer, introOfferDays } = useSubscription();
+  const a1cUnlockText = hasIntroOffer && introOfferDays
+    ? (rs.projectedA1CUnlock ?? `Unlock estimated A1C trends with a ${introOfferDays}-day free trial.`).replace('{days}', String(introOfferDays))
+    : (rs.projectedA1CUnlockNoTrial ?? 'Unlock estimated A1C trends with VitalSync Premium.');
   const { state, addBloodSugar, deleteBloodSugar } = useHealth();
   const { dietType: userDietType } = useDietType();
   const dietOption = DIET_TYPE_OPTIONS.find(o => o.value === userDietType);
@@ -570,7 +575,7 @@ export default function BloodSugarLogScreen() {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[s.a1cLockedTitle, { color: colors.primary }]}>{rs.projectedA1CPremium}</Text>
-            <Text style={[s.a1cLockedSub, { color: colors.muted }]}>{rs.projectedA1CUnlock}</Text>
+            <Text style={[s.a1cLockedSub, { color: colors.muted }]}>{a1cUnlockText}</Text>
           </View>
           <View style={{ alignItems: 'flex-end', gap: 4 }}>
             <View style={[s.a1cTryFreeBtn, { backgroundColor: colors.primary }]}>

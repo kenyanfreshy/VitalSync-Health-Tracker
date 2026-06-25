@@ -45,6 +45,7 @@ import { applyRTLForLang, isRTLLang } from '@/lib/rtl';
 import { getLangFlag } from '@/lib/lang-flags';
 import { SUPPORTED_LANGUAGES } from '@/lib/supported-languages';
 import { markOnboardingComplete, hasCompletedOnboarding } from '@/lib/onboarding';
+import { useSubscription } from '@/lib/subscription/subscription-context';
 import { useThemeContext } from '@/lib/theme-provider';
 import { markConsentAccepted } from '@/components/consent-modal';
 import { saveUserProfile, type BiologicalSex } from '@/lib/user-profile';
@@ -309,6 +310,7 @@ export default function OnboardingScreen() {
   const [profileWeight, setProfileWeight] = useState('');
   const [profileHeight, setProfileHeight] = useState('');
   const [selectedDiet, setSelectedDiet] = useState<DietType>('balanced');
+  const { hasIntroOffer, introOfferDays } = useSubscription();
   const { setPreference: setThemePref } = useThemeContext();
   const [selectedTheme, setSelectedTheme] = useState<'light' | 'dark' | 'system' | 'amoled'>('dark');
   const [consentAcknowledged, setConsentAcknowledged] = useState(false);
@@ -561,7 +563,7 @@ export default function OnboardingScreen() {
     { top: o.slideHeadline3top, bottom: o.slideHeadline3bottom },
     { top: o.slideHeadline5top, bottom: o.slideHeadline5bottom },
     { top: o.slideHeadline6top, bottom: o.slideHeadline6bottom },
-    { top: 'Unlock Premium', bottom: 'Start your 14-day free trial' },
+    { top: o.slideHeadlinePremiumTop ?? 'Unlock Premium', bottom: hasIntroOffer && introOfferDays ? `Start your ${introOfferDays}-day free trial` : (o.slideHeadlinePremiumBottom ?? 'Get full access to VitalSync Premium') },
     { top: o.slideHeadline4top, bottom: o.slideHeadline4bottom },
   ];
 

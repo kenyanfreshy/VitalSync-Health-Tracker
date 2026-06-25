@@ -91,6 +91,19 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.72 */
+export const whatsNewV1072Strings = {
+  version: "1.0.72",
+  date: "Jun 2026",
+  headline: "Dynamic Trial Eligibility · Guideline 2.1(b)",
+  // Fixed
+  f1Title: "Trial CTA Now Reflects Your Eligibility",
+  f1Desc: "The paywall, onboarding, and all upsell screens now read your introductory offer eligibility directly from the App Store. \"Start 14-Day Free Trial\" only appears when Apple confirms you are eligible — otherwise a direct Subscribe CTA is shown.",
+  f2Title: "All Screens Updated",
+  f2Desc: "Analytics, Blood Sugar A1C, Dashboard customisation, Purchase Success, and Premium Compare screens all now reflect your real StoreKit eligibility instead of hardcoding trial text.",
+  f3Title: "New No-Trial Fallback Strings",
+  f3Desc: "Added 30 new translated strings across all 10 languages for the no-trial-eligible state, ensuring every user sees accurate, localised subscription copy.",
+} as const;
 /** Release note content — v1.0.71 */
 export const whatsNewV1071Strings = {
   version: "1.0.71",
@@ -769,6 +782,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1072 = useT(whatsNewV1072Strings);
   const v1071 = useT(whatsNewV1071Strings);
   const v1070 = useT(whatsNewV1070Strings);
   const v1069 = useT(whatsNewV1069Strings);
@@ -795,7 +809,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1071;
+  const latestVersion = v1072;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -925,7 +939,12 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.71 (latest) ── */}
+          {/* ── v1.0.72 (latest) ── */}
+            <ReleaseItem emoji="🎟️" title={v1072.f1Title} desc={v1072.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="📱" title={v1072.f2Title} desc={v1072.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🌐" title={v1072.f3Title} desc={v1072.f3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+
+          {/* ── v1.0.71 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelFixed} color="#F87171" />
             <ReleaseItem emoji="🔄" title={v1071.f1Title} desc={v1071.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

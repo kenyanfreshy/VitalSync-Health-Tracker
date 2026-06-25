@@ -309,6 +309,8 @@ export default function SettingsScreen() {
     isRestoring: subIsRestoring,
     restoreResult: subRestoreResult,
     clearRestoreResult: subClearRestoreResult,
+    hasIntroOffer: subHasIntroOffer,
+    introOfferDays: subIntroOfferDays,
   } = useSubscription();
   // ── Derived plan display info ─────────────────────────────────────────────
   // activePlanLabel is resolved after se is declared (line ~1351); use a getter below.
@@ -1956,7 +1958,9 @@ export default function SettingsScreen() {
                     ? (t.trialExpiredLabel ?? 'Trial expired — subscribe to restore premium access')
                     : subProductsLoading
                     ? (t.loadingPlansLabel ?? 'Loading plans…')
-                    : (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes 14-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
+                    : subHasIntroOffer && subIntroOfferDays
+                      ? (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes {days}-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice).replace('{days}', String(subIntroOfferDays))
+                      : (t.monthlyYearlySubNoTrial ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
                 </Text>
               )}
             </View>
@@ -1969,7 +1973,11 @@ export default function SettingsScreen() {
                 activeOpacity={0.7}
               >
                 <Text style={{ fontSize: 15, fontWeight: '600', color: '#6366F1' }}>
-                  {accessState === 'expired' ? (t.subscribeNowLabel ?? 'Subscribe Now') : (t.startTrialLabel ?? 'Start 14-Day Free Trial')}
+                  {accessState === 'expired'
+                    ? (t.subscribeNowLabel ?? 'Subscribe Now')
+                    : subHasIntroOffer && subIntroOfferDays
+                      ? (t.startTrialLabel ?? 'Start {days}-Day Free Trial').replace('{days}', String(subIntroOfferDays))
+                      : (t.subscribeToPremium ?? 'Subscribe to Premium')}
                 </Text>
                 <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
               </TouchableOpacity>

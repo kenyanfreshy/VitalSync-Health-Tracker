@@ -1,3 +1,15 @@
+## [1.0.72] - 2026-06-25
+
+### Fixed — Dynamic Trial Eligibility (Apple Guideline 2.1(b))
+- **Paywall CTA fully dynamic**: `continueWithAnnual` and `trialDisclosure` now read from StoreKit product object fields (`introductoryPricePaymentModeIOS`, `introductoryPriceNumberOfPeriodsIOS`, `introductoryPriceSubscriptionPeriodIOS`). Trial copy shown only when StoreKit confirms the Apple ID is eligible for an introductory offer; otherwise "Subscribe to Premium" CTA is displayed.
+- **All secondary upsell surfaces updated**: Analytics screen, Blood Sugar A1C unlock card, Dashboard customisation upsell, Onboarding trial slide, Purchase Success screen, and Premium Compare screen all now read `hasIntroOffer` / `introOfferDays` from SubscriptionContext instead of hardcoding "14-Day Free Trial".
+- **`hasIntroOffer`, `introOfferLabel`, `introOfferDays`** exported from SubscriptionContext — derived from loaded StoreKit product objects at runtime.
+- **30 new i18n strings** across 10 languages: `monthlyYearlySubNoTrial`, `subscribeToPremium`, `unlockReorderingNoteNoTrial` (settingsExtStrings) and `projectedA1CUnlockNoTrial` (recordsStrings).
+- **`{days}` placeholder** in `startTrialLabel` and `monthlyYearlySub` for runtime substitution from StoreKit data.
+- **Version bump**: 1.0.72 / Build 10072 / versionCode 72.
+
+---
+
 ## [1.0.71] - 2026-06-23
 ### Fixed — Subscription Management Screen
 - **Restore Purchases now works**: Tapping "Restore Purchases" calls `getAvailablePurchases()` immediately, filters to known subscription SKUs, and processes the most recent purchase. A loading spinner replaces the row label while restoration is in progress.

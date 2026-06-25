@@ -25,7 +25,7 @@ import * as Haptics from "expo-haptics";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { useColors } from "@/hooks/use-colors";
 
-import { PRODUCT_IDS } from "@/lib/subscription/subscription-context";
+import { PRODUCT_IDS, useSubscription } from "@/lib/subscription/subscription-context";
 
 type ConfettiCannonRef = InstanceType<typeof ConfettiCannon>;
 
@@ -44,10 +44,13 @@ const UNLOCKED_FEATURES = [
 ];
 
 // ─── Plan label helper ────────────────────────────────────────────────────────
-function getPlanLabel(planId: string | undefined): string {
-  if (planId === PRODUCT_IDS.yearly) return "Annual Plan · 14-day free trial";
-  if (planId === PRODUCT_IDS.monthly) return "Monthly Plan · 14-day free trial";
-  return "14-day free trial";
+// NOTE: Do NOT hardcode trial text here. Trial text is only shown when
+// StoreKit confirms introductory offer eligibility (hasIntroOffer === true).
+function getPlanLabel(planId: string | undefined, hasIntroOffer: boolean, introOfferDays: number | null): string {
+  const trialSuffix = hasIntroOffer && introOfferDays ? ` · ${introOfferDays}-day free trial` : '';
+  if (planId === PRODUCT_IDS.yearly) return `Annual Plan${trialSuffix}`;
+  if (planId === PRODUCT_IDS.monthly) return `Monthly Plan${trialSuffix}`;
+  return hasIntroOffer && introOfferDays ? `${introOfferDays}-day free trial` : 'VitalSync Premium';
 }
 
 export default function PurchaseSuccessScreen() {
@@ -56,7 +59,8 @@ export default function PurchaseSuccessScreen() {
   const s = makeStyles(colors, insets);
 
   const { planId } = useLocalSearchParams<{ planId?: string }>();
-  const planLabel = getPlanLabel(planId);
+  const { hasIntroOffer, introOfferDays } = useSubscription();
+  const planLabel = getPlanLabel(planId, hasIntroOffer, introOfferDays);
 
   // ── Confetti cannon ref ──────────────────────────────────────────────────
   const confettiRef = useRef<ConfettiCannonRef>(null);
