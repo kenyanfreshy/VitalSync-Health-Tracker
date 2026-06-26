@@ -91,6 +91,25 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.73 */
+export const whatsNewV1073Strings = {
+  version: "1.0.73",
+  date: "Jun 2026",
+  headline: "Paywall Pricing Update · Feature List Refresh",
+  // Changed
+  c1Title: "New Pricing: $49.99/yr or $4.99/mo",
+  c1Desc: "The Premium subscription is now $49.99 per year ($4.17/mo billed yearly) or $4.99 per month. Best Value badge on the annual plan.",
+  c2Title: "Dynamic Trial CTA",
+  c2Desc: "The subscribe button now shows trial copy (\"Try free for {days} days\") only when the App Store confirms you are eligible. Otherwise a direct subscribe CTA is shown.",
+  c3Title: "Updated Feature List",
+  c3Desc: "The Premium feature list is refreshed to 11 items: Advanced wellness insights, Projected A1C estimates, Medication reminders, Appointment reminders, Health report exports, Nutrition analysis, Wellness correlations, Apple Health data import, Dashboard customization, Multi-language support, and Secure personal health tracking.",
+  // Fixed
+  f1Title: "Compliance: EKG Wording Removed",
+  f1Desc: "Paywall slide 3 title updated from clinical EKG wording to \"Apple Health ECG History\" to comply with Apple Guideline 1.4.1.",
+  f2Title: "Loading & Error States Improved",
+  f2Desc: "Loading text now reads \"Loading subscription options…\". If prices fail to load, a clear error message and retry button appear. Purchase buttons are disabled until products are loaded.",
+} as const;
+
 /** Release note content — v1.0.72 */
 export const whatsNewV1072Strings = {
   version: "1.0.72",
@@ -782,6 +801,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1073 = useT(whatsNewV1073Strings);
   const v1072 = useT(whatsNewV1072Strings);
   const v1071 = useT(whatsNewV1071Strings);
   const v1070 = useT(whatsNewV1070Strings);
@@ -809,7 +829,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1072;
+  const latestVersion = v1073;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -939,8 +959,21 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.72 (latest) ── */}
-            <ReleaseItem emoji="🎟️" title={v1072.f1Title} desc={v1072.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          {/* ── v1.0.73 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
+            <ReleaseItem emoji="💰" title={v1073.c1Title} desc={v1073.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🏷️" title={v1073.c2Title} desc={v1073.c2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="✨" title={v1073.c3Title} desc={v1073.c3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color="#F87171" />
+            <ReleaseItem emoji="✅" title={v1073.f1Title} desc={v1073.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="⏳" title={v1073.f2Title} desc={v1073.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+
+          {/* ── v1.0.72 ── */}
+            <ReleaseItem emoji="🏟️" title={v1072.f1Title} desc={v1072.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="📱" title={v1072.f2Title} desc={v1072.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
             <ReleaseItem emoji="🌐" title={v1072.f3Title} desc={v1072.f3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
 

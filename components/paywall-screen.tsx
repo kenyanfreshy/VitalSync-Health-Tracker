@@ -194,18 +194,18 @@ export function PaywallScreen({
         // StoreKit confirmed trial eligibility — show trial CTA
         const trialCta = (pw as any).continueWithAnnual;
         if (trialCta) return trialCta.replace('{days}', String(introOfferDays));
-        return `Start ${introOfferDays}-Day Free Trial`;
+        return `Try free for ${introOfferDays} days, then ${yearlyPrice}/year`;
       }
       // No trial available — show direct subscribe CTA
-      return (pw as any).subscribeAnnual ?? `Subscribe — ${yearlyLabel}`;
+      return (pw as any).subscribeAnnual ?? `Subscribe Annual \u2014 ${yearlyPrice}/yr`;
     }
     // Monthly plan
     if (hasIntroOffer && introOfferDays) {
       const trialCta = (pw as any).continueWithMonthlyTrial;
       if (trialCta) return trialCta.replace('{days}', String(introOfferDays));
-      return `Start ${introOfferDays}-Day Free Trial`;
+      return `Try free for ${introOfferDays} days, then ${monthlyPrice}/month`;
     }
-    return (pw as any).continueWithMonthly ?? 'Unlock Premium Features';
+    return (pw as any).continueWithMonthly ?? `Subscribe Monthly \u2014 ${monthlyPrice}/mo`;
   })();
 
   // ── Handle primary CTA ────────────────────────────────────────────────────
@@ -318,7 +318,7 @@ export function PaywallScreen({
           resizeMode="contain"
         />
         <ActivityIndicator size="large" color={colors.primary} style={{ marginBottom: 12 }} />
-        <Text style={s.loadingText}>{pw.loadingSubscription}</Text>
+        <Text style={s.loadingText}>{(pw as any).loadingSubscription ?? 'Loading subscription options…'}</Text>
       </View>
     );
   }
@@ -387,21 +387,22 @@ export function PaywallScreen({
   }
 
   // ── Feature lists ─────────────────────────────────────────────────────────
+  // Primary (shown highlighted at top)
   const primaryFeatures: { text: string; highlight?: boolean }[] = [
-    { text: pw.feat13, highlight: true },
-    { text: Platform.OS === 'ios' ? pw.feat2ios : pw.feat2android, highlight: true },
-    { text: pw.feat1 },
+    { text: (pw as any).featAdvancedInsights ?? 'Advanced wellness insights', highlight: true },
+    { text: (pw as any).featA1C ?? 'Projected A1C estimates', highlight: true },
+    { text: (pw as any).featMedReminders ?? 'Medication reminders', highlight: true },
   ];
+  // Extended (shown when expanded)
   const extendedFeatures: { text: string; highlight?: boolean }[] = [
-    { text: pw.feat3 },
-    { text: pw.feat4 },
-    { text: pw.feat5 },
-    { text: pw.feat6 },
-    { text: pw.feat7 },
-    { text: pw.feat8 },
-    { text: pw.feat9 },
-    { text: pw.feat10 },
-    { text: pw.feat12 },
+    { text: (pw as any).featApptReminders ?? 'Appointment reminders' },
+    { text: (pw as any).featReports ?? 'Health report exports' },
+    { text: (pw as any).featNutrition ?? 'Nutrition analysis' },
+    { text: (pw as any).featCorrelations ?? 'Wellness correlations' },
+    { text: (pw as any).featAppleHealth ?? 'Apple Health data import' },
+    { text: (pw as any).featDashboard ?? 'Dashboard customization' },
+    { text: (pw as any).featMultiLang ?? 'Multi-language support' },
+    { text: (pw as any).featSecureTracking ?? 'Secure personal health tracking' },
   ];
 
   const carouselSlides = getCarouselSlides(pw);
@@ -510,6 +511,7 @@ export function PaywallScreen({
                 {((pw as any).introFreeTrial ?? '{days}-day free trial').replace('{days}', String(introOfferDays))}
               </Text>
             )}
+            <Text style={s.trialSubText}>$4.17/mo billed yearly</Text>
             <Text style={s.savingText}>Save ~17%</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}
@@ -542,6 +544,7 @@ export function PaywallScreen({
                 {((pw as any).introFreeTrial ?? '{days}-day free trial').replace('{days}', String(introOfferDays))}
               </Text>
             )}
+            <Text style={s.trialSubText}>Cancel anytime</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.monthly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.monthly && <View style={s.radioInner} />}
             </View>
@@ -627,12 +630,14 @@ export function PaywallScreen({
         {/* Products load error — shown when StoreKit fails to return products after 3 retries */}
         {productsLoadError && !purchaseError ? (
           <>
-            <Text style={s.errorText}>{productsLoadError}</Text>
+            <Text style={s.errorText}>
+              {(pw as any).productsLoadErrorMsg ?? "We couldn't load subscription options. Please try again."}
+            </Text>
             <Pressable
               style={({ pressed }) => [s.retryLoadButton, pressed && { opacity: 0.7 }]}
               onPress={() => reloadProducts()}
             >
-              <Text style={s.retryLoadButtonText}>Retry Loading Prices</Text>
+              <Text style={s.retryLoadButtonText}>{(pw as any).retryLoadingPrices ?? 'Try Again'}</Text>
             </Pressable>
           </>
         ) : null}
@@ -663,9 +668,7 @@ export function PaywallScreen({
               </Text>
               {selectedPlan !== FREE_PLAN_ID && (
                 <Text style={s.ctaPriceLabel}>
-                  {selectedPlan === PRODUCT_IDS.yearly
-                    ? `${yearlyPrice}/year after trial. Cancel anytime.`
-                    : `${monthlyPrice}/month. Cancel anytime.`}
+                  Cancel any time
                 </Text>
               )}
             </>
@@ -736,7 +739,7 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
     },
     {
       icon: '',
-      title: pw.slide3Title ?? 'ADVANCED EKG TRACKING',
+      title: pw.slide3Title ?? 'APPLE HEALTH ECG HISTORY',
       subtitle: '',
       description: '',
     },
@@ -778,7 +781,7 @@ function getCarouselSlides(pw: any): CarouselSlide[] {
     },
     {
       icon: '',
-      title: pw.slide10Title ?? 'BLUETOOTH DEVICE SUPPORT',
+      title: pw.slide10Title ?? 'SUPPORTED DEVICE INTEGRATION',
       subtitle: '',
       description: '',
     },

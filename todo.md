@@ -10461,3 +10461,25 @@
 - [x] Full i18n: 14 new strings across all 10 languages
 - [x] Version bump to 1.0.71 / Build 10071 / versionCode 71
 - [x] CHANGELOG and What's New updated
+## v1.0.72 — Dynamic Trial Eligibility (Apple Guideline 2.1(b))
+- [x] Paywall CTA reads StoreKit introductory offer eligibility dynamically
+- [x] All secondary upsell surfaces updated (Analytics, A1C, Dashboard, Onboarding, Purchase Success, Premium Compare)
+- [x] hasIntroOffer / introOfferLabel / introOfferDays exported from SubscriptionContext
+- [x] 30 new i18n strings across 10 languages (no-trial-eligible state)
+- [x] Version bump to 1.0.72 / Build 10072 / versionCode 72
+- [x] CHANGELOG and What's New updated
+- [x] Commit and push
+## v1.0.73 — Paywall Pricing Update, Feature List Refresh, Compliance Fixes
+- [x] New pricing: Annual $49.99/yr, Monthly $4.99/mo
+- [x] Dynamic CTA: trial variant when StoreKit eligible, direct subscribe otherwise
+- [x] 11-item feature list (no Bluetooth): Advanced wellness insights, Projected A1C estimates, Medication reminders, Appointment reminders, Health report exports, Nutrition analysis, Wellness correlations, Apple Health data import, Dashboard customization, Multi-language support, Secure personal health tracking
+- [x] Compliance fix: paywall slide 3 title changed from clinical EKG wording to "Apple Health ECG History"
+- [x] Loading state: "Loading subscription options…"
+- [x] Error state: "We couldn't load subscription options. Please try again." with retry button
+- [x] Purchase buttons disabled until StoreKit products loaded
+- [x] i18n patch: 170 changes across all 10 languages (17 new/updated keys per language)
+- [x] Version bump to 1.0.73 / Build 10073 / versionCode 73
+- [x] CHANGELOG and What's New updated
+- [ ] Commit and push
+- [ ] EAS iOS production build
+- [ ] TestFlight submission

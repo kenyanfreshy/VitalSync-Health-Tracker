@@ -1,4 +1,14 @@
-## [1.0.72] - 2026-06-25
+## [1.0.73] - 2026-06-26
+### Changed — Paywall Pricing, Feature List, and Compliance Fixes
+- **New pricing**: Annual plan updated to $49.99/yr ($4.17/mo billed yearly, Best Value badge); Monthly plan updated to $4.99/mo (Cancel anytime).
+- **Dynamic CTA labels**: Purchase button text is now fully dynamic — shows trial variant ("Try free for {days} days, then $49.99/year") when StoreKit confirms introductory offer eligibility, otherwise shows "Subscribe Annual — $49.99/yr" or "Subscribe Monthly — $4.99/mo".
+- **11-item feature list**: Replaced previous feature list with: Advanced wellness insights, Projected A1C estimates, Medication reminders, Appointment reminders, Health report exports, Nutrition analysis, Wellness correlations, Apple Health data import, Dashboard customization, Multi-language support, Secure personal health tracking. Removed "Supported Bluetooth device integration" (app uses Apple HealthKit only).
+- **Compliance fix — EKG wording**: Removed clinical EKG wording from paywall slide 3 title; replaced with "Apple Health ECG History" to comply with Apple Guideline 1.4.1.
+- **Loading/error states**: Loading text updated to "Loading subscription options…"; error state now shows "We couldn't load subscription options. Please try again." with a retry button. Purchase buttons are disabled until StoreKit products are loaded.
+- **i18n**: 170 changes applied across all 10 languages (EN, ES, FR, DE, ZH, PT, AR, SW, HI, JA) — new keys: `continueWithAnnualTrial`, `continueWithMonthlyTrial`, `subscribeAnnual`, `subscribeMonthly`, `productsLoadErrorMsg`, `retryLoadingPrices`, `featAdvancedInsights`, `featA1C`, `featMedReminders`, `featApptReminders`, `featReports`, `featNutrition`, `featCorrelations`, `featAppleHealth`, `featDashboard`, `featMultiLang`, `featSecureTracking`.
+- **Version bump**: 1.0.73 / Build 10073 / versionCode 73.
+
+---
 
 ### Fixed — Dynamic Trial Eligibility (Apple Guideline 2.1(b))
 - **Paywall CTA fully dynamic**: `continueWithAnnual` and `trialDisclosure` now read from StoreKit product object fields (`introductoryPricePaymentModeIOS`, `introductoryPriceNumberOfPeriodsIOS`, `introductoryPriceSubscriptionPeriodIOS`). Trial copy shown only when StoreKit confirms the Apple ID is eligible for an introductory offer; otherwise "Subscribe to Premium" CTA is displayed.
