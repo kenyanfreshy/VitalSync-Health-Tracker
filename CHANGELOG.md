@@ -1,3 +1,10 @@
+## [1.0.74] - 2026-06-26
+### Fixed — Correlate Screen Crash (subscribeToPremium of undefined)
+- **Bug fix**: Fixed crash `Cannot read property 'subscribeToPremium' of undefined` that occurred when tapping the Correlate tab. The `analyticsCta` variable referenced `cs` (correlation strings) before `cs` was declared in the component body — a JavaScript temporal dead zone error. Moved `cs = useCorrelationStrings()` above `analyticsCta` to resolve.
+- **Version bump**: 1.0.74 / Build 10074 / versionCode 74.
+
+---
+
 ## [1.0.73] - 2026-06-26
 ### Changed — Paywall Pricing, Feature List, and Compliance Fixes
 - **New pricing**: Annual plan updated to $49.99/yr ($4.17/mo billed yearly, Best Value badge); Monthly plan updated to $4.99/mo (Cancel anytime).

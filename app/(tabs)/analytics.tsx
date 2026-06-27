@@ -186,14 +186,14 @@ export default function AnalyticsScreen() {
   const colors = useColors();
   const { isPremium: isAnalyticsPremium, openPaywall: openAnalyticsPaywall } = usePremiumGate();
   const { hasIntroOffer, introOfferDays } = useSubscription();
-  const analyticsCta = hasIntroOffer && introOfferDays
-    ? (cs.premiumCta ?? `Start ${introOfferDays}-Day Free Trial`).replace('{days}', String(introOfferDays))
-    : (cs.subscribeToPremium ?? 'Subscribe to Premium');
   const scheme = useColorScheme() ?? 'light';
   const isDark = scheme === 'dark';
   const lang = useLang();
   const ds = (disclaimerStrings as unknown as Record<string, typeof disclaimerStrings.en>)[lang] ?? disclaimerStrings.en;
   const cs = useCorrelationStrings();
+  const analyticsCta = hasIntroOffer && introOfferDays
+    ? (cs.premiumCta ?? `Start ${introOfferDays}-Day Free Trial`).replace('{days}', String(introOfferDays))
+    : (cs.subscribeToPremium ?? 'Subscribe to Premium');
   const isRTL = useRTL();
   const { state, dietType } = useHealth();
   const [hrWindow, setHrWindow] = useState<HrWindowSize>("4h");

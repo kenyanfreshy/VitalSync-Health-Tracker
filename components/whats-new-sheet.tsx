@@ -91,6 +91,16 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.74 */
+export const whatsNewV1074Strings = {
+  version: "1.0.74",
+  date: "Jun 2026",
+  headline: "Correlate Crash Fix",
+  // Fixed
+  f1Title: "Correlate Screen No Longer Crashes",
+  f1Desc: "Fixed a crash that occurred when tapping the Correlate tab. The subscription strings variable was referenced before it was initialised, causing an immediate error. This is now resolved.",
+} as const;
+
 /** Release note content — v1.0.73 */
 export const whatsNewV1073Strings = {
   version: "1.0.73",
@@ -801,6 +811,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1074 = useT(whatsNewV1074Strings);
   const v1073 = useT(whatsNewV1073Strings);
   const v1072 = useT(whatsNewV1072Strings);
   const v1071 = useT(whatsNewV1071Strings);
@@ -829,7 +840,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1073;
+  const latestVersion = v1074;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -959,7 +970,12 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.73 (latest) ── */}
+          {/* ── v1.0.74 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color="#F87171" />
+            <ReleaseItem emoji="🛠️" title={v1074.f1Title} desc={v1074.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.73 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
             <ReleaseItem emoji="💰" title={v1073.c1Title} desc={v1073.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
