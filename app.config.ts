@@ -18,7 +18,7 @@ const apsEnvironment =
 const env = {
   appName: "VitalSync Health Tracker",
   appSlug: "VitalSync-Health-Tracker",
-  logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663404202670/tRjRLeXaFwalXOjc.png",
+  logoUrl: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663404202670/yzHjfrHgYmARWLaM.png",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
