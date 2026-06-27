@@ -41,7 +41,7 @@ const env = {
 const config: ExpoConfig = {
   name: env.appName,
   slug: env.appSlug,
-  version: "1.0.75",
+  version: "1.0.76",
   orientation: "portrait",
   newArchEnabled: true,
   icon: "./assets/images/icon.png",
@@ -50,7 +50,7 @@ const config: ExpoConfig = {
   ios: {
     supportsTablet: true,
     bundleIdentifier: bundleId,
-    buildNumber: "10075",
+    buildNumber: "10076",
     infoPlist: {
       ITSAppUsesNonExemptEncryption: false,
       CFBundleDisplayName: "VitalSync Health Tracker",
@@ -89,7 +89,7 @@ const config: ExpoConfig = {
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
     },
-    versionCode: 75,
+    versionCode: 76,
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: bundleId,
