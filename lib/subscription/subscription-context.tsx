@@ -346,7 +346,37 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         // Require an authenticated session — no point calling the server otherwise
         const token = await Auth.getSessionToken();
         if (!token) {
-          log("[Subscription] silentRestoreOnColdStart: no session token, skipping");
+          // No server session (fresh install or logged-out user).
+          // Fall back to StoreKit-native restore: call getAvailablePurchases() directly.
+          // This is the standard Apple-recommended approach for reinstall scenarios.
+          log("[Subscription] silentRestoreOnColdStart: no session token — attempting StoreKit-native restore");
+          try {
+            const purchases = await Promise.race([
+              getAvailablePurchases(),
+              new Promise<never>((_, reject) =>
+                setTimeout(() => reject(new Error('storekit-restore-timeout')), 8000)
+              ),
+            ]);
+            const subPurchases = (purchases as Purchase[]).filter(
+              (p: Purchase) => p.productId === PRODUCT_IDS.monthly || p.productId === PRODUCT_IDS.yearly
+            );
+            if (subPurchases.length > 0) {
+              const sorted = [...subPurchases].sort(
+                (a: Purchase, b: Purchase) => (b.transactionDate ?? 0) - (a.transactionDate ?? 0)
+              );
+              log(`[Subscription] silentRestoreOnColdStart: StoreKit found ${subPurchases.length} sub(s), restoring latest: ${sorted[0].productId}`);
+              await processPurchase(sorted[0] as Purchase);
+            } else {
+              log("[Subscription] silentRestoreOnColdStart: StoreKit found no active subscriptions");
+            }
+          } catch (storeKitErr) {
+            const storeKitMsg = storeKitErr instanceof Error ? storeKitErr.message : String(storeKitErr);
+            if (storeKitMsg === 'storekit-restore-timeout') {
+              warn("[Subscription] silentRestoreOnColdStart: StoreKit restore timed out after 8s");
+            } else {
+              warn("[Subscription] silentRestoreOnColdStart: StoreKit restore failed (non-fatal):", storeKitMsg);
+            }
+          }
           return;
         }
         log("[Subscription] silentRestoreOnColdStart: querying server for verified status");
@@ -384,9 +414,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
       }
     },
-    [persistAccessState],
+    [persistAccessState, processPurchase],
   );
-
   // ── Load persisted state on mount ───────────────────────────────────────────
 
   const loadPersistedState = useCallback(async () => {

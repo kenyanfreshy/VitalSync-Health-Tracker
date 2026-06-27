@@ -3,7 +3,7 @@
  *
  * Premium 3D glass collapsible dashboard card showing:
  *   - Latest blood glucose (mg/dL) — color-coded by user thresholds
- *   - Projected A1C via ADAG formula: (avg + 46.7) / 28.7
+ *   - Logged A1C & Trend Tracking via ADAG formula: (avg + 46.7) / 28.7
  *   - 7-day, 30-day, 90-day glucose averages
  *   - 7-day sparkline trend
  *   - Time-in-Range (TIR) bar using computeTIR()
@@ -17,7 +17,7 @@
  * Language matches Records screen vocabulary (Blood Sugar, Fasting, Post-Meal,
  * Normal / Pre-Diabetes / High / Low, Dexcom / CGM Data).
  *
- * Compliance: "Projected A1C" / "Estimated A1C" only. Disclaimer shown.
+ * Compliance: "Logged A1C & Trend Tracking" / "Estimated A1C" only. Disclaimer shown.
  * No diagnosis language.
  */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -370,7 +370,7 @@ const STRINGS = {
     title:             'Blood Sugar',
     noData:            'No readings',
     lastUpdated:       'Last updated',
-    projectedA1C:      'Projected A1C',
+    projectedA1C:      'Logged A1C & Trend Tracking',
     notEnoughData:     'Not enough data yet',
     avg7:              '7-day avg',
     avg30:             '30-day avg',

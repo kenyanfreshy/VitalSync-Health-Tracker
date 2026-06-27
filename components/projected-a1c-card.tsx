@@ -504,7 +504,7 @@ export function ProjectedA1CCard({
           <Text style={{ fontSize: 15 }}>🩸</Text>
         </View>
         <View style={s.headerText}>
-          <Text style={[s.title, { color: colors.foreground }]}>{rs.projectedA1C ?? 'Projected A1C'}</Text>
+          <Text style={[s.title, { color: colors.foreground }]}>{rs.projectedA1C ?? 'Logged A1C & Trend Tracking'}</Text>
           <Text style={[s.subtitle, { color: colors.muted }]}>
             {rs.a1cFormula ?? 'ADAG formula'} · {windowDays}d · {result.count} {rs.a1cReadings?.toLowerCase() ?? 'readings'}
           </Text>
@@ -724,7 +724,7 @@ export function ProjectedA1CCard({
           <View style={[s.disclaimerBox, { backgroundColor: '#F59E0B12', borderColor: '#F59E0B40' }]}>
             <Text style={s.disclaimerIcon}>⚠️</Text>
             <Text style={[s.disclaimerText, { color: colors.muted }]}>
-              Projected A1C is a statistical estimate based on logged readings and is{' '}
+              Your logged A1C trend is calculated from your glucose readings and is{' '}
               <Text style={{ fontWeight: '700' }}>not a substitute</Text> for a laboratory
               hemoglobin A1C test. Consult your physician for personalized guidance.
             </Text>

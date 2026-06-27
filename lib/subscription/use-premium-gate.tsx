@@ -30,7 +30,7 @@ import { usePaywallStrings } from "@/hooks/use-paywall-strings";
 export type PremiumFeature =
   | "Health Report Export"
   | "Advanced Correlations"
-  | "Projected A1C"
+  | "Logged A1C & Trend Tracking"
   | "Smart Reminders"
   | "Dashboard Customisation"
   | "Advanced Nutrition"
@@ -56,7 +56,7 @@ export const FEATURE_DESCRIPTIONS: Record<PremiumFeature, string> = {
     "Generate and export detailed PDF health reports to share with your physician.",
   "Advanced Correlations":
     "Discover patterns between your vitals, nutrition, sleep, and activity data.",
-  "Projected A1C":
+  "Logged A1C & Trend Tracking":
     "See your estimated A1C trend based on your continuous glucose readings.",
   "Smart Reminders":
     "Unlock intelligent reminders for medications, hydration, vitals, and appointments.",

@@ -1,3 +1,13 @@
+## [1.0.75] - 2026-06-27
+### Changed
+- **A1C copy renamed**: "Projected A1C estimates" → "Logged A1C & Trend Tracking" across the entire codebase — onboarding, paywall feature list, blood glucose tab, dashboard card, report generator, and all 10 i18n locales.
+### Fixed
+- **Manage Subscription deep link**: Changed iOS URL to `itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions` so the Subscriptions page opens directly to VitalSync instead of the global subscriptions list.
+- **Restore Purchases on fresh install**: Added StoreKit-native cold-start restore path. When no server session is present (reinstall, new device), `getAvailablePurchases()` is called directly from StoreKit to silently restore the subscription without requiring the user to tap "Restore Purchases".
+- **Version bump**: 1.0.75 / Build 10075 / versionCode 75.
+
+---
+
 ## [1.0.74] - 2026-06-26
 ### Fixed — Correlate Screen Crash (subscribeToPremium of undefined)
 - **Bug fix**: Fixed crash `Cannot read property 'subscribeToPremium' of undefined` that occurred when tapping the Correlate tab. The `analyticsCta` variable referenced `cs` (correlation strings) before `cs` was declared in the component body — a JavaScript temporal dead zone error. Moved `cs = useCorrelationStrings()` above `analyticsCta` to resolve.

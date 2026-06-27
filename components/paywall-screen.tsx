@@ -51,7 +51,8 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 }
 
 // ─── Manage Subscription URLs ─────────────────────────────────────────────────
-const IOS_MANAGE_SUB_URL = "itms-apps://apps.apple.com/account/subscriptions";
+// Deep link that opens the iOS Subscriptions page directly to VitalSync
+const IOS_MANAGE_SUB_URL = "itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions";
 const IOS_MANAGE_SUB_FALLBACK = "https://apps.apple.com/account/subscriptions";
 const ANDROID_MANAGE_SUB_URL = "https://play.google.com/store/account/subscriptions";
 
@@ -390,7 +391,7 @@ export function PaywallScreen({
   // Primary (shown highlighted at top)
   const primaryFeatures: { text: string; highlight?: boolean }[] = [
     { text: (pw as any).featAdvancedInsights ?? 'Advanced wellness insights', highlight: true },
-    { text: (pw as any).featA1C ?? 'Projected A1C estimates', highlight: true },
+    { text: (pw as any).featA1C ?? 'Logged A1C & Trend Tracking', highlight: true },
     { text: (pw as any).featMedReminders ?? 'Medication reminders', highlight: true },
   ];
   // Extended (shown when expanded)

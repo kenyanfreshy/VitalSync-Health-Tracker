@@ -1034,7 +1034,7 @@ export default function ReportScreen() {
           />
           {/* ── Clinical Analytics ── */}
           <ToggleRow
-            label={t.projectedA1c ?? 'Projected A1C'}
+            label={t.projectedA1c ?? 'Logged A1C & Trend Tracking'}
             subtitle={(t.projectedA1cSubtitle ?? 'ADAG formula · {n} glucose readings').replace('{n}', String((state.data?.bloodSugar ?? []).length))}
             value={includeA1C}
             onToggle={setIncludeA1C}

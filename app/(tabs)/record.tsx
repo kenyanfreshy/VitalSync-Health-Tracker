@@ -157,7 +157,7 @@ const RECORD_STRINGS = {
   glucoseFilterAll: 'All',
   glucoseFilterHealthKit: 'HealthKit',
   glucoseFilterManual: 'Manual',
-  projectedA1CPremium: 'Projected A1C — Premium',
+  projectedA1CPremium: 'Logged A1C & Trend Tracking — Premium',
   projectedA1CUnlock: 'Unlock estimated A1C trends with a free trial.',
 } as const;
 

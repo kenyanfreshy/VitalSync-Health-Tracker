@@ -1988,7 +1988,7 @@ export default function SettingsScreen() {
               style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               onPress={() => {
                 if (Platform.OS === 'ios') {
-                  Linking.openURL('itms-apps://apps.apple.com/account/subscriptions').catch(() =>
+                  Linking.openURL('itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions').catch(() =>
                     Linking.openURL('https://apps.apple.com/account/subscriptions')
                   );
                 } else {

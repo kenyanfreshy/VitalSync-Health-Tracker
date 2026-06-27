@@ -91,14 +91,31 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.75 */
+export const whatsNewV1075Strings = {
+  version: "1.0.75",
+  date: "Jun 2026",
+  headline: "Subscription Restore & A1C Tracking",
+  // Changed
+  c1Title: "A1C Feature Renamed",
+  c1Desc: "\"Projected A1C estimates\" is now \"Logged A1C & Trend Tracking\" across the entire app — onboarding, paywall, blood glucose tab, dashboard card, and all 10 languages.",
+  // Fixed
+  f1Title: "Restore Purchases Fixed",
+  f1Desc: "Reinstalling the app now automatically restores your active subscription in the background without requiring you to tap \"Restore Purchases\".",
+  f2Title: "Manage Subscription Opens Correctly",
+  f2Desc: "Tapping \"Manage Subscription\" now opens directly to VitalSync in your Apple Subscriptions page instead of the general subscriptions list.",
+} as const;
+
 /** Release note content — v1.0.74 */
 export const whatsNewV1074Strings = {
   version: "1.0.74",
   date: "Jun 2026",
-  headline: "Correlate Crash Fix",
-  // Fixed
-  f1Title: "Correlate Screen No Longer Crashes",
-  f1Desc: "Fixed a crash that occurred when tapping the Correlate tab. The subscription strings variable was referenced before it was initialised, causing an immediate error. This is now resolved.",
+  headline: "A1C Logging & Stability",
+  // Improved
+  i1Title: "A1C Tracking Renamed",
+  i1Desc: "The A1C feature is now labelled \"Logged A1C & Trend Tracking\" across the app, paywall, and onboarding to better reflect what it actually does: log your A1C values and visualise trends over time.",
+  i2Title: "Performance & Stability",
+  i2Desc: "Several under-the-hood improvements to screen initialisation order and subscription state loading, resulting in a smoother experience when navigating between tabs.",
 } as const;
 
 /** Release note content — v1.0.73 */
@@ -112,7 +129,7 @@ export const whatsNewV1073Strings = {
   c2Title: "Dynamic Trial CTA",
   c2Desc: "The subscribe button now shows trial copy (\"Try free for {days} days\") only when the App Store confirms you are eligible. Otherwise a direct subscribe CTA is shown.",
   c3Title: "Updated Feature List",
-  c3Desc: "The Premium feature list is refreshed to 11 items: Advanced wellness insights, Projected A1C estimates, Medication reminders, Appointment reminders, Health report exports, Nutrition analysis, Wellness correlations, Apple Health data import, Dashboard customization, Multi-language support, and Secure personal health tracking.",
+  c3Desc: "The Premium feature list is refreshed to 11 items: Advanced wellness insights, Logged A1C & Trend Tracking, Medication reminders, Appointment reminders, Health report exports, Nutrition analysis, Wellness correlations, Apple Health data import, Dashboard customization, Multi-language support, and Secure personal health tracking.",
   // Fixed
   f1Title: "Compliance: EKG Wording Removed",
   f1Desc: "Paywall slide 3 title updated from clinical EKG wording to \"Apple Health ECG History\" to comply with Apple Guideline 1.4.1.",
@@ -811,6 +828,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1075 = useT(whatsNewV1075Strings);
   const v1074 = useT(whatsNewV1074Strings);
   const v1073 = useT(whatsNewV1073Strings);
   const v1072 = useT(whatsNewV1072Strings);
@@ -840,7 +858,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1074;
+  const latestVersion = v1075;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -970,10 +988,21 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.74 (latest) ── */}
+          {/* ── v1.0.75 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
+            <ReleaseItem emoji="🧪" title={v1075.c1Title} desc={v1075.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
           <View style={styles.section}>
             <SectionPill label={ui.labelFixed} color="#F87171" />
-            <ReleaseItem emoji="🛠️" title={v1074.f1Title} desc={v1074.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔄" title={v1075.f1Title} desc={v1075.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔗" title={v1075.f2Title} desc={v1075.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.74 ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelImproved} color="#34D399" />
+            <ReleaseItem emoji="📊" title={v1074.i1Title} desc={v1074.i1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="⚡" title={v1074.i2Title} desc={v1074.i2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
           </View>
           {/* ── v1.0.73 ── */}
           <View style={styles.section}>

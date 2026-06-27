@@ -3,8 +3,8 @@
  * Manual glucose entry with mg/dL ↔ mmol/L toggle and context (fasting, post-meal, etc.)
  *
  * Layout: single FlatList with ListHeaderComponent so the entry form, nutrition summary,
- * A1C target picker, and Projected A1C card all scroll together with the history list.
- * This prevents the history and Projected A1C card from being cut off.
+ * A1C target picker, and Logged A1C & Trend Tracking card all scroll together with the history list.
+ * This prevents the history and Logged A1C & Trend Tracking card from being cut off.
  */
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
@@ -556,7 +556,7 @@ export default function BloodSugarLogScreen() {
         </View>
       )}
 
-      {/* ─── Projected A1C (premium-gated) ────────────────────────────────── */}
+      {/* ─── Logged A1C & Trend Tracking (premium-gated) ────────────────────────────────── */}
       {isA1CPremium ? (
         <ProjectedA1CCard
           bloodSugarRecords={records}
@@ -567,7 +567,7 @@ export default function BloodSugarLogScreen() {
       ) : (
         <TouchableOpacity
           activeOpacity={0.85}
-          onPress={requireA1CPremium(() => {}, { feature: 'Projected A1C' })}
+          onPress={requireA1CPremium(() => {}, { feature: 'Logged A1C & Trend Tracking' })}
           style={[s.a1cLockedCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
           <View style={s.a1cLockedIconWrap}>
@@ -666,7 +666,7 @@ export default function BloodSugarLogScreen() {
     <ScreenContainer>
       {/* Contextual upsell bottom sheet */}
       {UpsellSheet}
-      {/* Projected A1C premium gate sheet — render as expression (never as <A1CGateSheet />
+      {/* Logged A1C & Trend Tracking premium gate sheet — render as expression (never as <A1CGateSheet />
            because PremiumGateSheet is React.ReactElement|null; calling it as a JSX element
            when null causes maybeHijackSafeAreaProvider crash on iOS 26.5 / Hermes) */}
       {A1CGateSheet}
@@ -872,7 +872,7 @@ const styles = (c: ReturnType<typeof useColors>) => StyleSheet.create({
   macroBarFill: { height: 4, borderRadius: 2 },
   sugarWarning: { borderRadius: 8, borderWidth: 1, padding: 10, marginTop: 4 },
   sugarWarningText: { fontSize: 12, fontWeight: '500', lineHeight: 17 },
-  // Projected A1C locked card (free users)
+  // Logged A1C & Trend Tracking locked card (free users)
   a1cLockedCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     marginHorizontal: 16, marginBottom: 8, marginTop: 4,

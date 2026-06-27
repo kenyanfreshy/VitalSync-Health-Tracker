@@ -10488,6 +10488,6 @@
 - [x] Fix `Cannot read property 'subscribeToPremium' of undefined` crash on Correlate tab
 - [x] Version bump to 1.0.74 / Build 10074 / versionCode 74
 - [x] CHANGELOG and What's New updated
-- [ ] Commit and push
-- [ ] EAS iOS production build
-- [ ] TestFlight submission
+- [x] Commit and push
+- [x] EAS iOS production build
+- [x] TestFlight submission

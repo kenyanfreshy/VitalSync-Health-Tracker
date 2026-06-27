@@ -30,7 +30,7 @@ export interface ReportConfig {
   weightUnit?: 'kg' | 'lbs';
   /** 'mg/dL' or 'mmol/L' — controls blood glucose unit display */
   glucoseUnit?: 'mg/dL' | 'mmol/L';
-  /** Include Projected A1C section (ADAG formula) */
+  /** Include Logged A1C & Trend Tracking section (ADAG formula) */
   includeA1C?: boolean;
   /** Daily A1C snapshots for the 30-day trend chart (from AsyncStorage) */
   a1cSnapshots?: { date: string; a1c: number }[];
@@ -403,7 +403,7 @@ export const DEFAULT_REPORT_LABELS: ReportLabels = {
   tempLow: 'Low',
   tempFever: 'Fever',
   tempHighFever: 'High Fever',
-  projectedA1C: 'Projected A1C',
+  projectedA1C: 'Logged A1C & Trend Tracking',
   a1cFormula: 'ADAG Formula',
   a1cAvgGlucose: 'Avg Glucose',
   a1cReadings: 'Readings',
@@ -2467,7 +2467,7 @@ export function generateReportHTML(data: HealthData, config: ReportConfig): stri
   ` : ''}
 
   ${(() => {
-    // ── Projected A1C Section (Enhanced) ─────────────────────────────────────
+    // ── Logged A1C & Trend Tracking Section (Enhanced) ─────────────────────────────────────
     if (config.includeA1C === false) return '';
     const bsRecords = (data.bloodSugar ?? []).filter(r => {
       const d = new Date(r.timestamp);

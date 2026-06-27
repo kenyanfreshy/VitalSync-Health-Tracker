@@ -57,7 +57,7 @@ const COMPARE_STRINGS_EN = {
   rowRefillAlerts: 'Refill & Low-Stock Alerts',
   rowBasicCharts: 'Basic Trend Charts',
   rowAdvancedCorrelations: 'Advanced Correlations',
-  rowProjectedA1C: 'Projected A1C Estimate',
+  rowProjectedA1C: 'Logged A1C & Trend Tracking',
   rowAIInsightsIOS: 'Personal Health Insights',
   rowAIInsightsAndroid: 'Personal Health Insights',
   rowPDFExport: 'Health Report PDF Export',
