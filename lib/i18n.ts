@@ -19734,7 +19734,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analyzed by Gemini AI · USDA FoodData Central · Apple Vision (fallback)',
       consentRequired: 'AI consent required to use this feature.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.'
+      consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.',
       enableInPrivacyConsent: 'Enable in Privacy & Consent →',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Diet Log',
@@ -19861,7 +19861,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analizado por Gemini AI · USDA FoodData Central · Apple Vision (respaldo)',
       consentRequired: 'Se requiere consentimiento de IA para usar esta función.',
       enableConsent: 'Habilitar Consentimiento IA',
-      consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.'
+      consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.',
       enableInPrivacyConsent: 'Activar en Privacidad y Consentimiento →',
     nutritionTabTitle: 'Nutricion',
     dietLogTabLabel: 'Diario',
@@ -19993,7 +19993,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analysé par Gemini AI · USDA FoodData Central · Apple Vision (secours)',
       consentRequired: 'Le consentement IA est requis pour utiliser cette fonctionnalité.',
       enableConsent: 'Activer le Consentement IA',
-      consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.'
+      consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.',
       enableInPrivacyConsent: 'Activer dans Confidentialité et Consentement →',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Journal',
@@ -20125,7 +20125,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: '启用 AI 同意',
-      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
       enableInPrivacyConsent: '在隐私与同意中启用 →',
     nutritionTabTitle: 'Nutricao',
     dietLogTabLabel: 'Diario',
@@ -20256,7 +20256,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'تحليل بواسطة Gemini AI · USDA FoodData Central · Apple Vision (احتياطي)',
       consentRequired: 'مطلوب موافقة الذكاء الاصطناعي لاستخدام هذه الميزة.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.'
+      consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.',
       enableInPrivacyConsent: 'تفعيل في الخصوصية والموافقة →',
     nutritionTabTitle: 'AlTghyh',
     dietLogTabLabel: 'sjlAlGhDA',
@@ -20388,7 +20388,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Imechambuliwa na Gemini AI · USDA FoodData Central · Apple Vision (mbadala)',
       consentRequired: 'Inahitajika ridhaa ya AI kutumia kipengele hiki.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.'
+      consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.',
       enableInPrivacyConsent: 'Wezesha katika Faragha na Ridhaa →',
     nutritionTabTitle: 'Lishe',
     dietLogTabLabel: 'Kumbukumbu',
@@ -20520,7 +20520,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision (फ़ॉलबैक) द्वारा विश्लेषित',
       consentRequired: 'इस सुविधा का उपयोग करने के लिए AI सहमति आवश्यक है।',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।'
+      consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।',
       enableInPrivacyConsent: 'गोपनीयता और सहमति में सक्षम करें →',
     nutritionTabTitle: 'Poshan',
     dietLogTabLabel: 'Aahar Log',
@@ -20652,7 +20652,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
       enableInPrivacyConsent: '在隐私与同意中启用 →',
     nutritionTabTitle: 'Yingyang',
     dietLogTabLabel: 'Yinshi Riji',
@@ -20783,7 +20783,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analysiert von Gemini AI · USDA FoodData Central · Apple Vision (Fallback)',
       consentRequired: 'KI-Einwilligung erforderlich, um diese Funktion zu nutzen.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.'
+      consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.',
       enableInPrivacyConsent: 'In Datenschutz & Einwilligung aktivieren →',
     nutritionTabTitle: 'Ernahrung',
     dietLogTabLabel: 'Ernahrungstagebuch',
@@ -20915,7 +20915,7 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision（フォールバック）で分析',
       consentRequired: 'この機能を使用するにはAI同意が必要です。',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。'
+      consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。',
       enableInPrivacyConsent: 'プライバシーと同意で有効にする →',
     nutritionTabTitle: 'Eiyo',
     dietLogTabLabel: 'Shokuji Kiroku',
