@@ -36,6 +36,7 @@ import { GlassCard } from '@/components/glass-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme, useCorrelationStrings } from '@/hooks';
 import { useColors } from '@/hooks/use-colors';
+import { TransparencyCard } from '@/components/transparency-card';
 import {
   computeCorrelation,
   extractMetricSeries,
@@ -794,7 +795,7 @@ function PlotCard({
           {/* 📚 Evidence Source */}
           <EvidenceSourceBlock ev={pair.evidence} isDark={isDark} cs={cs} />
 
-          <Text style={[styles.disclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
+          <Text style={[styles.disclaimer, { color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)' }]}>
             {cs.peDisclaimer ?? 'For informational purposes only · Not medical advice'}
           </Text>
         </View>
@@ -908,10 +909,8 @@ export function PatternExplorer({ data }: PatternExplorerProps) {
             ))}
           </View>
 
-          {/* Footer */}
-          <Text style={[styles.footerDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
-            {cs.peFooterDisclaimer ?? 'Historical relationships generated from your recorded wellness information. Educational research sources are provided for informational purposes only. Not medical advice.'}
-          </Text>
+          {/* Footer — TransparencyCard (correlate) */}
+          <TransparencyCard variant="correlate" style={{ marginHorizontal: 0, marginTop: 8, marginBottom: 4 }} />
         </View>
       )}
     </GlassCard>

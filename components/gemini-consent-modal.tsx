@@ -1,13 +1,15 @@
 /**
  * components/gemini-consent-modal.tsx
  *
- * One-time consent dialog shown before the first Food Scan upload.
- * Explains that food images are sent to Google Gemini for Nutrition Analysis.
+ * One-time consent dialog shown before the first use of any food AI feature:
+ *   - Scan Meal   (plate photo → Gemini AI → USDA FoodData Central → Apple Vision fallback)
+ *   - Scan Barcode (barcode → Open Food Facts → USDA enrichment)
+ *   - Food Search  (text query → Gemini AI → USDA FoodData Central)
  *
  * Props:
  *   visible  — controls modal visibility
  *   onAccept — called when user taps "I Agree"
- *   onDecline — called when user taps "Not Now" (scan is cancelled)
+ *   onDecline — called when user taps "Not Now" (action is cancelled)
  */
 
 import React from 'react';
@@ -71,7 +73,7 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
             <Text style={styles.headerIcon}>🤖</Text>
             <Text style={[styles.title, { color: fg }]}>AI Nutrition Analysis</Text>
             <Text style={[styles.subtitle, { color: muted }]}>
-              Powered by Google Gemini · USDA FoodData Central
+              Gemini AI · USDA FoodData Central · Apple Vision (fallback)
             </Text>
           </View>
 
@@ -83,11 +85,13 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
             {/* Explanation */}
             <View style={[styles.infoCard, { backgroundColor: cardBg, borderColor: border }]}>
               <Text style={[styles.infoText, { color: fg }]}>
-                To identify foods and estimate nutrition from your photos, VitalSync sends the food image to{' '}
-                <Text style={{ fontWeight: '700', color: BLUE }}>Google Gemini</Text>
-                {' '}for analysis. Macro and micronutrient values are then cross-referenced with the{' '}
+                VitalSync uses{' '}
+                <Text style={{ fontWeight: '700', color: BLUE }}>Google Gemini AI</Text>
+                {' '}as the primary engine to identify foods and estimate nutrition. Results are cross-referenced with the{' '}
                 <Text style={{ fontWeight: '700', color: EMERALD }}>USDA FoodData Central</Text>
-                {' '}database.
+                {' '}database for lab-verified values.{' '}
+                <Text style={{ fontWeight: '700' }}>Apple Vision</Text>
+                {' '}is used as an on-device fallback when Gemini is unavailable.
               </Text>
             </View>
 
@@ -95,9 +99,9 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
             <View style={styles.pointsList}>
               {[
                 {
-                  icon: '📷',
-                  title: 'Image sent to Google',
-                  body: 'Your food photo is transmitted to Google Gemini\'s servers for AI analysis. The image is not stored by Google after processing.',
+                  icon: '🤖',
+                  title: 'Gemini AI (primary)',
+                  body: 'For plate scans, your food photo is sent to Google Gemini servers for AI analysis. For food search, your text query is sent to Gemini. Google does not store your data after processing.',
                 },
                 {
                   icon: '🔬',
@@ -106,8 +110,8 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
                 },
                 {
                   icon: '📱',
-                  title: 'Results stay on device',
-                  body: 'Nutrition results are stored only on your device. VitalSync never uploads your health data to any server.',
+                  title: 'Apple Vision (fallback)',
+                  body: 'When Gemini is unavailable, on-device Apple Vision is used to identify foods. No data leaves your device in this case.',
                 },
                 {
                   icon: '↩️',
@@ -128,9 +132,9 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
             {/* Google Privacy note */}
             <View style={[styles.noteCard, { backgroundColor: BLUE + '12', borderColor: BLUE + '30' }]}>
               <Text style={[styles.noteText, { color: muted }]}>
-                By tapping "I Agree", you consent to your food photos being processed by Google Gemini in accordance with{' '}
+                By tapping "I Agree", you consent to food photos and search queries being processed by Google Gemini in accordance with{' '}
                 <Text style={{ color: BLUE }}>Google's Privacy Policy</Text>.
-                {' '}This consent is required only for the camera scan feature. Manual food search and barcode scan do not send images to Google.
+                {' '}This consent covers all three food AI features: Scan Meal, Scan Barcode, and Food Search. You can revoke it at any time in Settings → Privacy & Consent.
               </Text>
             </View>
           </ScrollView>
@@ -153,7 +157,7 @@ export function GeminiConsentModal({ visible, onAccept, onDecline }: GeminiConse
               ]}
               onPress={handleAccept}
             >
-              <Text style={styles.acceptBtnText}>I Agree — Enable Scan</Text>
+              <Text style={styles.acceptBtnText}>I Agree — Enable Food AI</Text>
             </Pressable>
           </View>
         </View>

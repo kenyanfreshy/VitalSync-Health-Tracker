@@ -63,6 +63,7 @@ import { DIET_TYPE_OPTIONS } from '@/lib/health/diet-type';
 import { AiFoodCameraSheet } from '@/components/ai-food-camera-sheet';
 import type { SodiumRecord, BloodSugarRecord } from '@/lib/health/types';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { TransparencyCard } from '@/components/transparency-card';
 import * as Haptics from 'expo-haptics';
 import * as SafeImagePicker from '@/lib/safe-image-picker';
 import { MacroGoalsSheet } from '@/components/macro-goals-sheet';
@@ -1108,9 +1109,7 @@ export function SmartNutritionCard({
                   <Text style={[styles.refreshText, { color: EMERALD }]}>{ds.insightRefreshAnalysis ?? '↻ Refresh'} {intelligenceName}</Text>
                 )}
               </Pressable>
-              <Text style={[styles.insightDisclaimer, { color: colors.muted }]}>
-                {ds.insightDisclaimer ?? 'For informational purposes only. Not a substitute for medical or dietary advice. Consult a qualified healthcare provider before making health decisions.'}
-              </Text>
+              <TransparencyCard variant="nutritionAnalysis" style={{ marginTop: 8 }} />
             </View>
           ) : (
             <View style={styles.emptyBlock}>

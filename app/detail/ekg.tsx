@@ -28,6 +28,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Dimensions } from 'react-native';
 import Svg, { Circle, G, Polyline, Rect, Text as SvgText, Line } from 'react-native-svg';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { TransparencyCard } from '@/components/transparency-card';
 import { initAppleHealthKit, _resetRNHCache } from '@/lib/health/rnh-loader';
 import {
   fetchEKGPage,
@@ -675,6 +676,7 @@ function EKGDetailScreenInner() {
           <ActivityIndicator size="small" color={ACCENT} />
         </View>
       )}
+      <TransparencyCard variant="ekgHistory" style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 4 }} />
       <View style={[styles.disclaimer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <Text style={[styles.disclaimerText, { color: colors.muted }]}>{ds.ekgDisclaimer}</Text>
       </View>

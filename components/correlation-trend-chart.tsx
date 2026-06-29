@@ -48,6 +48,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import Svg, { Circle } from 'react-native-svg';
 import { useColors, useCorrelationStrings } from '@/hooks';
+import { TransparencyCard } from '@/components/transparency-card';
 import type { HealthData } from '@/lib/health/types';
 import { CORRELATION_REFS } from '@/lib/health/peer-review-refs';
 
@@ -1174,12 +1175,8 @@ export function CorrelationTrendChart({ data, days = 30 }: CorrelationTrendChart
           </View>
         );
       })()}
-      {/* ── Compliance footer ────────────────────────────────────────────────── */}
-      <View style={[ctStyles.footer, { borderTopColor: border }]}>
-        <Text style={[ctStyles.footerText, { color: textMuted }]}>
-          Historical data patterns provided for informational purposes only. Correlations do not imply medical causation. Not a diagnostic tool.
-        </Text>
-      </View>
+      {/* ── TransparencyCard (scatterPlot / correlate) ─────────────────────── */}
+      <TransparencyCard variant="scatterPlot" style={{ marginHorizontal: 16, marginBottom: 4, marginTop: 4 }} />
 
         </View>
       </Reanimated.View>

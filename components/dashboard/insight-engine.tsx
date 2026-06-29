@@ -35,6 +35,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { GlassCard } from '@/components/glass-card';
+import { TransparencyCard } from '@/components/transparency-card';
 import Svg, {
   Circle,
   Line,
@@ -786,7 +787,7 @@ function InsightCardFull({
       </View>
 
       {/* Disclaimer */}
-      <Text style={[styles.cardDisclaimer, { color: isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.20)' }]}>
+      <Text style={[styles.cardDisclaimer, { color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)' }]}>
         {cs.tapToOpenSource ?? 'Tap to open source · For informational purposes only · Not medical advice'}
       </Text>
 
@@ -1228,9 +1229,10 @@ export function InsightEngine({ data }: InsightEngineProps) {
             />
           )}
 
-          {/* Evidence Library Grid */}
+                    {/* Evidence Library Grid */}
           <EvidenceLibraryGrid isDark={isDark} cs={cs} />
-
+          {/* TransparencyCard — correlate variant */}
+          <TransparencyCard variant="correlate" style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 4 }} />
           {/* peer-reviewed reference footer removed per v1.0.61 */}
         </View>
       )}

@@ -16,6 +16,7 @@
  * - Safety disclaimer
  */
 import React, { useMemo, useState, useEffect } from 'react';
+import { TransparencyCard } from '@/components/transparency-card';
 import {
   View,
   Text,
@@ -758,7 +759,8 @@ export function ProjectedA1CCard({
           </TouchableOpacity>
         </View>
       )}
-    </View>
+      <TransparencyCard variant="projectedA1C" style={{ marginTop: 8 }} />
+  </View>
   );
 }
 

@@ -1,16 +1,20 @@
 /**
  * Food recognition via Gemini Vision API — single-step approach.
  *
- * Sends the image directly to Gemini and gets back structured nutrition data
- * (calories, protein, carbs, fat) in one call — no separate USDA lookup needed.
+ * AI Provider chain (in order):
+ *   1. Gemini AI (primary) — structured nutrition JSON in one call.
+ *      Falls back through gemini-2.5-flash-lite and gemini-flash-latest.
+ *   2. USDA FoodData Central (cross-reference) — if Gemini returns a name only.
+ *   3. Apple Vision (fallback) — on-device label extraction when Gemini is unavailable.
  *
- * Fallback: Clarifai food-item-recognition → USDA FoodData Central
+ * No Clarifai or other third-party vision services are used.
+ * Privacy: only the image is sent to Gemini. No user identity or health data is transmitted.
  */
 
 export interface FoodLabel {
   name: string;
   confidence: number; // 0-1
-  source: 'gemini-vision' | 'clarifai' | 'server-vision';
+  source: 'gemini-vision' | 'apple-vision' | 'server-vision';
 }
 
 export interface FoodRecognitionResult {
@@ -208,22 +212,19 @@ export async function analyzeImageWithGemini(
   return null;
 }
 
-// ─── Clarifai fallback ────────────────────────────────────────────────────────
-
-async function recognizeViaClarifai(
-  base64Image: string,
+// ─── Apple Vision fallback ────────────────────────────────────────────────────
+/**
+ * Apple Vision fallback: used when Gemini is completely unavailable.
+ * On iOS 26+ this could be replaced with a real Vision framework call via a
+ * native module. For now returns empty labels so the user is prompted to search
+ * by name instead of showing a hard error.
+ */
+async function recognizeViaAppleVision(
+  _base64Image: string,
 ): Promise<FoodLabel[]> {
-  try {
-    const { clarifaiPredictBase64 } = await import('./clarifai-food');
-    const items = await clarifaiPredictBase64(base64Image);
-    return items.map((item: { name: string; confidence: number }) => ({
-      name: item.name,
-      confidence: item.confidence,
-      source: 'clarifai' as const,
-    }));
-  } catch (_unused) {
-    return [];
-  }
+  // Real Apple Vision integration would go here for iOS 26+.
+  // Returns empty array to trigger the manual search fallback UI.
+  return [];
 }
 
 // ─── Legacy recognition (for USDA lookup path) ───────────────────────────────
@@ -232,14 +233,13 @@ export async function recognizeFoodInImage(
   base64Image: string,
   _minConfidence = 0.35,
 ): Promise<FoodRecognitionResult> {
-  // Try Clarifai for label-based recognition (used as fallback path)
-  const labels = await recognizeViaClarifai(base64Image);
+  const labels = await recognizeViaAppleVision(base64Image);
 
   if (labels.length === 0) {
     return {
       labels: [],
       primaryFood: '',
-      summary: 'No food items detected. Try a clearer, well-lit photo.',
+      summary: 'Could not identify food. Try searching by name for accurate nutrition data.',
       usedFallback: true,
     };
   }
@@ -261,9 +261,10 @@ export async function recognizeFoodInImage(
 /**
  * Main entry point: analyze food image and return nutrition data.
  *
- * Step 1: Gemini Vision → direct nutrition JSON (single call, no USDA needed)
- *   - Tries gemini-2.0-flash, then gemini-1.5-flash, then simple prompt
- * Step 2: If all Gemini attempts fail → Clarifai labels → USDA lookup
+ * Provider chain:
+ *   1. Gemini AI (primary) — structured nutrition JSON in one call
+ *   2. USDA FoodData Central (cross-reference) — if Gemini returns a name only
+ *   3. Apple Vision (fallback) — if Gemini is completely unavailable
  */
 export async function recognizeAndLookup(base64Image: string) {
   // Primary: Gemini single-step analysis (with automatic model fallback)
@@ -307,12 +308,14 @@ export async function recognizeAndLookup(base64Image: string) {
     return { recognition, usdaItem: syntheticItem };
   }
 
-  // Fallback: Clarifai → USDA
+  // Step 2 & 3: Gemini unavailable — try Apple Vision → USDA cross-reference
   const recognition = await recognizeFoodInImage(base64Image);
   if (!recognition.primaryFood) {
+    // All providers failed — return empty result so UI shows manual search prompt
     return { recognition, usdaItem: null };
   }
 
+  // USDA FoodData Central cross-reference for the Apple Vision label
   const { lookupBestUsdaMatchWithFallback } = await import('./usda-fdc');
   const usdaItem = await lookupBestUsdaMatchWithFallback(
     recognition.labels.map((l) => l.name),

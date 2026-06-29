@@ -22,6 +22,7 @@ import { GlassCard } from '@/components/glass-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { useColorScheme, useCorrelationStrings } from '@/hooks';
 import { useColors } from '@/hooks/use-colors';
+import { TransparencyCard } from '@/components/transparency-card';
 import type { HealthData } from '@/lib/health/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -356,10 +357,8 @@ export function WellnessSummarySection({ data }: WellnessSummarySectionProps) {
             ))}
           </View>
 
-          {/* Disclaimer */}
-          <Text style={[styles.disclaimer, { color: isDark ? 'rgba(255,255,255,0.22)' : 'rgba(0,0,0,0.28)' }]}>
-            {cs.wellnessSummaryDisclaimer ?? 'Averages based on your logged data. For informational purposes only — not medical advice.'}
-          </Text>
+          {/* TransparencyCard — wellnessSummary */}
+          <TransparencyCard variant="wellnessSummary" style={{ marginHorizontal: 16, marginTop: 8, marginBottom: 4 }} />
         </View>
       )}
     </GlassCard>

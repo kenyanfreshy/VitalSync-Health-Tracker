@@ -21,6 +21,7 @@ import {
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks';
+import { TransparencyCard } from '@/components/transparency-card';
 import { useHealth } from '@/lib/health/health-context';
 import { trpc } from '@/lib/trpc';
 import type { SodiumRecord, BloodPressureRecord, PulseRecord, BloodSugarRecord, MealIQAnalysisRecord } from '@/lib/health/types';
@@ -375,6 +376,7 @@ export function MealIQSheet({ meal, visible, onClose }: Props) {
 
               {/* Disclaimer */}
               <Text style={[s.disclaimer, { color: colors.muted }]}>{result.disclaimer}</Text>
+              <TransparencyCard variant="nutritionAnalysis" style={{ marginTop: 8 }} />
             </>
           )}
         </ScrollView>

@@ -64,6 +64,7 @@ import { InsightEngine } from '@/components/dashboard/insight-engine';
 import { WellnessSummarySection } from '@/components/dashboard/wellness-summary';
 import { PatternExplorer } from '@/components/dashboard/pattern-explorer';
 import { CorrelationTrendChart } from '@/components/correlation-trend-chart';
+import { TransparencyCard } from '@/components/transparency-card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { safeSetItem } from '@/lib/safe-async-storage';
 import { router } from 'expo-router';
@@ -1202,6 +1203,9 @@ export default function AnalyticsScreen() {
         </>
         )}
         <View style={{ height: 24 }} />
+
+        {/* TransparencyCard — correlate variant */}
+        <TransparencyCard variant="correlate" style={{ marginHorizontal: 16, marginBottom: 8 }} />
 
         {/* Medical Disclaimer Footer */}
         <GlassCard accentColor="#64748B" style={{ marginHorizontal: 16, marginBottom: 8 }}>

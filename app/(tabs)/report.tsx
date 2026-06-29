@@ -37,6 +37,7 @@ import * as Sharing from 'expo-sharing';
 import { FloatingWellnessDisclaimer } from '@/components/floating-wellness-disclaimer';
 import { ScreenContainer } from '@/components/screen-container';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { TransparencyCard } from '@/components/transparency-card';
 import { GlassCard } from '@/components/glass-card';
 import { useHealth } from '@/lib/health/health-context';
 import { useColors, useCorrelationStrings, useLang, useRawLang, useReportStrings } from '@/hooks';
@@ -1123,6 +1124,9 @@ export default function ReportScreen() {
         <View style={{ height: 14 }} />
         <View style={{ height: 1, marginHorizontal: 20, backgroundColor: isDark ? 'rgba(255,255,255,0.11)' : 'rgba(0,0,0,0.11)' }} />
         <View style={{ height: 14 }} />
+
+        {/* ─── TransparencyCard (report) ─────────────────────────────────── */}
+        <TransparencyCard variant="healthReport" style={{ marginHorizontal: 16, marginBottom: 8 }} />
 
         {/* ─── Disclaimer Notee ─────────────────────────────────────────────── */}
         <View style={{ marginBottom: 12, paddingHorizontal: 4 }}>

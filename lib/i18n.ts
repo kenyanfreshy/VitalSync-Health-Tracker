@@ -19731,6 +19731,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Keep Estimate',
       scanAgainRetake: 'Retake Photo',
       prevEstimateChip: 'Previous estimate: {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Analyzed by Gemini AI · USDA FoodData Central · Apple Vision (fallback)',
+      consentRequired: 'AI consent required to use this feature.',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Diet Log',
     insightsTabLabel: 'Insights',
@@ -19853,6 +19857,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Mantener estimación',
       scanAgainRetake: 'Volver a fotografiar',
       prevEstimateChip: 'Estimación anterior: {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Analizado por Gemini AI · USDA FoodData Central · Apple Vision (respaldo)',
+      consentRequired: 'Se requiere consentimiento de IA para usar esta función.',
+      enableConsent: 'Habilitar Consentimiento IA',
+      consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.',
     nutritionTabTitle: 'Nutricion',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analisis',
@@ -19980,6 +19988,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Conserver l’estimation',
       scanAgainRetake: 'Reprendre la photo',
       prevEstimateChip: 'Estimation précédente : {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Analysé par Gemini AI · USDA FoodData Central · Apple Vision (secours)',
+      consentRequired: 'Le consentement IA est requis pour utiliser cette fonctionnalité.',
+      enableConsent: 'Activer le Consentement IA',
+      consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Journal',
     insightsTabLabel: 'Analyzes',
@@ -20107,6 +20119,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Manter estimativa',
       scanAgainRetake: 'Tirar nova foto',
       prevEstimateChip: 'Estimativa anterior: {kcal} kcal — {name}',
+      foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
+      consentRequired: '使用此功能需要 AI 同意。',
+      enableConsent: '启用 AI 同意',
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
     nutritionTabTitle: 'Nutricao',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analises',
@@ -20233,6 +20249,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'احتفظ بالتقدير',
       scanAgainRetake: 'إعادة التصوير',
       prevEstimateChip: 'التقدير السابق: {kcal} سعرة — {name}',
+      foodScanDisclaimer: 'تحليل بواسطة Gemini AI · USDA FoodData Central · Apple Vision (احتياطي)',
+      consentRequired: 'مطلوب موافقة الذكاء الاصطناعي لاستخدام هذه الميزة.',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.',
     nutritionTabTitle: 'AlTghyh',
     dietLogTabLabel: 'sjlAlGhDA',
     insightsTabLabel: 'rwyA',
@@ -20360,6 +20380,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Hifadhi makadirio',
       scanAgainRetake: 'Piga picha tena',
       prevEstimateChip: 'Makadirio ya awali: {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Imechambuliwa na Gemini AI · USDA FoodData Central · Apple Vision (mbadala)',
+      consentRequired: 'Inahitajika ridhaa ya AI kutumia kipengele hiki.',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.',
     nutritionTabTitle: 'Lishe',
     dietLogTabLabel: 'Kumbukumbu',
     insightsTabLabel: 'Maarifa',
@@ -20487,6 +20511,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'अनुमान रखें',
       scanAgainRetake: 'फ़ोटो पुनः लें',
       prevEstimateChip: 'पिछला अनुमान: {kcal} कैलोरी — {name}',
+      foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision (फ़ॉलबैक) द्वारा विश्लेषित',
+      consentRequired: 'इस सुविधा का उपयोग करने के लिए AI सहमति आवश्यक है।',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।',
     nutritionTabTitle: 'Poshan',
     dietLogTabLabel: 'Aahar Log',
     insightsTabLabel: 'Antardrishti',
@@ -20614,6 +20642,10 @@ export const foodCameraStrings = {
       scanAgainKeep: '保留估算',
       scanAgainRetake: '重新拍照',
       prevEstimateChip: '上次估算：{kcal} 千卡 — {name}',
+      foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
+      consentRequired: '使用此功能需要 AI 同意。',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
     nutritionTabTitle: 'Yingyang',
     dietLogTabLabel: 'Yinshi Riji',
     insightsTabLabel: 'Dongjian',
@@ -20740,6 +20772,10 @@ export const foodCameraStrings = {
       scanAgainKeep: 'Schätzung behalten',
       scanAgainRetake: 'Foto wiederholen',
       prevEstimateChip: 'Vorherige Schätzung: {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Analysiert von Gemini AI · USDA FoodData Central · Apple Vision (Fallback)',
+      consentRequired: 'KI-Einwilligung erforderlich, um diese Funktion zu nutzen.',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.',
     nutritionTabTitle: 'Ernahrung',
     dietLogTabLabel: 'Ernahrungstagebuch',
     insightsTabLabel: 'Einblicke',
@@ -20867,6 +20903,10 @@ export const foodCameraStrings = {
       scanAgainKeep: '推定を保持',
       scanAgainRetake: '再撮影',
       prevEstimateChip: '前回の推定: {kcal} kcal — {name}',
+      foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision（フォールバック）で分析',
+      consentRequired: 'この機能を使用するにはAI同意が必要です。',
+      enableConsent: 'Enable AI Consent',
+      consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。',
     nutritionTabTitle: 'Eiyo',
     dietLogTabLabel: 'Shokuji Kiroku',
     insightsTabLabel: 'Bunseki',
@@ -39169,3 +39209,1179 @@ export const smartReminderBannerStrings = {
 } as const;
 
 export type SmartReminderBannerLang = keyof typeof smartReminderBannerStrings;
+
+// ─── Transparency Card Strings ───────────────────────────────────────────────
+export const transparencyStrings = {
+  en: {
+    dashboard: {
+      title: `About Your Dashboard`,
+      body: `This dashboard combines information you've entered with health data you've chosen to share. Some summaries may include AI-generated explanations to help make trends easier to understand.
+
+Data Sources:
+• Apple Health (when authorized)
+• Manual entries
+• Connected devices
+• USDA FoodData Central (nutrition)
+• Google Gemini or Apple Intelligence (supported devices)
+
+For informational purposes only — not medical advice.`,
+    },
+    wellnessSummary: {
+      title: `About This Summary`,
+      body: `This summary is generated from your available health information using Apple Intelligence or Google Gemini, depending on your device. It highlights observed wellness trends in plain language and is intended for informational purposes only.
+
+It does not diagnose conditions, recommend treatments, or replace professional medical advice.`,
+    },
+    correlate: {
+      title: `How Correlations Are Calculated`,
+      body: `VitalSync first performs statistical analysis using mathematical models such as correlation coefficients and trend analysis. AI then explains those statistical findings in everyday language.
+
+Correlation identifies relationships between measurements but does not establish cause and effect. Observed relationships may be influenced by additional lifestyle, environmental, or medical factors not available to the app.`,
+    },
+    scatterPlot: {
+      title: `About This Visualization`,
+      body: `Each chart displays historical measurements over time. Trend lines are generated from statistical analysis of your recorded data.
+
+Visual relationships should be interpreted as patterns rather than evidence that one measurement causes another.`,
+    },
+    wellnessScore: {
+      title: `How Your Wellness Score Is Calculated`,
+      body: `Your Wellness Score combines multiple wellness indicators including sleep, activity, heart rate trends, nutrition, recovery metrics, and other available health information.
+
+Scores are generated using mathematical models and machine learning. The score reflects observed wellness patterns and is not a medical assessment or diagnosis.`,
+    },
+    recoveryScore: {
+      title: `About Your Recovery Score`,
+      body: `Recovery estimates are based on recent historical trends including sleep, heart rate variability, activity, resting heart rate, and other available wellness information.
+
+Recovery scores represent estimated readiness based on available data and should not be interpreted as medical advice.`,
+    },
+    nutritionAnalysis: {
+      title: `About Nutrition Analysis`,
+      body: `Nutrition information is sourced from the USDA FoodData Central database whenever available. Apple Intelligence or Google Gemini may summarize nutritional patterns and explain general wellness information.
+
+AI does not estimate or invent nutrient values when USDA data is available. Food recognition accuracy may vary depending on image quality and meal complexity.`,
+    },
+    mealScanner: {
+      title: `About Meal Scanner`,
+      body: `Food identification uses Google Gemini AI with USDA FoodData Central for nutrition data. Apple Vision is used as a fallback on supported devices.
+
+Nutrition facts are matched against USDA FoodData Central whenever possible. Review scanned results before saving to ensure accuracy.`,
+    },
+    healthReport: {
+      title: `About This Report`,
+      body: `This report summarizes your recorded wellness information. AI-generated summaries are intended to improve readability and understanding.
+
+The report should not be used as a substitute for clinical evaluation or emergency medical care.`,
+    },
+    aiChat: {
+      title: `About AI Responses`,
+      body: `Responses are generated using Apple Intelligence on supported Apple devices or Google Gemini on other supported devices. Responses are based solely on the information available within VitalSync.
+
+AI responses may occasionally be incomplete or inaccurate. Always consult a licensed healthcare professional regarding personal medical decisions.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `This summary was generated using Apple's Foundation Models. Depending on device capabilities, processing may occur on-device or through Apple's privacy-preserving infrastructure.
+
+VitalSync sends only the information required to generate this summary.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `This explanation was generated using Google Gemini. Only the information required to generate the requested wellness summary is processed.
+
+No AI-generated response should be interpreted as medical advice.`,
+    },
+    healthKit: {
+      title: `Apple Health Data`,
+      body: `Health information displayed within VitalSync is collected from Apple Health only after you grant permission. You remain in control of which health categories are shared.
+
+Revoking Apple Health permissions immediately stops new data synchronization.`,
+    },
+    connectedDevices: {
+      title: `Connected Devices`,
+      body: `Measurements imported from supported Bluetooth devices are displayed as reported by the device manufacturer. VitalSync does not modify raw measurement values.
+
+Device accuracy depends on the manufacturer and proper device use.`,
+    },
+    projectedA1C: {
+      title: `About Projected A1C`,
+      body: `Projected A1C is an estimated wellness metric calculated from available glucose information and mathematical modeling.
+
+It is not a laboratory HbA1c measurement and should not be used to diagnose or monitor diabetes.`,
+    },
+    ekgHistory: {
+      title: `About EKG History`,
+      body: `EKG records displayed within VitalSync are stored for your personal reference. Any classifications are intended to organize historical records and should not be interpreted as clinical findings.
+
+Consult a licensed healthcare professional regarding any cardiac concerns.`,
+    },
+    trendsPredictions: {
+      title: `About Trends & Predictions`,
+      body: `Trend forecasts are generated using machine learning and historical wellness information. Forecasts estimate potential future patterns and are not guarantees of future outcomes.
+
+Unexpected lifestyle changes or health events may significantly alter future trends.`,
+    },
+    privacy: {
+      title: `Privacy & AI`,
+      body: `VitalSync processes only the information necessary to generate requested insights. Apple Intelligence is used on supported Apple devices. Google Gemini is used as a fallback on Android and unsupported Apple devices.
+
+Nutrition information is sourced from USDA FoodData Central whenever available. VitalSync does not sell personal health information.`,
+    },
+  },
+  es: {
+    dashboard: {
+      title: `Acerca de tu Panel`,
+      body: `Este panel combina información que has ingresado con datos de salud que has elegido compartir. Algunos resúmenes pueden incluir explicaciones generadas por IA para facilitar la comprensión de tendencias.
+
+Fuentes de datos:
+• Apple Health (cuando está autorizado)
+• Entradas manuales
+• Dispositivos conectados
+• USDA FoodData Central (nutrición)
+• Google Gemini o Apple Intelligence (dispositivos compatibles)
+
+Solo para fines informativos — no es consejo médico.`,
+    },
+    wellnessSummary: {
+      title: `Acerca de Este Resumen`,
+      body: `Este resumen se genera a partir de tu información de salud disponible usando Apple Intelligence o Google Gemini, según tu dispositivo. Destaca tendencias de bienestar observadas en lenguaje sencillo y es solo para fines informativos.
+
+No diagnostica condiciones, recomienda tratamientos ni reemplaza el consejo médico profesional.`,
+    },
+    correlate: {
+      title: `Cómo Se Calculan las Correlaciones`,
+      body: `VitalSync primero realiza análisis estadístico usando modelos matemáticos como coeficientes de correlación y análisis de tendencias. Luego la IA explica esos hallazgos estadísticos en lenguaje cotidiano.
+
+La correlación identifica relaciones entre mediciones pero no establece causa y efecto.`,
+    },
+    scatterPlot: {
+      title: `Acerca de Esta Visualización`,
+      body: `Cada gráfico muestra mediciones históricas a lo largo del tiempo. Las líneas de tendencia se generan a partir del análisis estadístico de tus datos registrados.
+
+Las relaciones visuales deben interpretarse como patrones, no como evidencia de causalidad.`,
+    },
+    wellnessScore: {
+      title: `Cómo Se Calcula Tu Puntuación de Bienestar`,
+      body: `Tu Puntuación de Bienestar combina múltiples indicadores de bienestar incluyendo sueño, actividad, tendencias de frecuencia cardíaca, nutrición y métricas de recuperación.
+
+Las puntuaciones se generan usando modelos matemáticos y aprendizaje automático. No es una evaluación médica.`,
+    },
+    recoveryScore: {
+      title: `Acerca de Tu Puntuación de Recuperación`,
+      body: `Las estimaciones de recuperación se basan en tendencias históricas recientes incluyendo sueño, variabilidad de frecuencia cardíaca, actividad y frecuencia cardíaca en reposo.
+
+No deben interpretarse como consejo médico.`,
+    },
+    nutritionAnalysis: {
+      title: `Acerca del Análisis Nutricional`,
+      body: `La información nutricional proviene de la base de datos USDA FoodData Central cuando está disponible. Apple Intelligence o Google Gemini pueden resumir patrones nutricionales.
+
+La IA no estima ni inventa valores de nutrientes cuando hay datos USDA disponibles.`,
+    },
+    mealScanner: {
+      title: `Acerca del Escáner de Comidas`,
+      body: `La identificación de alimentos usa Google Gemini AI con USDA FoodData Central para datos nutricionales. Apple Vision se usa como respaldo en dispositivos compatibles.
+
+Revisa los resultados escaneados antes de guardar para asegurar precisión.`,
+    },
+    healthReport: {
+      title: `Acerca de Este Informe`,
+      body: `Este informe resume tu información de bienestar registrada. Los resúmenes generados por IA están destinados a mejorar la legibilidad.
+
+No debe usarse como sustituto de una evaluación clínica.`,
+    },
+    aiChat: {
+      title: `Acerca de las Respuestas de IA`,
+      body: `Las respuestas se generan usando Apple Intelligence en dispositivos Apple compatibles o Google Gemini en otros dispositivos. Se basan únicamente en la información disponible en VitalSync.
+
+Consulta siempre a un profesional de salud licenciado para decisiones médicas personales.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `Este resumen fue generado usando los Modelos de Fundación de Apple. Dependiendo de las capacidades del dispositivo, el procesamiento puede ocurrir en el dispositivo o a través de la infraestructura de privacidad de Apple.
+
+VitalSync solo envía la información necesaria para generar este resumen.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `Esta explicación fue generada usando Google Gemini. Solo se procesa la información necesaria para generar el resumen de bienestar solicitado.
+
+Ninguna respuesta generada por IA debe interpretarse como consejo médico.`,
+    },
+    healthKit: {
+      title: `Datos de Apple Health`,
+      body: `La información de salud en VitalSync se recopila de Apple Health solo después de que otorgues permiso. Tú controlas qué categorías de salud se comparten.
+
+Revocar los permisos de Apple Health detiene inmediatamente la sincronización de nuevos datos.`,
+    },
+    connectedDevices: {
+      title: `Dispositivos Conectados`,
+      body: `Las mediciones importadas de dispositivos Bluetooth compatibles se muestran tal como las reporta el fabricante. VitalSync no modifica los valores de medición sin procesar.
+
+La precisión del dispositivo depende del fabricante y del uso correcto.`,
+    },
+    projectedA1C: {
+      title: `Acerca de la A1C Proyectada`,
+      body: `La A1C Proyectada es una métrica de bienestar estimada calculada a partir de información de glucosa disponible y modelado matemático.
+
+No es una medición de HbA1c de laboratorio y no debe usarse para diagnosticar o monitorear diabetes.`,
+    },
+    ekgHistory: {
+      title: `Acerca del Historial de ECG`,
+      body: `Los registros de ECG en VitalSync se almacenan para tu referencia personal. Las clasificaciones están destinadas a organizar registros históricos y no deben interpretarse como hallazgos clínicos.
+
+Consulta a un profesional de salud licenciado sobre cualquier preocupación cardíaca.`,
+    },
+    trendsPredictions: {
+      title: `Acerca de Tendencias y Predicciones`,
+      body: `Los pronósticos de tendencias se generan usando aprendizaje automático e información histórica de bienestar. Los pronósticos estiman patrones futuros potenciales y no son garantías.
+
+Cambios inesperados en el estilo de vida o eventos de salud pueden alterar significativamente las tendencias futuras.`,
+    },
+    privacy: {
+      title: `Privacidad e IA`,
+      body: `VitalSync procesa solo la información necesaria para generar los insights solicitados. Apple Intelligence se usa en dispositivos Apple compatibles. Google Gemini se usa como respaldo en Android y dispositivos Apple no compatibles.
+
+VitalSync no vende información de salud personal.`,
+    },
+  },
+  fr: {
+    dashboard: {
+      title: `À propos de votre tableau de bord`,
+      body: `Ce tableau de bord combine les informations que vous avez saisies avec les données de santé que vous avez choisi de partager. Certains résumés peuvent inclure des explications générées par IA.
+
+Sources de données :
+• Apple Health (si autorisé)
+• Saisies manuelles
+• Appareils connectés
+• USDA FoodData Central (nutrition)
+• Google Gemini ou Apple Intelligence (appareils compatibles)
+
+À titre informatif uniquement — pas un avis médical.`,
+    },
+    wellnessSummary: {
+      title: `À propos de ce résumé`,
+      body: `Ce résumé est généré à partir de vos informations de santé disponibles en utilisant Apple Intelligence ou Google Gemini, selon votre appareil. Il met en évidence les tendances de bien-être observées en langage simple.
+
+Il ne diagnostique pas de conditions, ne recommande pas de traitements et ne remplace pas un avis médical professionnel.`,
+    },
+    correlate: {
+      title: `Comment les corrélations sont calculées`,
+      body: `VitalSync effectue d'abord une analyse statistique en utilisant des modèles mathématiques tels que les coefficients de corrélation. L'IA explique ensuite ces résultats en langage courant.
+
+La corrélation identifie des relations entre les mesures mais n'établit pas de causalité.`,
+    },
+    scatterPlot: {
+      title: `À propos de cette visualisation`,
+      body: `Chaque graphique affiche des mesures historiques dans le temps. Les lignes de tendance sont générées à partir de l'analyse statistique de vos données enregistrées.
+
+Les relations visuelles doivent être interprétées comme des modèles, pas comme des preuves de causalité.`,
+    },
+    wellnessScore: {
+      title: `Comment votre score de bien-être est calculé`,
+      body: `Votre score de bien-être combine plusieurs indicateurs incluant le sommeil, l'activité, les tendances de fréquence cardiaque, la nutrition et les métriques de récupération.
+
+Les scores sont générés à l'aide de modèles mathématiques et d'apprentissage automatique. Ce n'est pas une évaluation médicale.`,
+    },
+    recoveryScore: {
+      title: `À propos de votre score de récupération`,
+      body: `Les estimations de récupération sont basées sur les tendances historiques récentes incluant le sommeil, la variabilité de la fréquence cardiaque et l'activité.
+
+Ne doit pas être interprété comme un avis médical.`,
+    },
+    nutritionAnalysis: {
+      title: `À propos de l'analyse nutritionnelle`,
+      body: `Les informations nutritionnelles proviennent de la base de données USDA FoodData Central lorsque disponible. Apple Intelligence ou Google Gemini peuvent résumer les tendances nutritionnelles.
+
+L'IA n'estime pas les valeurs nutritionnelles quand les données USDA sont disponibles.`,
+    },
+    mealScanner: {
+      title: `À propos du scanner de repas`,
+      body: `L'identification des aliments utilise Google Gemini AI avec USDA FoodData Central pour les données nutritionnelles. Apple Vision est utilisé comme solution de secours.
+
+Vérifiez les résultats scannés avant de les enregistrer.`,
+    },
+    healthReport: {
+      title: `À propos de ce rapport`,
+      body: `Ce rapport résume vos informations de bien-être enregistrées. Les résumés générés par IA visent à améliorer la lisibilité.
+
+Ne doit pas être utilisé comme substitut à une évaluation clinique.`,
+    },
+    aiChat: {
+      title: `À propos des réponses IA`,
+      body: `Les réponses sont générées en utilisant Apple Intelligence sur les appareils Apple compatibles ou Google Gemini sur d'autres appareils. Elles sont basées uniquement sur les informations disponibles dans VitalSync.
+
+Consultez toujours un professionnel de santé agréé pour les décisions médicales personnelles.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `Ce résumé a été généré en utilisant les modèles de fondation d'Apple. Selon les capacités de l'appareil, le traitement peut se faire sur l'appareil ou via l'infrastructure de confidentialité d'Apple.
+
+VitalSync n'envoie que les informations nécessaires pour générer ce résumé.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `Cette explication a été générée en utilisant Google Gemini. Seules les informations nécessaires sont traitées.
+
+Aucune réponse générée par IA ne doit être interprétée comme un avis médical.`,
+    },
+    healthKit: {
+      title: `Données Apple Health`,
+      body: `Les informations de santé dans VitalSync sont collectées depuis Apple Health uniquement après votre autorisation. Vous contrôlez les catégories de santé partagées.
+
+Révoquer les autorisations Apple Health arrête immédiatement la synchronisation.`,
+    },
+    connectedDevices: {
+      title: `Appareils connectés`,
+      body: `Les mesures importées des appareils Bluetooth compatibles sont affichées telles que rapportées par le fabricant. VitalSync ne modifie pas les valeurs de mesure brutes.
+
+La précision dépend du fabricant et d'une utilisation correcte.`,
+    },
+    projectedA1C: {
+      title: `À propos de l'A1C projeté`,
+      body: `L'A1C projeté est une métrique de bien-être estimée calculée à partir des informations de glucose disponibles et de la modélisation mathématique.
+
+Ce n'est pas une mesure HbA1c de laboratoire et ne doit pas être utilisé pour diagnostiquer ou surveiller le diabète.`,
+    },
+    ekgHistory: {
+      title: `À propos de l'historique ECG`,
+      body: `Les enregistrements ECG dans VitalSync sont stockés pour votre référence personnelle. Les classifications visent à organiser les enregistrements historiques et ne doivent pas être interprétées comme des résultats cliniques.
+
+Consultez un professionnel de santé agréé pour toute préoccupation cardiaque.`,
+    },
+    trendsPredictions: {
+      title: `À propos des tendances et prédictions`,
+      body: `Les prévisions de tendances sont générées en utilisant l'apprentissage automatique. Les prévisions estiment des modèles futurs potentiels et ne sont pas des garanties.
+
+Des changements de style de vie inattendus peuvent modifier significativement les tendances futures.`,
+    },
+    privacy: {
+      title: `Confidentialité et IA`,
+      body: `VitalSync traite uniquement les informations nécessaires pour générer les insights demandés. Apple Intelligence est utilisé sur les appareils Apple compatibles. Google Gemini est utilisé comme solution de secours.
+
+VitalSync ne vend pas d'informations de santé personnelles.`,
+    },
+  },
+  zh: {
+    dashboard: {
+      title: `关于您的仪表板`,
+      body: `此仪表板结合了您输入的信息与您选择共享的健康数据。部分摘要可能包含AI生成的解释，以帮助更好地理解趋势。
+
+数据来源：
+• Apple Health（已授权时）
+• 手动输入
+• 已连接设备
+• USDA FoodData Central（营养）
+• Google Gemini 或 Apple Intelligence（支持的设备）
+
+仅供参考——非医疗建议。`,
+    },
+    wellnessSummary: {
+      title: `关于此摘要`,
+      body: `此摘要根据您的可用健康信息，使用 Apple Intelligence 或 Google Gemini 生成，具体取决于您的设备。它以通俗语言突出显示观察到的健康趋势，仅供参考。
+
+不诊断疾病、不推荐治疗，也不替代专业医疗建议。`,
+    },
+    correlate: {
+      title: `相关性的计算方式`,
+      body: `VitalSync 首先使用相关系数和趋势分析等数学模型进行统计分析，然后由AI用日常语言解释这些统计结果。
+
+相关性识别测量之间的关系，但不建立因果关系。`,
+    },
+    scatterPlot: {
+      title: `关于此可视化`,
+      body: `每个图表显示随时间变化的历史测量值。趋势线由您记录数据的统计分析生成。
+
+视觉关系应解释为模式，而非一个测量导致另一个测量的证据。`,
+    },
+    wellnessScore: {
+      title: `您的健康评分计算方式`,
+      body: `您的健康评分综合了多项健康指标，包括睡眠、活动、心率趋势、营养和恢复指标。
+
+评分使用数学模型和机器学习生成。该评分反映观察到的健康模式，不是医疗评估或诊断。`,
+    },
+    recoveryScore: {
+      title: `关于您的恢复评分`,
+      body: `恢复估计基于近期历史趋势，包括睡眠、心率变异性、活动和静息心率。
+
+恢复评分代表基于可用数据的估计准备状态，不应解释为医疗建议。`,
+    },
+    nutritionAnalysis: {
+      title: `关于营养分析`,
+      body: `营养信息尽可能来源于USDA FoodData Central数据库。Apple Intelligence 或 Google Gemini 可能会总结营养模式。
+
+当USDA数据可用时，AI不会估计或编造营养值。`,
+    },
+    mealScanner: {
+      title: `关于餐食扫描仪`,
+      body: `食物识别使用 Google Gemini AI，营养数据来自 USDA FoodData Central。在支持的设备上，Apple Vision 用作备用方案。
+
+保存前请检查扫描结果以确保准确性。`,
+    },
+    healthReport: {
+      title: `关于此报告`,
+      body: `此报告总结了您记录的健康信息。AI生成的摘要旨在提高可读性和理解度。
+
+不应作为临床评估或紧急医疗护理的替代品。`,
+    },
+    aiChat: {
+      title: `关于AI回复`,
+      body: `回复在支持的Apple设备上使用 Apple Intelligence 生成，在其他支持的设备上使用 Google Gemini 生成。回复仅基于VitalSync中可用的信息。
+
+在做出个人医疗决定时，请务必咨询持牌医疗专业人员。`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `此摘要使用Apple的基础模型生成。根据设备功能，处理可能在设备上进行或通过Apple的隐私保护基础设施进行。
+
+VitalSync仅发送生成此摘要所需的信息。`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `此解释使用 Google Gemini 生成。仅处理生成所请求健康摘要所需的信息。
+
+AI生成的回复不应解释为医疗建议。`,
+    },
+    healthKit: {
+      title: `Apple Health 数据`,
+      body: `VitalSync中显示的健康信息仅在您授权后从Apple Health收集。您可以控制共享哪些健康类别。
+
+撤销Apple Health权限会立即停止新数据同步。`,
+    },
+    connectedDevices: {
+      title: `已连接设备`,
+      body: `从支持的蓝牙设备导入的测量值按设备制造商报告的方式显示。VitalSync不修改原始测量值。
+
+设备精度取决于制造商和正确使用设备。`,
+    },
+    projectedA1C: {
+      title: `关于预测A1C`,
+      body: `预测A1C是根据可用血糖信息和数学建模计算的估计健康指标。
+
+它不是实验室HbA1c测量值，不应用于诊断或监测糖尿病。`,
+    },
+    ekgHistory: {
+      title: `关于心电图历史`,
+      body: `VitalSync中显示的心电图记录存储供您个人参考。任何分类旨在整理历史记录，不应解释为临床发现。
+
+请咨询持牌医疗专业人员了解任何心脏问题。`,
+    },
+    trendsPredictions: {
+      title: `关于趋势和预测`,
+      body: `趋势预测使用机器学习和历史健康信息生成。预测估计潜在的未来模式，不是对未来结果的保证。
+
+意外的生活方式变化或健康事件可能会显著改变未来趋势。`,
+    },
+    privacy: {
+      title: `隐私与AI`,
+      body: `VitalSync仅处理生成所请求洞察所需的信息。Apple Intelligence用于支持的Apple设备。Google Gemini用作Android和不支持的Apple设备的备用方案。
+
+VitalSync不出售个人健康信息。`,
+    },
+  },
+  pt: {
+    dashboard: {
+      title: `Sobre o Seu Painel`,
+      body: `Este painel combina informações que você inseriu com dados de saúde que escolheu compartilhar. Alguns resumos podem incluir explicações geradas por IA.
+
+Fontes de dados:
+• Apple Health (quando autorizado)
+• Entradas manuais
+• Dispositivos conectados
+• USDA FoodData Central (nutrição)
+• Google Gemini ou Apple Intelligence (dispositivos compatíveis)
+
+Apenas para fins informativos — não é conselho médico.`,
+    },
+    wellnessSummary: {
+      title: `Sobre Este Resumo`,
+      body: `Este resumo é gerado a partir das suas informações de saúde disponíveis usando Apple Intelligence ou Google Gemini, dependendo do seu dispositivo. Destaca tendências de bem-estar observadas em linguagem simples.
+
+Não diagnostica condições, não recomenda tratamentos e não substitui o conselho médico profissional.`,
+    },
+    correlate: {
+      title: `Como as Correlações São Calculadas`,
+      body: `O VitalSync primeiro realiza análise estatística usando modelos matemáticos como coeficientes de correlação. A IA então explica esses resultados em linguagem cotidiana.
+
+A correlação identifica relações entre medições, mas não estabelece causa e efeito.`,
+    },
+    scatterPlot: {
+      title: `Sobre Esta Visualização`,
+      body: `Cada gráfico exibe medições históricas ao longo do tempo. As linhas de tendência são geradas a partir da análise estatística dos seus dados registrados.
+
+As relações visuais devem ser interpretadas como padrões, não como evidência de causalidade.`,
+    },
+    wellnessScore: {
+      title: `Como Sua Pontuação de Bem-Estar É Calculada`,
+      body: `Sua Pontuação de Bem-Estar combina múltiplos indicadores incluindo sono, atividade, tendências de frequência cardíaca, nutrição e métricas de recuperação.
+
+As pontuações são geradas usando modelos matemáticos e aprendizado de máquina. Não é uma avaliação médica.`,
+    },
+    recoveryScore: {
+      title: `Sobre Sua Pontuação de Recuperação`,
+      body: `As estimativas de recuperação são baseadas em tendências históricas recentes incluindo sono, variabilidade da frequência cardíaca e atividade.
+
+Não deve ser interpretado como conselho médico.`,
+    },
+    nutritionAnalysis: {
+      title: `Sobre a Análise Nutricional`,
+      body: `As informações nutricionais são obtidas do banco de dados USDA FoodData Central quando disponível. Apple Intelligence ou Google Gemini podem resumir padrões nutricionais.
+
+A IA não estima valores nutricionais quando os dados USDA estão disponíveis.`,
+    },
+    mealScanner: {
+      title: `Sobre o Scanner de Refeições`,
+      body: `A identificação de alimentos usa Google Gemini AI com USDA FoodData Central para dados nutricionais. Apple Vision é usado como alternativa em dispositivos compatíveis.
+
+Revise os resultados escaneados antes de salvar para garantir precisão.`,
+    },
+    healthReport: {
+      title: `Sobre Este Relatório`,
+      body: `Este relatório resume suas informações de bem-estar registradas. Os resumos gerados por IA visam melhorar a legibilidade.
+
+Não deve ser usado como substituto de avaliação clínica.`,
+    },
+    aiChat: {
+      title: `Sobre as Respostas de IA`,
+      body: `As respostas são geradas usando Apple Intelligence em dispositivos Apple compatíveis ou Google Gemini em outros dispositivos. Baseiam-se apenas nas informações disponíveis no VitalSync.
+
+Consulte sempre um profissional de saúde licenciado para decisões médicas pessoais.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `Este resumo foi gerado usando os Modelos de Fundação da Apple. Dependendo das capacidades do dispositivo, o processamento pode ocorrer no dispositivo ou através da infraestrutura de privacidade da Apple.
+
+O VitalSync envia apenas as informações necessárias para gerar este resumo.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `Esta explicação foi gerada usando Google Gemini. Apenas as informações necessárias são processadas.
+
+Nenhuma resposta gerada por IA deve ser interpretada como conselho médico.`,
+    },
+    healthKit: {
+      title: `Dados do Apple Health`,
+      body: `As informações de saúde no VitalSync são coletadas do Apple Health apenas após você conceder permissão. Você controla quais categorias de saúde são compartilhadas.
+
+Revogar as permissões do Apple Health interrompe imediatamente a sincronização de novos dados.`,
+    },
+    connectedDevices: {
+      title: `Dispositivos Conectados`,
+      body: `As medições importadas de dispositivos Bluetooth compatíveis são exibidas conforme relatado pelo fabricante. O VitalSync não modifica os valores de medição brutos.
+
+A precisão do dispositivo depende do fabricante e do uso correto.`,
+    },
+    projectedA1C: {
+      title: `Sobre a A1C Projetada`,
+      body: `A A1C Projetada é uma métrica de bem-estar estimada calculada a partir de informações de glicose disponíveis e modelagem matemática.
+
+Não é uma medição de HbA1c laboratorial e não deve ser usada para diagnosticar ou monitorar diabetes.`,
+    },
+    ekgHistory: {
+      title: `Sobre o Histórico de ECG`,
+      body: `Os registros de ECG no VitalSync são armazenados para sua referência pessoal. As classificações visam organizar registros históricos e não devem ser interpretadas como achados clínicos.
+
+Consulte um profissional de saúde licenciado sobre quaisquer preocupações cardíacas.`,
+    },
+    trendsPredictions: {
+      title: `Sobre Tendências e Previsões`,
+      body: `As previsões de tendências são geradas usando aprendizado de máquina e informações históricas de bem-estar. As previsões estimam padrões futuros potenciais e não são garantias.
+
+Mudanças inesperadas no estilo de vida podem alterar significativamente as tendências futuras.`,
+    },
+    privacy: {
+      title: `Privacidade e IA`,
+      body: `O VitalSync processa apenas as informações necessárias para gerar os insights solicitados. Apple Intelligence é usado em dispositivos Apple compatíveis. Google Gemini é usado como alternativa no Android e em dispositivos Apple não compatíveis.
+
+O VitalSync não vende informações de saúde pessoais.`,
+    },
+  },
+  ar: {
+    dashboard: {
+      title: `حول لوحة التحكم`,
+      body: `تجمع لوحة التحكم هذه المعلومات التي أدخلتها مع بيانات الصحة التي اخترت مشاركتها. قد تتضمن بعض الملخصات تفسيرات مولّدة بالذكاء الاصطناعي.
+
+مصادر البيانات:
+• Apple Health (عند الإذن)
+• الإدخالات اليدوية
+• الأجهزة المتصلة
+• USDA FoodData Central (التغذية)
+• Google Gemini أو Apple Intelligence (الأجهزة المدعومة)
+
+للأغراض المعلوماتية فقط — ليس نصيحة طبية.`,
+    },
+    wellnessSummary: {
+      title: `حول هذا الملخص`,
+      body: `يتم إنشاء هذا الملخص من معلوماتك الصحية المتاحة باستخدام Apple Intelligence أو Google Gemini حسب جهازك. يسلط الضوء على اتجاهات العافية المرصودة بلغة بسيطة.
+
+لا يشخّص الحالات ولا يوصي بالعلاجات ولا يحل محل المشورة الطبية المتخصصة.`,
+    },
+    correlate: {
+      title: `كيف يتم حساب الارتباطات`,
+      body: `يُجري VitalSync أولاً تحليلاً إحصائياً باستخدام نماذج رياضية مثل معاملات الارتباط. ثم يشرح الذكاء الاصطناعي تلك النتائج بلغة يومية.
+
+يحدد الارتباط العلاقات بين القياسات لكنه لا يثبت السببية.`,
+    },
+    scatterPlot: {
+      title: `حول هذا التصور`,
+      body: `يعرض كل مخطط قياسات تاريخية عبر الزمن. تُنشأ خطوط الاتجاه من التحليل الإحصائي لبياناتك المسجلة.
+
+ينبغي تفسير العلاقات المرئية كأنماط وليس كدليل على السببية.`,
+    },
+    wellnessScore: {
+      title: `كيف يُحسب درجة العافية`,
+      body: `تجمع درجة العافية مؤشرات متعددة تشمل النوم والنشاط واتجاهات معدل ضربات القلب والتغذية ومقاييس التعافي.
+
+تُنشأ الدرجات باستخدام نماذج رياضية والتعلم الآلي. ليست تقييماً طبياً.`,
+    },
+    recoveryScore: {
+      title: `حول درجة التعافي`,
+      body: `تستند تقديرات التعافي إلى الاتجاهات التاريخية الأخيرة بما في ذلك النوم وتقلب معدل ضربات القلب والنشاط.
+
+لا ينبغي تفسيرها كنصيحة طبية.`,
+    },
+    nutritionAnalysis: {
+      title: `حول تحليل التغذية`,
+      body: `تُستمد المعلومات الغذائية من قاعدة بيانات USDA FoodData Central عند توفرها. قد يلخص Apple Intelligence أو Google Gemini الأنماط الغذائية.
+
+لا يقدّر الذكاء الاصطناعي القيم الغذائية عند توفر بيانات USDA.`,
+    },
+    mealScanner: {
+      title: `حول ماسح الوجبات`,
+      body: `يستخدم التعرف على الطعام Google Gemini AI مع USDA FoodData Central للبيانات الغذائية. يُستخدم Apple Vision كبديل على الأجهزة المدعومة.
+
+راجع النتائج الممسوحة قبل الحفظ لضمان الدقة.`,
+    },
+    healthReport: {
+      title: `حول هذا التقرير`,
+      body: `يلخص هذا التقرير معلومات العافية المسجلة لديك. تهدف الملخصات المولّدة بالذكاء الاصطناعي إلى تحسين القراءة.
+
+لا ينبغي استخدامه كبديل للتقييم السريري.`,
+    },
+    aiChat: {
+      title: `حول ردود الذكاء الاصطناعي`,
+      body: `تُنشأ الردود باستخدام Apple Intelligence على أجهزة Apple المدعومة أو Google Gemini على الأجهزة الأخرى. تستند فقط إلى المعلومات المتاحة في VitalSync.
+
+استشر دائماً متخصصاً صحياً مرخصاً للقرارات الطبية الشخصية.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `تم إنشاء هذا الملخص باستخدام نماذج Apple الأساسية. اعتماداً على قدرات الجهاز، قد تتم المعالجة على الجهاز أو عبر البنية التحتية لحماية الخصوصية من Apple.
+
+يرسل VitalSync فقط المعلومات اللازمة لإنشاء هذا الملخص.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `تم إنشاء هذا الشرح باستخدام Google Gemini. تتم معالجة المعلومات الضرورية فقط.
+
+لا ينبغي تفسير أي رد مولّد بالذكاء الاصطناعي كنصيحة طبية.`,
+    },
+    healthKit: {
+      title: `بيانات Apple Health`,
+      body: `تُجمع المعلومات الصحية في VitalSync من Apple Health فقط بعد منحك الإذن. أنت تتحكم في فئات الصحة المشتركة.
+
+إلغاء أذونات Apple Health يوقف مزامنة البيانات الجديدة فوراً.`,
+    },
+    connectedDevices: {
+      title: `الأجهزة المتصلة`,
+      body: `تُعرض القياسات المستوردة من أجهزة البلوتوث المدعومة كما أبلغ عنها الشركة المصنعة. لا يعدّل VitalSync قيم القياس الخام.
+
+تعتمد دقة الجهاز على الشركة المصنعة والاستخدام الصحيح.`,
+    },
+    projectedA1C: {
+      title: `حول A1C المتوقع`,
+      body: `A1C المتوقع مقياس عافية تقديري محسوب من معلومات الجلوكوز المتاحة والنمذجة الرياضية.
+
+ليس قياس HbA1c مختبرياً ولا ينبغي استخدامه لتشخيص أو مراقبة مرض السكري.`,
+    },
+    ekgHistory: {
+      title: `حول سجل تخطيط القلب`,
+      body: `تُخزّن سجلات تخطيط القلب في VitalSync كمرجع شخصي لك. التصنيفات مخصصة لتنظيم السجلات التاريخية ولا ينبغي تفسيرها كنتائج سريرية.
+
+استشر متخصصاً صحياً مرخصاً بشأن أي مخاوف قلبية.`,
+    },
+    trendsPredictions: {
+      title: `حول الاتجاهات والتوقعات`,
+      body: `تُنشأ توقعات الاتجاهات باستخدام التعلم الآلي ومعلومات العافية التاريخية. تقدّر التوقعات الأنماط المستقبلية المحتملة وليست ضمانات.
+
+قد تغير التغييرات غير المتوقعة في نمط الحياة الاتجاهات المستقبلية بشكل كبير.`,
+    },
+    privacy: {
+      title: `الخصوصية والذكاء الاصطناعي`,
+      body: `يعالج VitalSync فقط المعلومات اللازمة لإنشاء الرؤى المطلوبة. يُستخدم Apple Intelligence على أجهزة Apple المدعومة. يُستخدم Google Gemini كبديل على Android والأجهزة غير المدعومة.
+
+لا يبيع VitalSync المعلومات الصحية الشخصية.`,
+    },
+  },
+  sw: {
+    dashboard: {
+      title: `Kuhusu Dashibodi Yako`,
+      body: `Dashibodi hii inachanganya taarifa uliyoingiza na data ya afya uliyochagua kushiriki. Baadhi ya muhtasari unaweza kujumuisha maelezo yaliyotengenezwa na AI.
+
+Vyanzo vya Data:
+• Apple Health (inapoidhinishwa)
+• Ingizo za mkono
+• Vifaa vilivyounganishwa
+• USDA FoodData Central (lishe)
+• Google Gemini au Apple Intelligence (vifaa vinavyoungwa mkono)
+
+Kwa madhumuni ya habari peke yake — si ushauri wa kimatibabu.`,
+    },
+    wellnessSummary: {
+      title: `Kuhusu Muhtasari Huu`,
+      body: `Muhtasari huu unatengenezwa kutoka kwa taarifa yako ya afya inayopatikana kwa kutumia Apple Intelligence au Google Gemini, kulingana na kifaa chako. Unasisitiza mwelekeo wa ustawi uliozingatiwa kwa lugha rahisi.
+
+Hauchunguzi hali, haupendekezi matibabu, na hauchukui nafasi ya ushauri wa kimatibabu wa kitaalamu.`,
+    },
+    correlate: {
+      title: `Jinsi Uhusiano Unavyohesabiwa`,
+      body: `VitalSync kwanza hufanya uchambuzi wa takwimu kwa kutumia mifano ya kihesabu kama vile mgawo wa uhusiano. Kisha AI inaeleza matokeo hayo kwa lugha ya kila siku.
+
+Uhusiano unabainisha mahusiano kati ya vipimo lakini haufanyi sababu na athari.`,
+    },
+    scatterPlot: {
+      title: `Kuhusu Uonyeshaji Huu`,
+      body: `Kila chati inaonyesha vipimo vya kihistoria kwa wakati. Mistari ya mwelekeo inatengenezwa kutoka kwa uchambuzi wa takwimu wa data yako iliyorekodiwa.
+
+Mahusiano ya kuona yanapaswa kutafsiriwa kama mifumo, si ushahidi wa sababu.`,
+    },
+    wellnessScore: {
+      title: `Jinsi Alama Yako ya Ustawi Inavyohesabiwa`,
+      body: `Alama yako ya Ustawi inachanganya viashiria vingi ikiwemo usingizi, shughuli, mwelekeo wa kiwango cha moyo, lishe na vipimo vya kupona.
+
+Alama zinatengenezwa kwa kutumia mifano ya kihesabu na ujifunzaji wa mashine. Si tathmini ya kimatibabu.`,
+    },
+    recoveryScore: {
+      title: `Kuhusu Alama Yako ya Kupona`,
+      body: `Makadirio ya kupona yanategemea mwelekeo wa kihistoria wa hivi karibuni ikiwemo usingizi, tofauti ya kiwango cha moyo na shughuli.
+
+Haipaswi kutafsiriwa kama ushauri wa kimatibabu.`,
+    },
+    nutritionAnalysis: {
+      title: `Kuhusu Uchambuzi wa Lishe`,
+      body: `Taarifa ya lishe inatoka kwenye hifadhidata ya USDA FoodData Central inapowezekana. Apple Intelligence au Google Gemini inaweza kufupisha mifumo ya lishe.
+
+AI haikadiriwi au kuvumbua thamani za virutubisho wakati data ya USDA inapatikana.`,
+    },
+    mealScanner: {
+      title: `Kuhusu Skana ya Mlo`,
+      body: `Utambuzi wa chakula unatumia Google Gemini AI na USDA FoodData Central kwa data ya lishe. Apple Vision inatumika kama mbadala kwenye vifaa vinavyoungwa mkono.
+
+Kagua matokeo yaliyoskanwa kabla ya kuhifadhi kuhakikisha usahihi.`,
+    },
+    healthReport: {
+      title: `Kuhusu Ripoti Hii`,
+      body: `Ripoti hii inafupisha taarifa yako ya ustawi iliyorekodiwa. Muhtasari uliozalishwa na AI unakusudiwa kuboresha usomaji.
+
+Haipaswi kutumika kama mbadala wa tathmini ya kliniki.`,
+    },
+    aiChat: {
+      title: `Kuhusu Majibu ya AI`,
+      body: `Majibu yanatengenezwa kwa kutumia Apple Intelligence kwenye vifaa vya Apple vinavyoungwa mkono au Google Gemini kwenye vifaa vingine. Yanategemea tu taarifa inayopatikana ndani ya VitalSync.
+
+Daima wasiliana na mtaalamu wa afya aliyeidhinishwa kwa maamuzi ya kimatibabu ya kibinafsi.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `Muhtasari huu ulizalishwa kwa kutumia Mifano ya Msingi ya Apple. Kulingana na uwezo wa kifaa, usindikaji unaweza kutokea kwenye kifaa au kupitia miundombinu ya kulinda faragha ya Apple.
+
+VitalSync inatuma tu taarifa inayohitajika kuzalisha muhtasari huu.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `Maelezo haya yalizalishwa kwa kutumia Google Gemini. Taarifa inayohitajika tu inasindikwa.
+
+Hakuna jibu lililozalishwa na AI linalopaswa kutafsiriwa kama ushauri wa kimatibabu.`,
+    },
+    healthKit: {
+      title: `Data ya Apple Health`,
+      body: `Taarifa ya afya ndani ya VitalSync inakusanywa kutoka Apple Health tu baada ya kutoa ruhusa. Unabaki na udhibiti wa makundi ya afya yanayoshirikiwa.
+
+Kufuta ruhusa za Apple Health kunasimamisha mara moja usawazishaji wa data mpya.`,
+    },
+    connectedDevices: {
+      title: `Vifaa Vilivyounganishwa`,
+      body: `Vipimo vilivyoingizwa kutoka vifaa vya Bluetooth vinavyoungwa mkono vinaonyeshwa kama inavyoripotiwa na mtengenezaji. VitalSync haibadilishi thamani za kipimo ghafi.
+
+Usahihi wa kifaa unategemea mtengenezaji na matumizi sahihi ya kifaa.`,
+    },
+    projectedA1C: {
+      title: `Kuhusu A1C Inayotarajiwa`,
+      body: `A1C Inayotarajiwa ni kipimo cha ustawi kilichokadiriwa kinachohesabiwa kutoka kwa taarifa ya glukosi inayopatikana na mfano wa kihesabu.
+
+Si kipimo cha HbA1c cha maabara na haipaswi kutumika kuchunguza au kufuatilia kisukari.`,
+    },
+    ekgHistory: {
+      title: `Kuhusu Historia ya EKG`,
+      body: `Rekodi za EKG ndani ya VitalSync zimehifadhiwa kwa kumbukumbu yako ya kibinafsi. Uainishaji wowote unakusudiwa kupanga rekodi za kihistoria na haipaswi kutafsiriwa kama matokeo ya kliniki.
+
+Wasiliana na mtaalamu wa afya aliyeidhinishwa kuhusu wasiwasi wowote wa moyo.`,
+    },
+    trendsPredictions: {
+      title: `Kuhusu Mwelekeo na Utabiri`,
+      body: `Utabiri wa mwelekeo unazalishwa kwa kutumia ujifunzaji wa mashine na taarifa ya kihistoria ya ustawi. Utabiri unakadiri mifumo ya baadaye inayowezekana na si dhamana za matokeo ya baadaye.
+
+Mabadiliko yasiyotarajiwa ya mtindo wa maisha yanaweza kubadilisha mwelekeo wa baadaye kwa kiasi kikubwa.`,
+    },
+    privacy: {
+      title: `Faragha na AI`,
+      body: `VitalSync inasindika tu taarifa inayohitajika kuzalisha maarifa yaliyoombwa. Apple Intelligence inatumika kwenye vifaa vya Apple vinavyoungwa mkono. Google Gemini inatumika kama mbadala kwenye Android na vifaa vya Apple visivyoungwa mkono.
+
+VitalSync haiuzi taarifa ya afya ya kibinafsi.`,
+    },
+  },
+  hi: {
+    dashboard: {
+      title: `आपके डैशबोर्ड के बारे में`,
+      body: `यह डैशबोर्ड आपके द्वारा दर्ज की गई जानकारी को उन स्वास्थ्य डेटा के साथ जोड़ता है जिन्हें आपने साझा करने का विकल्प चुना है। कुछ सारांशों में AI-जनित स्पष्टीकरण शामिल हो सकते हैं।
+
+डेटा स्रोत:
+• Apple Health (अधिकृत होने पर)
+• मैन्युअल प्रविष्टियाँ
+• कनेक्टेड डिवाइस
+• USDA FoodData Central (पोषण)
+• Google Gemini या Apple Intelligence (समर्थित डिवाइस)
+
+केवल सूचनात्मक उद्देश्यों के लिए — चिकित्सा सलाह नहीं।`,
+    },
+    wellnessSummary: {
+      title: `इस सारांश के बारे में`,
+      body: `यह सारांश आपके डिवाइस के आधार पर Apple Intelligence या Google Gemini का उपयोग करके आपकी उपलब्ध स्वास्थ्य जानकारी से उत्पन्न होता है। यह सरल भाषा में देखे गए स्वास्थ्य रुझानों को उजागर करता है।
+
+यह स्थितियों का निदान नहीं करता, उपचार की सिफारिश नहीं करता, और पेशेवर चिकित्सा सलाह की जगह नहीं लेता।`,
+    },
+    correlate: {
+      title: `सहसंबंध कैसे गणना किए जाते हैं`,
+      body: `VitalSync पहले सहसंबंध गुणांक जैसे गणितीय मॉडल का उपयोग करके सांख्यिकीय विश्लेषण करता है। फिर AI उन निष्कर्षों को रोजमर्रा की भाषा में समझाता है।
+
+सहसंबंध माप के बीच संबंधों की पहचान करता है लेकिन कारण और प्रभाव स्थापित नहीं करता।`,
+    },
+    scatterPlot: {
+      title: `इस विज़ुअलाइज़ेशन के बारे में`,
+      body: `प्रत्येक चार्ट समय के साथ ऐतिहासिक माप प्रदर्शित करता है। ट्रेंड लाइनें आपके रिकॉर्ड किए गए डेटा के सांख्यिकीय विश्लेषण से उत्पन्न होती हैं।
+
+दृश्य संबंधों को पैटर्न के रूप में समझा जाना चाहिए, कारणता के प्रमाण के रूप में नहीं।`,
+    },
+    wellnessScore: {
+      title: `आपका स्वास्थ्य स्कोर कैसे गणना किया जाता है`,
+      body: `आपका स्वास्थ्य स्कोर नींद, गतिविधि, हृदय गति रुझान, पोषण और रिकवरी मेट्रिक्स सहित कई स्वास्थ्य संकेतकों को जोड़ता है।
+
+स्कोर गणितीय मॉडल और मशीन लर्निंग का उपयोग करके उत्पन्न होते हैं। यह चिकित्सा मूल्यांकन नहीं है।`,
+    },
+    recoveryScore: {
+      title: `आपके रिकवरी स्कोर के बारे में`,
+      body: `रिकवरी अनुमान नींद, हृदय गति परिवर्तनशीलता और गतिविधि सहित हाल के ऐतिहासिक रुझानों पर आधारित हैं।
+
+इसे चिकित्सा सलाह के रूप में नहीं समझा जाना चाहिए।`,
+    },
+    nutritionAnalysis: {
+      title: `पोषण विश्लेषण के बारे में`,
+      body: `पोषण संबंधी जानकारी उपलब्ध होने पर USDA FoodData Central डेटाबेस से प्राप्त होती है। Apple Intelligence या Google Gemini पोषण पैटर्न का सारांश दे सकते हैं।
+
+जब USDA डेटा उपलब्ध हो तो AI पोषक तत्व मूल्यों का अनुमान नहीं लगाता।`,
+    },
+    mealScanner: {
+      title: `मील स्कैनर के बारे में`,
+      body: `खाद्य पहचान Google Gemini AI का उपयोग करती है और पोषण डेटा के लिए USDA FoodData Central का। समर्थित डिवाइस पर Apple Vision फॉलबैक के रूप में उपयोग किया जाता है।
+
+सटीकता सुनिश्चित करने के लिए सहेजने से पहले स्कैन किए गए परिणामों की समीक्षा करें।`,
+    },
+    healthReport: {
+      title: `इस रिपोर्ट के बारे में`,
+      body: `यह रिपोर्ट आपकी रिकॉर्ड की गई स्वास्थ्य जानकारी का सारांश देती है। AI-जनित सारांश पठनीयता में सुधार के लिए हैं।
+
+इसे नैदानिक मूल्यांकन के विकल्प के रूप में उपयोग नहीं किया जाना चाहिए।`,
+    },
+    aiChat: {
+      title: `AI प्रतिक्रियाओं के बारे में`,
+      body: `प्रतिक्रियाएं समर्थित Apple डिवाइस पर Apple Intelligence या अन्य डिवाइस पर Google Gemini का उपयोग करके उत्पन्न होती हैं। ये केवल VitalSync में उपलब्ध जानकारी पर आधारित हैं।
+
+व्यक्तिगत चिकित्सा निर्णयों के लिए हमेशा लाइसेंस प्राप्त स्वास्थ्य पेशेवर से परामर्श करें।`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `यह सारांश Apple के Foundation Models का उपयोग करके उत्पन्न किया गया था। डिवाइस क्षमताओं के आधार पर, प्रसंस्करण डिवाइस पर या Apple के गोपनीयता-संरक्षण बुनियादी ढांचे के माध्यम से हो सकता है।
+
+VitalSync केवल इस सारांश को उत्पन्न करने के लिए आवश्यक जानकारी भेजता है।`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `यह स्पष्टीकरण Google Gemini का उपयोग करके उत्पन्न किया गया था। केवल आवश्यक जानकारी संसाधित की जाती है।
+
+कोई भी AI-जनित प्रतिक्रिया चिकित्सा सलाह के रूप में नहीं समझी जानी चाहिए।`,
+    },
+    healthKit: {
+      title: `Apple Health डेटा`,
+      body: `VitalSync में प्रदर्शित स्वास्थ्य जानकारी केवल आपकी अनुमति के बाद Apple Health से एकत्र की जाती है। आप नियंत्रित करते हैं कि कौन सी स्वास्थ्य श्रेणियां साझा की जाती हैं।
+
+Apple Health अनुमतियां रद्द करने से तुरंत नए डेटा सिंक्रोनाइज़ेशन बंद हो जाता है।`,
+    },
+    connectedDevices: {
+      title: `कनेक्टेड डिवाइस`,
+      body: `समर्थित Bluetooth डिवाइस से आयातित माप डिवाइस निर्माता द्वारा रिपोर्ट किए अनुसार प्रदर्शित होते हैं। VitalSync कच्चे माप मूल्यों को संशोधित नहीं करता।
+
+डिवाइस की सटीकता निर्माता और उचित डिवाइस उपयोग पर निर्भर करती है।`,
+    },
+    projectedA1C: {
+      title: `प्रोजेक्टेड A1C के बारे में`,
+      body: `प्रोजेक्टेड A1C उपलब्ध ग्लूकोज जानकारी और गणितीय मॉडलिंग से गणना किया गया एक अनुमानित स्वास्थ्य मेट्रिक है।
+
+यह प्रयोगशाला HbA1c माप नहीं है और मधुमेह के निदान या निगरानी के लिए उपयोग नहीं किया जाना चाहिए।`,
+    },
+    ekgHistory: {
+      title: `EKG इतिहास के बारे में`,
+      body: `VitalSync में प्रदर्शित EKG रिकॉर्ड आपके व्यक्तिगत संदर्भ के लिए संग्रहीत हैं। कोई भी वर्गीकरण ऐतिहासिक रिकॉर्ड व्यवस्थित करने के लिए है और नैदानिक निष्कर्षों के रूप में नहीं समझा जाना चाहिए।
+
+किसी भी हृदय संबंधी चिंता के बारे में लाइसेंस प्राप्त स्वास्थ्य पेशेवर से परामर्श करें।`,
+    },
+    trendsPredictions: {
+      title: `रुझान और भविष्यवाणियों के बारे में`,
+      body: `रुझान पूर्वानुमान मशीन लर्निंग और ऐतिहासिक स्वास्थ्य जानकारी का उपयोग करके उत्पन्न होते हैं। पूर्वानुमान संभावित भविष्य के पैटर्न का अनुमान लगाते हैं और भविष्य के परिणामों की गारंटी नहीं हैं।
+
+जीवनशैली में अप्रत्याशित परिवर्तन भविष्य के रुझानों को महत्वपूर्ण रूप से बदल सकते हैं।`,
+    },
+    privacy: {
+      title: `गोपनीयता और AI`,
+      body: `VitalSync केवल अनुरोधित अंतर्दृष्टि उत्पन्न करने के लिए आवश्यक जानकारी संसाधित करता है। Apple Intelligence समर्थित Apple डिवाइस पर उपयोग किया जाता है। Google Gemini Android और असमर्थित Apple डिवाइस पर फॉलबैक के रूप में उपयोग किया जाता है।
+
+VitalSync व्यक्तिगत स्वास्थ्य जानकारी नहीं बेचता।`,
+    },
+  },
+  de: {
+    dashboard: {
+      title: `Über Ihr Dashboard`,
+      body: `Dieses Dashboard kombiniert von Ihnen eingegebene Informationen mit Gesundheitsdaten, die Sie geteilt haben. Einige Zusammenfassungen können KI-generierte Erklärungen enthalten.
+
+Datenquellen:
+• Apple Health (wenn autorisiert)
+• Manuelle Eingaben
+• Verbundene Geräte
+• USDA FoodData Central (Ernährung)
+• Google Gemini oder Apple Intelligence (unterstützte Geräte)
+
+Nur zu Informationszwecken — kein medizinischer Rat.`,
+    },
+    wellnessSummary: {
+      title: `Über Diese Zusammenfassung`,
+      body: `Diese Zusammenfassung wird aus Ihren verfügbaren Gesundheitsinformationen mit Apple Intelligence oder Google Gemini generiert, je nach Gerät. Sie hebt beobachtete Wellness-Trends in einfacher Sprache hervor.
+
+Sie diagnostiziert keine Erkrankungen, empfiehlt keine Behandlungen und ersetzt keinen professionellen medizinischen Rat.`,
+    },
+    correlate: {
+      title: `Wie Korrelationen Berechnet Werden`,
+      body: `VitalSync führt zunächst statistische Analysen mit mathematischen Modellen wie Korrelationskoeffizienten durch. KI erklärt dann diese Ergebnisse in Alltagssprache.
+
+Korrelation identifiziert Beziehungen zwischen Messungen, stellt aber keine Kausalität fest.`,
+    },
+    scatterPlot: {
+      title: `Über Diese Visualisierung`,
+      body: `Jedes Diagramm zeigt historische Messungen über die Zeit. Trendlinien werden aus der statistischen Analyse Ihrer aufgezeichneten Daten generiert.
+
+Visuelle Beziehungen sollten als Muster interpretiert werden, nicht als Beweis für Kausalität.`,
+    },
+    wellnessScore: {
+      title: `Wie Ihr Wellness-Score Berechnet Wird`,
+      body: `Ihr Wellness-Score kombiniert mehrere Indikatoren einschließlich Schlaf, Aktivität, Herzfrequenz-Trends, Ernährung und Erholungsmetriken.
+
+Scores werden mit mathematischen Modellen und maschinellem Lernen generiert. Es ist keine medizinische Bewertung.`,
+    },
+    recoveryScore: {
+      title: `Über Ihren Erholungs-Score`,
+      body: `Erholungsschätzungen basieren auf aktuellen historischen Trends einschließlich Schlaf, Herzfrequenzvariabilität und Aktivität.
+
+Sollte nicht als medizinischer Rat interpretiert werden.`,
+    },
+    nutritionAnalysis: {
+      title: `Über die Ernährungsanalyse`,
+      body: `Ernährungsinformationen stammen aus der USDA FoodData Central-Datenbank, wenn verfügbar. Apple Intelligence oder Google Gemini können Ernährungsmuster zusammenfassen.
+
+KI schätzt keine Nährwerte, wenn USDA-Daten verfügbar sind.`,
+    },
+    mealScanner: {
+      title: `Über den Mahlzeiten-Scanner`,
+      body: `Die Lebensmittelerkennung verwendet Google Gemini AI mit USDA FoodData Central für Ernährungsdaten. Apple Vision wird als Fallback auf unterstützten Geräten verwendet.
+
+Überprüfen Sie gescannte Ergebnisse vor dem Speichern auf Genauigkeit.`,
+    },
+    healthReport: {
+      title: `Über Diesen Bericht`,
+      body: `Dieser Bericht fasst Ihre aufgezeichneten Wellness-Informationen zusammen. KI-generierte Zusammenfassungen sollen die Lesbarkeit verbessern.
+
+Sollte nicht als Ersatz für eine klinische Bewertung verwendet werden.`,
+    },
+    aiChat: {
+      title: `Über KI-Antworten`,
+      body: `Antworten werden mit Apple Intelligence auf unterstützten Apple-Geräten oder Google Gemini auf anderen Geräten generiert. Sie basieren ausschließlich auf den in VitalSync verfügbaren Informationen.
+
+Konsultieren Sie immer einen zugelassenen Gesundheitsfachmann für persönliche medizinische Entscheidungen.`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `Diese Zusammenfassung wurde mit Apples Foundation Models generiert. Je nach Gerätefähigkeiten kann die Verarbeitung auf dem Gerät oder über Apples datenschutzschützende Infrastruktur erfolgen.
+
+VitalSync sendet nur die zur Generierung dieser Zusammenfassung erforderlichen Informationen.`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `Diese Erklärung wurde mit Google Gemini generiert. Nur die notwendigen Informationen werden verarbeitet.
+
+Keine KI-generierte Antwort sollte als medizinischer Rat interpretiert werden.`,
+    },
+    healthKit: {
+      title: `Apple Health-Daten`,
+      body: `Gesundheitsinformationen in VitalSync werden nur nach Ihrer Genehmigung von Apple Health gesammelt. Sie behalten die Kontrolle über die geteilten Gesundheitskategorien.
+
+Das Widerrufen von Apple Health-Berechtigungen stoppt sofort die neue Datensynchronisierung.`,
+    },
+    connectedDevices: {
+      title: `Verbundene Geräte`,
+      body: `Messungen von unterstützten Bluetooth-Geräten werden so angezeigt, wie vom Hersteller gemeldet. VitalSync ändert keine Rohmesswerte.
+
+Gerätegenauigkeit hängt vom Hersteller und der richtigen Geräteverwendung ab.`,
+    },
+    projectedA1C: {
+      title: `Über Projiziertes A1C`,
+      body: `Projiziertes A1C ist eine geschätzte Wellness-Metrik, die aus verfügbaren Glukoseinformationen und mathematischer Modellierung berechnet wird.
+
+Es ist keine Labor-HbA1c-Messung und sollte nicht zur Diagnose oder Überwachung von Diabetes verwendet werden.`,
+    },
+    ekgHistory: {
+      title: `Über EKG-Verlauf`,
+      body: `EKG-Aufzeichnungen in VitalSync werden für Ihre persönliche Referenz gespeichert. Klassifikationen dienen der Organisation historischer Aufzeichnungen und sollten nicht als klinische Befunde interpretiert werden.
+
+Konsultieren Sie einen zugelassenen Gesundheitsfachmann bei kardialen Bedenken.`,
+    },
+    trendsPredictions: {
+      title: `Über Trends und Vorhersagen`,
+      body: `Trendprognosen werden mit maschinellem Lernen und historischen Wellness-Informationen generiert. Prognosen schätzen potenzielle zukünftige Muster und sind keine Garantien.
+
+Unerwartete Lebensstiländerungen können zukünftige Trends erheblich verändern.`,
+    },
+    privacy: {
+      title: `Datenschutz und KI`,
+      body: `VitalSync verarbeitet nur die zur Generierung angeforderter Einblicke notwendigen Informationen. Apple Intelligence wird auf unterstützten Apple-Geräten verwendet. Google Gemini wird als Fallback auf Android und nicht unterstützten Apple-Geräten verwendet.
+
+VitalSync verkauft keine persönlichen Gesundheitsinformationen.`,
+    },
+  },
+  ja: {
+    dashboard: {
+      title: `ダッシュボードについて`,
+      body: `このダッシュボードは、あなたが入力した情報と共有を選択した健康データを組み合わせています。一部のサマリーにはAIが生成した説明が含まれる場合があります。
+
+データソース：
+• Apple Health（承認済みの場合）
+• 手動入力
+• 接続デバイス
+• USDA FoodData Central（栄養）
+• Google Gemini またはApple Intelligence（対応デバイス）
+
+情報提供のみを目的としています — 医療アドバイスではありません。`,
+    },
+    wellnessSummary: {
+      title: `このサマリーについて`,
+      body: `このサマリーは、デバイスに応じてApple IntelligenceまたはGoogle Geminiを使用して、利用可能な健康情報から生成されます。観察されたウェルネストレンドをわかりやすい言葉で強調しています。
+
+疾患の診断、治療の推奨、または専門的な医療アドバイスの代替にはなりません。`,
+    },
+    correlate: {
+      title: `相関の計算方法`,
+      body: `VitalSyncはまず相関係数などの数学モデルを使用して統計分析を実行します。次にAIがその統計的知見を日常的な言葉で説明します。
+
+相関は測定間の関係を特定しますが、因果関係を確立するものではありません。`,
+    },
+    scatterPlot: {
+      title: `この視覚化について`,
+      body: `各チャートは時間の経過とともに過去の測定値を表示します。トレンドラインは記録されたデータの統計分析から生成されます。
+
+視覚的な関係はパターンとして解釈する必要があり、一方の測定が他方を引き起こすという証拠ではありません。`,
+    },
+    wellnessScore: {
+      title: `ウェルネススコアの計算方法`,
+      body: `ウェルネススコアは、睡眠、活動、心拍数トレンド、栄養、回復指標など複数のウェルネス指標を組み合わせています。
+
+スコアは数学モデルと機械学習を使用して生成されます。医療評価や診断ではありません。`,
+    },
+    recoveryScore: {
+      title: `回復スコアについて`,
+      body: `回復の推定は、睡眠、心拍変動、活動などの最近の過去のトレンドに基づいています。
+
+医療アドバイスとして解釈すべきではありません。`,
+    },
+    nutritionAnalysis: {
+      title: `栄養分析について`,
+      body: `栄養情報は利用可能な場合、USDA FoodData Centralデータベースから取得されます。Apple IntelligenceまたはGoogle Geminiが栄養パターンを要約する場合があります。
+
+USDAデータが利用可能な場合、AIは栄養値を推定または作成しません。`,
+    },
+    mealScanner: {
+      title: `ミールスキャナーについて`,
+      body: `食品識別はGoogle Gemini AIを使用し、栄養データにはUSDA FoodData Centralを使用します。対応デバイスではApple Visionがフォールバックとして使用されます。
+
+精度を確保するため、保存前にスキャン結果を確認してください。`,
+    },
+    healthReport: {
+      title: `このレポートについて`,
+      body: `このレポートは記録されたウェルネス情報を要約しています。AIが生成したサマリーは読みやすさの向上を目的としています。
+
+臨床評価の代替として使用すべきではありません。`,
+    },
+    aiChat: {
+      title: `AI応答について`,
+      body: `応答は対応するAppleデバイスではApple Intelligence、その他のデバイスではGoogle Geminiを使用して生成されます。VitalSync内で利用可能な情報のみに基づいています。
+
+個人的な医療上の決定については、常に資格を持つ医療専門家に相談してください。`,
+    },
+    appleIntelligence: {
+      title: `Apple Intelligence`,
+      body: `このサマリーはAppleのFoundation Modelsを使用して生成されました。デバイスの機能に応じて、処理はデバイス上またはAppleのプライバシー保護インフラストラクチャを通じて行われる場合があります。
+
+VitalSyncはこのサマリーを生成するために必要な情報のみを送信します。`,
+    },
+    googleGemini: {
+      title: `Google Gemini`,
+      body: `この説明はGoogle Geminiを使用して生成されました。必要な情報のみが処理されます。
+
+AIが生成した応答は医療アドバイスとして解釈すべきではありません。`,
+    },
+    healthKit: {
+      title: `Apple Healthデータ`,
+      body: `VitalSync内に表示される健康情報は、許可を与えた後にのみApple Healthから収集されます。共有する健康カテゴリを管理できます。
+
+Apple Healthの権限を取り消すと、新しいデータの同期が即座に停止します。`,
+    },
+    connectedDevices: {
+      title: `接続デバイス`,
+      body: `対応するBluetoothデバイスからインポートされた測定値は、デバイスメーカーが報告したとおりに表示されます。VitalSyncは生の測定値を変更しません。
+
+デバイスの精度はメーカーと適切なデバイスの使用に依存します。`,
+    },
+    projectedA1C: {
+      title: `予測A1Cについて`,
+      body: `予測A1Cは、利用可能なグルコース情報と数学的モデリングから計算された推定ウェルネス指標です。
+
+検査室のHbA1c測定ではなく、糖尿病の診断や監視に使用すべきではありません。`,
+    },
+    ekgHistory: {
+      title: `EKG履歴について`,
+      body: `VitalSync内に表示されるEKG記録は個人的な参照のために保存されています。分類は過去の記録を整理するためのものであり、臨床的所見として解釈すべきではありません。
+
+心臓に関する懸念については、資格を持つ医療専門家に相談してください。`,
+    },
+    trendsPredictions: {
+      title: `トレンドと予測について`,
+      body: `トレンド予測は機械学習と過去のウェルネス情報を使用して生成されます。予測は潜在的な将来のパターンを推定するものであり、将来の結果の保証ではありません。
+
+予期しないライフスタイルの変化は将来のトレンドを大幅に変える可能性があります。`,
+    },
+    privacy: {
+      title: `プライバシーとAI`,
+      body: `VitalSyncは要求されたインサイトを生成するために必要な情報のみを処理します。Apple Intelligenceは対応するAppleデバイスで使用されます。Google GeminiはAndroidおよび非対応のAppleデバイスでフォールバックとして使用されます。
+
+VitalSyncは個人の健康情報を販売しません。`,
+    },
+  },
+} as const;
+
+export type TransparencyVariant = keyof typeof transparencyStrings.en;

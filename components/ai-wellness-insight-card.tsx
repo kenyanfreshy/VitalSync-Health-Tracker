@@ -18,6 +18,7 @@
  */
 
 import React, { useEffect } from 'react';
+import { TransparencyCard } from '@/components/transparency-card';
 import { View, Text, ActivityIndicator, Pressable, StyleSheet, Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { GlassCard } from '@/components/glass-card';
@@ -204,7 +205,8 @@ export function AIWellnessInsightCard({
         <Text style={styles.titleEmoji}>✦</Text>
         <Text style={[styles.title, { color: textColor }]}>{title}</Text>
         <ProviderBadge provider={insight.provider} isDark={isDark} />
-      </View>
+        <TransparencyCard variant="appleIntelligence" style={{ marginTop: 8 }} />
+  </View>
 
       <Text style={[styles.insightText, { color: textColor }]}>
         {insight.text}

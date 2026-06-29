@@ -3,8 +3,8 @@
  *
  * A full-featured Smart food logging bottom sheet that replaces the /log/sodium screen.
  * Modes:
- *   1. Plate Scan  — photograph a meal → Apple Vision/LLM → USDA FoodData Central → serving confirm → log
- *                   Clarifai fallback when Vision confidence is low. Server fallback if no food detected.
+ *   1. Plate Scan  — photograph a meal → Gemini AI → USDA FoodData Central → serving confirm → log
+ *                   Apple Vision fallback when Gemini is unavailable.
  *   2. Barcode Scan — native on-device scanner → Open Food Facts → USDA enrichment (low-confidence) → log
  *   3. USDA Search — type a food name → searchFood → pick item(s) → macro preview → log
  *
@@ -66,7 +66,8 @@ import { BarcodeScannerModal } from '@/components/barcode-scanner-modal';
 import { MicrophoneIcon } from '@/components/ui/microphone-icon';
 import { MealAnalysisOverlay, type AnalysisStep, type AnalysisStepState, type DetectedFoodLabel } from '@/components/meal-analysis-overlay';
 import { GeminiConsentModal } from '@/components/gemini-consent-modal';
-import { hasGeminiConsent, markGeminiConsent } from '@/lib/gemini-consent';
+import { TransparencyCard } from '@/components/transparency-card';
+import { hasGeminiConsent, markGeminiConsent, revokeGeminiConsent as _revokeGeminiConsent } from '@/lib/gemini-consent';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1077,6 +1078,7 @@ interface HomeScreenProps {
   mode: ScanMode;
   onPlateScan: () => void;
   onBarcodeScan: () => void;
+  consentGranted?: boolean | null;
   recentMeals: SodiumRecordLike[];
   swipedId: string | null;
   setSwipedId: (id: string | null) => void;
@@ -1089,7 +1091,7 @@ interface HomeScreenProps {
   prevEstimate?: { kcal: number; name: string } | null;
   scanBtnSpinAnim?: Animated.Value;
 }
-function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
+function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan, consentGranted, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
   return (
     <>
       <View style={styles.homeGrid}>
@@ -1101,7 +1103,7 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
             pressed && { opacity: 0.75, transform: [{ scale: 0.97 }] },
           ]}
           onPress={onPlateScan}
-          disabled={scanning}
+          disabled={scanning || consentGranted === false}
         >
           {(scanning || openingCamera) && scanBtnSpinAnim ? (
             <>
@@ -1140,7 +1142,7 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
             pressed && { opacity: 0.75, transform: [{ scale: 0.97 }] },
           ]}
           onPress={onBarcodeScan}
-          disabled={scanning}
+          disabled={scanning || consentGranted === false}
         >
           {scanning && mode === 'home' ? (
             <ActivityIndicator color={BLUE} size="large" />
@@ -1153,6 +1155,19 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
           )}
         </Pressable>
       </View>
+      {/* AI provider disclaimer — TransparencyCard (mealScanner) */}
+      <TransparencyCard variant="mealScanner" style={{ marginTop: 10 }} />
+      {/* Consent-revoked banner — shown when user has previously revoked consent */}
+      {consentGranted === false && (
+        <View style={[styles.consentBanner, { backgroundColor: '#F59E0B18', borderColor: '#F59E0B55' }]}>
+          <Text style={[styles.consentBannerText, { color: '#F59E0B' }]}>
+            {fc.consentRequired ?? 'AI consent required to use this feature.'}
+          </Text>
+          <Text style={[styles.consentBannerHint, { color: mutedColor }]}>
+            {fc.consentRevokedHint ?? 'Go to Settings → Privacy & Consent to re-enable.'}
+          </Text>
+        </View>
+      )}
       <RecentScansSection
         recentMeals={recentMeals}
         isDark={isDark}
@@ -1619,6 +1634,10 @@ export function AiFoodCameraSheet({
   // pendingPlateScan: true = user tried to scan before consent; retry after accept
   const [showGeminiConsent, setShowGeminiConsent] = useState(false);
   const pendingPlateScanRef = useRef(false);
+  const pendingBarcodeRef = useRef(false);
+  const pendingSearchRef = useRef<string | null>(null);
+  // consentGranted: null = not yet loaded, true/false = loaded from AsyncStorage
+  const [consentGranted, setConsentGranted] = useState<boolean | null>(null);
   // Recent search queries loaded from AsyncStorage cache
   const [recentQueries, setRecentQueries] = useState<string[]>([]);
   // Load recent queries whenever the sheet becomes visible
@@ -1675,6 +1694,8 @@ export function AiFoodCameraSheet({
       setSelectedResult(null);
       setTrayItems([]);
       setShowTray(false);
+      // Load consent state so buttons can be gated immediately
+      hasGeminiConsent().then((granted) => setConsentGranted(granted)).catch(() => setConsentGranted(false));
       // Reset analysis overlay
       setAnalysisStepStates(INITIAL_STEP_STATES_DEFAULT);
       setAnalysisProgress(0);
@@ -1699,6 +1720,15 @@ export function AiFoodCameraSheet({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible, initialMode, initialSearchQuery]);
 
+  // Auto-trigger plate scan when sheet opens with initialMode='plate' and consent already granted
+  useEffect(() => {
+    if (visible && initialMode === 'plate' && consentGranted === true) {
+      const t = setTimeout(() => handlePlateScan(), 350);
+      return () => clearTimeout(t);
+    }
+    return undefined;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, initialMode, consentGranted]);
   // No recording animation needed — mic button just focuses the search TextInput
 
   // Start/stop scanner ring spin based on scanning state
@@ -1771,11 +1801,11 @@ export function AiFoodCameraSheet({
     setAnalysisStepStates(prev => ({ ...prev, [step]: state }));
   }, []);
 
-  // ── Plate scan — Apple Vision → USDA FoodData Central (privacy-first) ────────
+  // ── Plate scan — Gemini AI → USDA FoodData Central (privacy-first) ────────────
   // Pipeline:
-  //   1. Apple Vision / server multimodal LLM → food labels (on-device / our server)
-  //   2. Clarifai fallback if Vision confidence is low
-  //   3. USDA FoodData Central → lab-verified macros (direct REST, no proxy)
+  //   1. Gemini AI Vision → structured nutrition JSON (primary)
+  //   2. USDA FoodData Central → lab-verified macro cross-reference
+  //   3. Apple Vision → on-device fallback when Gemini is unavailable
   //   4. Serving confirmation UI (×0.5 / ×1 / ×1.5 / ×2 multiplier)
   //   5. HealthKit write-back fires automatically via addSodium → saveMealToHealthKit
   const handlePlateScan = useCallback(async () => {
@@ -1975,10 +2005,17 @@ export function AiFoodCameraSheet({
   }, [onScanMealPress, resetAnalysisState, advanceStep]);
 
   // ── Barcode scan — native on-device scanner → Open Food Facts API ──────────
-  const handleBarcodeScan = useCallback(() => {
+  const handleBarcodeScan = useCallback(async () => {
     if (onBarcodeScanPress) {
       // Parent has provided a gate — fire it instead of opening the scanner
       onBarcodeScanPress();
+      return;
+    }
+    // ── Consent gate ─────────────────────────────────────────────────────────
+    const consentGiven = await hasGeminiConsent();
+    if (!consentGiven) {
+      pendingBarcodeRef.current = true;
+      setShowGeminiConsent(true);
       return;
     }
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -2045,8 +2082,15 @@ export function AiFoodCameraSheet({
   }, []);
 
   // ── Food search: Gemini 2.5 primary + USDA fallback (fully client-side) ────
-  const handleSubmitSearch = useCallback((query: string, _setLocalText: (t: string) => void) => {
+  const handleSubmitSearch = useCallback(async (query: string, _setLocalText: (t: string) => void) => {
     if (!query.trim()) return;
+    // ── Consent gate ─────────────────────────────────────────────────────────
+    const consentGiven = await hasGeminiConsent();
+    if (!consentGiven) {
+      pendingSearchRef.current = query;
+      setShowGeminiConsent(true);
+      return;
+    }
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     const trimmedQuery = query.trim();
     setSearchQuery(trimmedQuery);
@@ -2469,6 +2513,17 @@ export function AiFoodCameraSheet({
           </View>
 
           {/* Content */}
+          {/* Consent-revoked banner in search/home mode */}
+          {consentGranted === false && (
+            <View style={[styles.consentBanner, { backgroundColor: '#F59E0B18', borderColor: '#F59E0B55', marginHorizontal: 16, marginTop: 8 }]}>
+              <Text style={[styles.consentBannerText, { color: '#F59E0B' }]}>
+                {fc.consentRequired ?? 'AI consent required to use this feature.'}
+              </Text>
+              <Text style={[styles.consentBannerHint, { color: colors.muted }]}>
+                {fc.consentRevokedHint ?? 'Go to Settings → Privacy & Consent to re-enable.'}
+              </Text>
+            </View>
+          )}
           <ScrollView
             style={styles.scrollContent}
             contentContainerStyle={styles.scrollContentInner}
@@ -2541,6 +2596,7 @@ export function AiFoodCameraSheet({
                       mode={mode}
                       onPlateScan={handlePlateScan}
                       onBarcodeScan={handleBarcodeScan}
+                      consentGranted={consentGranted}
                       recentMeals={recentMeals}
                       swipedId={swipedId}
                       setSwipedId={setSwipedId}
@@ -2737,17 +2793,26 @@ export function AiFoodCameraSheet({
       visible={showGeminiConsent}
       onAccept={async () => {
         await markGeminiConsent();
+        setConsentGranted(true);
         setShowGeminiConsent(false);
-        // Resume the pending plate scan if the user was trying to scan
+        // Resume whichever action was pending
         if (pendingPlateScanRef.current) {
           pendingPlateScanRef.current = false;
-          // Small delay so the modal fully dismisses before camera opens
           setTimeout(() => handlePlateScan(), 300);
+        } else if (pendingBarcodeRef.current) {
+          pendingBarcodeRef.current = false;
+          setTimeout(() => { setShowBarcodeScanner(true); }, 300);
+        } else if (pendingSearchRef.current) {
+          const q = pendingSearchRef.current;
+          pendingSearchRef.current = null;
+          setTimeout(() => handleSubmitSearch(q, () => {}), 300);
         }
       }}
       onDecline={() => {
         setShowGeminiConsent(false);
         pendingPlateScanRef.current = false;
+        pendingBarcodeRef.current = false;
+        pendingSearchRef.current = null;
       }}
     />
 
@@ -2869,6 +2934,33 @@ const styles = StyleSheet.create({
   homeGrid: {
     flexDirection: 'row',
     gap: 12,
+  },
+  disclaimerRow: {
+    marginTop: 10,
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  disclaimerText: {
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 16,
+  },
+  consentBanner: {
+    marginTop: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 12,
+    gap: 4,
+  },
+  consentBannerText: {
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  consentBannerHint: {
+    fontSize: 11,
+    textAlign: 'center',
+    lineHeight: 15,
   },
   homeBtn: {
     borderRadius: 16,
