@@ -1,39 +1,39 @@
 /**
  * withStoreKitConfig.js
  *
- * Adds the VitalSync.storekit file to the Xcode project during expo prebuild
+ * Adds the VitalSync.storekit file to the ios/ directory during expo prebuild
  * and wires it to the Debug scheme's LaunchAction so local StoreKit testing
  * works when running from Xcode.
  *
  * This plugin:
  *   1. Copies storekit/VitalSync.storekit into ios/VitalSync.storekit
- *   2. Adds the file reference to the Xcode project navigator
- *   3. Updates the Debug LaunchAction in the xcscheme to reference the file
+ *   2. Updates the Debug LaunchAction in the xcscheme to reference the file
+ *
+ * Note: We intentionally skip adding the file to the Xcode project navigator
+ * (pbxproj) because the xcode npm package's addFile() API requires the target
+ * group to already exist, which is unreliable during prebuild. The scheme
+ * reference is sufficient for local StoreKit testing — Xcode resolves the
+ * path relative to the xcodeproj directory.
  *
  * Release/Archive builds are unaffected (storeKitConfigurationFileReference
  * is only set on the LaunchAction, not ProfileAction or ArchiveAction).
  */
-const {
-  withXcodeProject,
-  withDangerousMod,
-  IOSConfig,
-} = require("@expo/config-plugins");
+const { withDangerousMod } = require("@expo/config-plugins");
 const path = require("path");
 const fs = require("fs");
 
 const STOREKIT_FILENAME = "VitalSync.storekit";
 const STOREKIT_SOURCE = path.join(__dirname, "..", "storekit", STOREKIT_FILENAME);
 
-/**
- * Copy the .storekit file into the ios/ directory during prebuild.
- */
-const withCopyStoreKitFile = (config) => {
+const withStoreKitConfig = (config) => {
   return withDangerousMod(config, [
     "ios",
     async (mod) => {
       const iosDir = mod.modRequest.platformProjectRoot;
-      const dest = path.join(iosDir, STOREKIT_FILENAME);
+      const projectName = mod.modRequest.projectName;
 
+      // 1. Copy the .storekit file into ios/
+      const dest = path.join(iosDir, STOREKIT_FILENAME);
       if (fs.existsSync(STOREKIT_SOURCE)) {
         fs.copyFileSync(STOREKIT_SOURCE, dest);
         console.log(`[withStoreKitConfig] Copied ${STOREKIT_FILENAME} to ${dest}`);
@@ -42,55 +42,10 @@ const withCopyStoreKitFile = (config) => {
           `[withStoreKitConfig] Source file not found: ${STOREKIT_SOURCE}. ` +
             "Skipping StoreKit config copy."
         );
+        return mod;
       }
 
-      return mod;
-    },
-  ]);
-};
-
-/**
- * Add the .storekit file reference to the Xcode project.
- */
-const withAddStoreKitToProject = (config) => {
-  return withXcodeProject(config, (mod) => {
-    const project = mod.modResults;
-    const projectName = mod.modRequest.projectName;
-
-    // Check if already added
-    const existingFiles = project.pbxFileReferenceSection();
-    const alreadyAdded = Object.values(existingFiles).some(
-      (ref) => ref && ref.path === `"${STOREKIT_FILENAME}"`
-    );
-
-    if (alreadyAdded) {
-      console.log("[withStoreKitConfig] StoreKit file already in project, skipping.");
-      return mod;
-    }
-
-    // Add file reference
-    const file = project.addFile(STOREKIT_FILENAME, projectName, {
-      lastKnownFileType: "text",
-      sourceTree: '"<group>"',
-    });
-
-    if (file) {
-      console.log("[withStoreKitConfig] Added VitalSync.storekit to Xcode project");
-    }
-
-    return mod;
-  });
-};
-
-/**
- * Update the xcscheme LaunchAction to reference the StoreKit config for Debug builds.
- */
-const withSchemeStoreKitRef = (config) => {
-  return withDangerousMod(config, [
-    "ios",
-    async (mod) => {
-      const iosDir = mod.modRequest.platformProjectRoot;
-      const projectName = mod.modRequest.projectName;
+      // 2. Patch the xcscheme to reference the StoreKit config in Debug LaunchAction
       const schemePath = path.join(
         iosDir,
         `${projectName}.xcodeproj`,
@@ -112,9 +67,11 @@ const withSchemeStoreKitRef = (config) => {
         return mod;
       }
 
-      // Add storeKitConfigurationFileReference to LaunchAction
+      // Add storeKitConfigurationFileReference to the LaunchAction element.
+      // The LaunchAction for Debug builds contains buildConfiguration = "Debug".
+      // We insert the attribute before the closing > of the opening LaunchAction tag.
       scheme = scheme.replace(
-        /(<LaunchAction[^>]*buildConfiguration\s*=\s*"Debug"[^>]*)(>)/,
+        /(<LaunchAction\b[^>]*buildConfiguration\s*=\s*"Debug"[^>]*?)(\s*>)/,
         `$1\n         storeKitConfigurationFileReference = "../${STOREKIT_FILENAME}"$2`
       );
 
@@ -124,13 +81,6 @@ const withSchemeStoreKitRef = (config) => {
       return mod;
     },
   ]);
-};
-
-const withStoreKitConfig = (config) => {
-  config = withCopyStoreKitFile(config);
-  config = withAddStoreKitToProject(config);
-  config = withSchemeStoreKitRef(config);
-  return config;
 };
 
 module.exports = withStoreKitConfig;
