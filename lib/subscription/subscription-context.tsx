@@ -216,6 +216,13 @@ export interface SubscriptionContextValue {
   /** Reload products from store */
   reloadProducts: () => Promise<void>;
   /**
+   * DEV ONLY — Clears all persisted subscription state from AsyncStorage and resets
+   * in-memory state to 'unknown'. Use this to simulate a fresh install / next-install
+   * paywall flow during development and TestFlight testing.
+   * Has no effect on the actual App Store subscription — the user can restore it via Restore Purchases.
+   */
+  resetSubscriptionState: () => Promise<void>;
+  /**
    * True when StoreKit confirms an introductory offer (free trial) is available
    * for the selected annual product. Derived from the loaded product object.
    * The paywall MUST only show trial copy when this is true.
@@ -862,6 +869,38 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     setRestoreResult(null);
   }, []);
 
+  // ── DEV: Reset subscription state ──────────────────────────────────────────
+  // Clears all AsyncStorage subscription keys and resets in-memory state to 'unknown'.
+  // Use this in Settings (developer section) to simulate a fresh install for paywall testing.
+  // The user can always restore their actual subscription via Restore Purchases.
+
+  const resetSubscriptionState = useCallback(async () => {
+    try {
+      await AsyncStorage.multiRemove([
+        STORAGE_KEY_TRIAL_START,
+        STORAGE_KEY_ACCESS_STATE,
+        STORAGE_KEY_EXPIRY,
+        STORAGE_KEY_ACTIVE_PRODUCT,
+        STORAGE_KEY_ORIGINAL_PURCHASE_DATE,
+        STORAGE_KEY_AUTO_RENEW,
+        STORAGE_KEY_SUB_PLATFORM,
+      ]);
+      setAccessState('unknown');
+      setTrialStartMs(null);
+      setSubscriptionExpiryMs(null);
+      setActiveProductId(null);
+      setOriginalPurchaseDateMs(null);
+      setAutoRenewEnabled(null);
+      setSubscriptionPlatform(null);
+      setRestoreResult(null);
+      setPurchaseError(null);
+      setEngineState(PurchaseEngineState.IDLE);
+      log('[Subscription] resetSubscriptionState — all state cleared. Use Restore Purchases to recover active subscription.');
+    } catch (e) {
+      logError('[Subscription] resetSubscriptionState failed:', e);
+    }
+  }, []);
+
   // ── Mount / unmount ─────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -903,6 +942,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     verifyActiveEntitlements,
     clearRestoreResult,
     reloadProducts,
+    resetSubscriptionState,
   };
 
   return (

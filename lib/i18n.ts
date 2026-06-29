@@ -19734,7 +19734,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analyzed by Gemini AI · USDA FoodData Central · Apple Vision (fallback)',
       consentRequired: 'AI consent required to use this feature.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.',
+      consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.'
+      enableInPrivacyConsent: 'Enable in Privacy & Consent →',,
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Diet Log',
     insightsTabLabel: 'Insights',
@@ -19860,7 +19861,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analizado por Gemini AI · USDA FoodData Central · Apple Vision (respaldo)',
       consentRequired: 'Se requiere consentimiento de IA para usar esta función.',
       enableConsent: 'Habilitar Consentimiento IA',
-      consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.',
+      consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.'
+      enableInPrivacyConsent: 'Activar en Privacidad y Consentimiento →',,
     nutritionTabTitle: 'Nutricion',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analisis',
@@ -19991,7 +19993,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analysé par Gemini AI · USDA FoodData Central · Apple Vision (secours)',
       consentRequired: 'Le consentement IA est requis pour utiliser cette fonctionnalité.',
       enableConsent: 'Activer le Consentement IA',
-      consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.',
+      consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.'
+      enableInPrivacyConsent: 'Activer dans Confidentialité et Consentement →',,
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Journal',
     insightsTabLabel: 'Analyzes',
@@ -20122,7 +20125,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: '启用 AI 同意',
-      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
+      enableInPrivacyConsent: '在隐私与同意中启用 →',,
     nutritionTabTitle: 'Nutricao',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analises',
@@ -20252,7 +20256,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'تحليل بواسطة Gemini AI · USDA FoodData Central · Apple Vision (احتياطي)',
       consentRequired: 'مطلوب موافقة الذكاء الاصطناعي لاستخدام هذه الميزة.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.',
+      consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.'
+      enableInPrivacyConsent: 'تفعيل في الخصوصية والموافقة →',,
     nutritionTabTitle: 'AlTghyh',
     dietLogTabLabel: 'sjlAlGhDA',
     insightsTabLabel: 'rwyA',
@@ -20383,7 +20388,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Imechambuliwa na Gemini AI · USDA FoodData Central · Apple Vision (mbadala)',
       consentRequired: 'Inahitajika ridhaa ya AI kutumia kipengele hiki.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.',
+      consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.'
+      enableInPrivacyConsent: 'Wezesha katika Faragha na Ridhaa →',,
     nutritionTabTitle: 'Lishe',
     dietLogTabLabel: 'Kumbukumbu',
     insightsTabLabel: 'Maarifa',
@@ -20514,7 +20520,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision (फ़ॉलबैक) द्वारा विश्लेषित',
       consentRequired: 'इस सुविधा का उपयोग करने के लिए AI सहमति आवश्यक है।',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।',
+      consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।'
+      enableInPrivacyConsent: 'गोपनीयता और सहमति में सक्षम करें →',,
     nutritionTabTitle: 'Poshan',
     dietLogTabLabel: 'Aahar Log',
     insightsTabLabel: 'Antardrishti',
@@ -20645,7 +20652,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: '由 Gemini AI · USDA FoodData Central · Apple Vision（备用）分析',
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。',
+      consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
+      enableInPrivacyConsent: '在隐私与同意中启用 →',,
     nutritionTabTitle: 'Yingyang',
     dietLogTabLabel: 'Yinshi Riji',
     insightsTabLabel: 'Dongjian',
@@ -20775,7 +20783,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Analysiert von Gemini AI · USDA FoodData Central · Apple Vision (Fallback)',
       consentRequired: 'KI-Einwilligung erforderlich, um diese Funktion zu nutzen.',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.',
+      consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.'
+      enableInPrivacyConsent: 'In Datenschutz & Einwilligung aktivieren →',,
     nutritionTabTitle: 'Ernahrung',
     dietLogTabLabel: 'Ernahrungstagebuch',
     insightsTabLabel: 'Einblicke',
@@ -20906,7 +20915,8 @@ export const foodCameraStrings = {
       foodScanDisclaimer: 'Gemini AI · USDA FoodData Central · Apple Vision（フォールバック）で分析',
       consentRequired: 'この機能を使用するにはAI同意が必要です。',
       enableConsent: 'Enable AI Consent',
-      consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。',
+      consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。'
+      enableInPrivacyConsent: 'プライバシーと同意で有効にする →',,
     nutritionTabTitle: 'Eiyo',
     dietLogTabLabel: 'Shokuji Kiroku',
     insightsTabLabel: 'Bunseki',
@@ -39234,7 +39244,7 @@ It does not diagnose conditions, recommend treatments, or replace professional m
     },
     correlate: {
       title: `How Correlations Are Calculated`,
-      body: `VitalSync first performs statistical analysis using mathematical models such as correlation coefficients and trend analysis. AI then explains those statistical findings in everyday language.
+      body: `VitalSync first performs statistical analysis using mathematical models such as correlation coefficients and trend analysis. Apple Intelligence (on supported iOS 26+ devices) or Google Gemini then explains those statistical findings in everyday language.
 
 Correlation identifies relationships between measurements but does not establish cause and effect. Observed relationships may be influenced by additional lifestyle, environmental, or medical factors not available to the app.`,
     },
@@ -39351,7 +39361,7 @@ No diagnostica condiciones, recomienda tratamientos ni reemplaza el consejo méd
     },
     correlate: {
       title: `Cómo Se Calculan las Correlaciones`,
-      body: `VitalSync primero realiza análisis estadístico usando modelos matemáticos como coeficientes de correlación y análisis de tendencias. Luego la IA explica esos hallazgos estadísticos en lenguaje cotidiano.
+      body: `VitalSync primero realiza análisis estadístico usando modelos matemáticos como coeficientes de correlación y análisis de tendencias. Apple Intelligence (en dispositivos iOS 26+ compatibles) o Google Gemini luego explica esos hallazgos estadísticos en lenguaje cotidiano.
 
 La correlación identifica relaciones entre mediciones pero no establece causa y efecto.`,
     },
@@ -39468,7 +39478,7 @@ Il ne diagnostique pas de conditions, ne recommande pas de traitements et ne rem
     },
     correlate: {
       title: `Comment les corrélations sont calculées`,
-      body: `VitalSync effectue d'abord une analyse statistique en utilisant des modèles mathématiques tels que les coefficients de corrélation. L'IA explique ensuite ces résultats en langage courant.
+      body: `VitalSync effectue d'abord une analyse statistique en utilisant des modèles mathématiques tels que les coefficients de corrélation. Apple Intelligence (sur les appareils iOS 26+ compatibles) ou Google Gemini explique ensuite ces résultats en langage courant.
 
 La corrélation identifie des relations entre les mesures mais n'établit pas de causalité.`,
     },
@@ -39585,7 +39595,7 @@ VitalSync ne vend pas d'informations de santé personnelles.`,
     },
     correlate: {
       title: `相关性的计算方式`,
-      body: `VitalSync 首先使用相关系数和趋势分析等数学模型进行统计分析，然后由AI用日常语言解释这些统计结果。
+      body: `VitalSync 首先使用相关系数和趋势分析等数学模型进行统计分析，然后由 Apple Intelligence（在支持的 iOS 26+ 设备上）或 Google Gemini 用日常语言解释这些统计结果。
 
 相关性识别测量之间的关系，但不建立因果关系。`,
     },
@@ -39702,7 +39712,7 @@ Não diagnostica condições, não recomenda tratamentos e não substitui o cons
     },
     correlate: {
       title: `Como as Correlações São Calculadas`,
-      body: `O VitalSync primeiro realiza análise estatística usando modelos matemáticos como coeficientes de correlação. A IA então explica esses resultados em linguagem cotidiana.
+      body: `O VitalSync primeiro realiza análise estatística usando modelos matemáticos como coeficientes de correlação. O Apple Intelligence (em dispositivos iOS 26+ compatíveis) ou o Google Gemini então explica esses resultados em linguagem cotidiana.
 
 A correlação identifica relações entre medições, mas não estabelece causa e efeito.`,
     },
@@ -39819,7 +39829,7 @@ O VitalSync não vende informações de saúde pessoais.`,
     },
     correlate: {
       title: `كيف يتم حساب الارتباطات`,
-      body: `يُجري VitalSync أولاً تحليلاً إحصائياً باستخدام نماذج رياضية مثل معاملات الارتباط. ثم يشرح الذكاء الاصطناعي تلك النتائج بلغة يومية.
+      body: `يُجري VitalSync أولاً تحليلاً إحصائياً باستخدام نماذج رياضية مثل معاملات الارتباط. ثم يشرح Apple Intelligence (على أجهزة iOS 26+ المدعومة) أو Google Gemini تلك النتائج بلغة يومية.
 
 يحدد الارتباط العلاقات بين القياسات لكنه لا يثبت السببية.`,
     },
@@ -39936,7 +39946,7 @@ Hauchunguzi hali, haupendekezi matibabu, na hauchukui nafasi ya ushauri wa kimat
     },
     correlate: {
       title: `Jinsi Uhusiano Unavyohesabiwa`,
-      body: `VitalSync kwanza hufanya uchambuzi wa takwimu kwa kutumia mifano ya kihesabu kama vile mgawo wa uhusiano. Kisha AI inaeleza matokeo hayo kwa lugha ya kila siku.
+      body: `VitalSync kwanza hufanya uchambuzi wa takwimu kwa kutumia mifano ya kihesabu kama vile mgawo wa uhusiano. Kisha Apple Intelligence (kwenye vifaa vya iOS 26+ vinavyotumika) au Google Gemini inaeleza matokeo hayo kwa lugha ya kila siku.
 
 Uhusiano unabainisha mahusiano kati ya vipimo lakini haufanyi sababu na athari.`,
     },
@@ -40053,7 +40063,7 @@ VitalSync haiuzi taarifa ya afya ya kibinafsi.`,
     },
     correlate: {
       title: `सहसंबंध कैसे गणना किए जाते हैं`,
-      body: `VitalSync पहले सहसंबंध गुणांक जैसे गणितीय मॉडल का उपयोग करके सांख्यिकीय विश्लेषण करता है। फिर AI उन निष्कर्षों को रोजमर्रा की भाषा में समझाता है।
+      body: `VitalSync पहले सहसंबंध गुणांक जैसे गणितीय मॉडल का उपयोग करके सांख्यिकीय विश्लेषण करता है। फिर Apple Intelligence (समर्थित iOS 26+ डिवाइस पर) या Google Gemini उन निष्कर्षों को रोजमर्रा की भाषा में समझाता है।
 
 सहसंबंध माप के बीच संबंधों की पहचान करता है लेकिन कारण और प्रभाव स्थापित नहीं करता।`,
     },
@@ -40170,7 +40180,7 @@ Sie diagnostiziert keine Erkrankungen, empfiehlt keine Behandlungen und ersetzt 
     },
     correlate: {
       title: `Wie Korrelationen Berechnet Werden`,
-      body: `VitalSync führt zunächst statistische Analysen mit mathematischen Modellen wie Korrelationskoeffizienten durch. KI erklärt dann diese Ergebnisse in Alltagssprache.
+      body: `VitalSync führt zunächst statistische Analysen mit mathematischen Modellen wie Korrelationskoeffizienten durch. Apple Intelligence (auf unterstützten iOS 26+-Geräten) oder Google Gemini erklärt dann diese Ergebnisse in Alltagssprache.
 
 Korrelation identifiziert Beziehungen zwischen Messungen, stellt aber keine Kausalität fest.`,
     },
@@ -40287,7 +40297,7 @@ VitalSync verkauft keine persönlichen Gesundheitsinformationen.`,
     },
     correlate: {
       title: `相関の計算方法`,
-      body: `VitalSyncはまず相関係数などの数学モデルを使用して統計分析を実行します。次にAIがその統計的知見を日常的な言葉で説明します。
+      body: `VitalSyncはまず相関係数などの数学モデルを使用して統計分析を実行します。次にApple Intelligence（対応するiOS 26+デバイス）またはGoogle Geminiがその統計的知見を日常的な言葉で説明します。
 
 相関は測定間の関係を特定しますが、因果関係を確立するものではありません。`,
     },

@@ -66,6 +66,7 @@ import { BarcodeScannerModal } from '@/components/barcode-scanner-modal';
 import { MicrophoneIcon } from '@/components/ui/microphone-icon';
 import { MealAnalysisOverlay, type AnalysisStep, type AnalysisStepState, type DetectedFoodLabel } from '@/components/meal-analysis-overlay';
 import { GeminiConsentModal } from '@/components/gemini-consent-modal';
+import { router } from 'expo-router';
 import { TransparencyCard } from '@/components/transparency-card';
 import { hasGeminiConsent, markGeminiConsent, revokeGeminiConsent as _revokeGeminiConsent } from '@/lib/gemini-consent';
 
@@ -1163,9 +1164,17 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
           <Text style={[styles.consentBannerText, { color: '#F59E0B' }]}>
             {fc.consentRequired ?? 'AI consent required to use this feature.'}
           </Text>
-          <Text style={[styles.consentBannerHint, { color: mutedColor }]}>
-            {fc.consentRevokedHint ?? 'Go to Settings → Privacy & Consent to re-enable.'}
-          </Text>
+          <Pressable
+            onPress={() => {
+              if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push('/settings/consent');
+            }}
+            style={({ pressed }) => [styles.consentBannerLink, { opacity: pressed ? 0.7 : 1 }]}
+          >
+            <Text style={[styles.consentBannerLinkText, { color: '#F59E0B' }]}>
+              {fc.enableInPrivacyConsent ?? 'Enable in Privacy & Consent →'}
+            </Text>
+          </Pressable>
         </View>
       )}
       <RecentScansSection
@@ -2513,17 +2522,6 @@ export function AiFoodCameraSheet({
           </View>
 
           {/* Content */}
-          {/* Consent-revoked banner in search/home mode */}
-          {consentGranted === false && (
-            <View style={[styles.consentBanner, { backgroundColor: '#F59E0B18', borderColor: '#F59E0B55', marginHorizontal: 16, marginTop: 8 }]}>
-              <Text style={[styles.consentBannerText, { color: '#F59E0B' }]}>
-                {fc.consentRequired ?? 'AI consent required to use this feature.'}
-              </Text>
-              <Text style={[styles.consentBannerHint, { color: colors.muted }]}>
-                {fc.consentRevokedHint ?? 'Go to Settings → Privacy & Consent to re-enable.'}
-              </Text>
-            </View>
-          )}
           <ScrollView
             style={styles.scrollContent}
             contentContainerStyle={styles.scrollContentInner}
@@ -2961,6 +2959,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     textAlign: 'center',
     lineHeight: 15,
+  },
+  consentBannerLink: {
+    marginTop: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#F59E0B88',
+    alignSelf: 'center',
+    backgroundColor: '#F59E0B14',
+  },
+  consentBannerLinkText: {
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   homeBtn: {
     borderRadius: 16,

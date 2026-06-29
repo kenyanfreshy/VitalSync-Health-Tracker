@@ -39,8 +39,10 @@ import {
 } from '@/components/consent-modal';
 import {
   hasGeminiConsent,
+  markGeminiConsent,
   revokeGeminiConsent,
   hasAppleIntelligenceConsent,
+  markAppleIntelligenceConsent,
   revokeAppleIntelligenceConsent,
 } from '@/lib/gemini-consent';
 
@@ -181,6 +183,20 @@ export default function ConsentScreen() {
   }
 
   // ── Open external links ────────────────────────────────────────────────────
+  // ── Grant Gemini AI consent ───────────────────────────────────────────────
+  async function handleGrantGemini() {
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await markGeminiConsent();
+    await loadConsentState();
+  }
+
+  // ── Grant Apple Intelligence consent ─────────────────────────────────────
+  async function handleGrantAppleIntelligence() {
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await markAppleIntelligenceConsent();
+    setAppleIntelligenceConsented(true);
+  }
+
   // ── Revoke Gemini AI consent ──────────────────────────────────────────────
   function handleRevokeGemini() {
     Alert.alert(
@@ -452,10 +468,22 @@ export default function ConsentScreen() {
               <Text style={[styles.statusSub, { color: colors.muted }]}>
                 {geminiConsented
                   ? 'Food photos may be sent to Google Gemini for Nutrition Analysis.'
-                  : 'Consent will be requested the next time you use Camera Scan.'}
+                  : 'Enable to allow Camera Scan to send food photos to Google Gemini for analysis.'}
               </Text>
             </View>
           </View>
+          {!geminiConsented && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.acceptBtn,
+                { backgroundColor: colors.bpGreen, opacity: pressed ? 0.85 : 1, marginTop: 4 },
+              ]}
+              onPress={handleGrantGemini}
+            >
+              <IconSymbol name="checkmark.circle.fill" size={18} color="#fff" />
+              <Text style={styles.acceptBtnText}>Enable AI Food Scan (Camera Scan)</Text>
+            </Pressable>
+          )}
           {geminiConsented && (
             <Pressable
               style={({ pressed }) => [
@@ -497,10 +525,22 @@ export default function ConsentScreen() {
               <Text style={[styles.statusSub, { color: colors.muted }]}>
                 {appleIntelligenceConsented
                   ? 'AI wellness summaries are processed on-device using Apple Intelligence (iOS 26+).'
-                  : 'Consent will be requested the next time you open the AI Wellness Insights card.'}
+                  : 'Enable to allow on-device AI wellness summaries using Apple Intelligence (iOS 26+).'}
               </Text>
             </View>
           </View>
+          {!appleIntelligenceConsented && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.acceptBtn,
+                { backgroundColor: colors.bpGreen, opacity: pressed ? 0.85 : 1, marginTop: 4 },
+              ]}
+              onPress={handleGrantAppleIntelligence}
+            >
+              <IconSymbol name="checkmark.circle.fill" size={18} color="#fff" />
+              <Text style={styles.acceptBtnText}>Enable Apple Intelligence Consent</Text>
+            </Pressable>
+          )}
           {appleIntelligenceConsented && (
             <Pressable
               style={({ pressed }) => [

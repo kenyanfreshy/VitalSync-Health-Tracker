@@ -311,6 +311,7 @@ export default function SettingsScreen() {
     clearRestoreResult: subClearRestoreResult,
     hasIntroOffer: subHasIntroOffer,
     introOfferDays: subIntroOfferDays,
+    resetSubscriptionState: resetSubState,
   } = useSubscription();
   // ── Derived plan display info ─────────────────────────────────────────────
   // activePlanLabel is resolved after se is declared (line ~1351); use a getter below.
@@ -4507,6 +4508,31 @@ export default function SettingsScreen() {
               if (shared) promptClearAfterShare();
             }}
             disabled={crashLogCount === 0 || isSharing}
+          />
+          {/* DEV: Reset paywall state — simulates fresh install for paywall flow testing */}
+          <SettingsRow
+            icon="arrow.counterclockwise.circle.fill"
+            iconColor="#F59E0B"
+            label="Reset Paywall State (Dev)"
+            subtitle="Clears local subscription cache to simulate a fresh install. Use Restore Purchases to recover your active subscription."
+            onPress={() => {
+              Alert.alert(
+                'Reset Paywall State',
+                'This clears the local subscription cache so the paywall appears as on a fresh install.\n\nYour actual App Store subscription is NOT cancelled — tap Restore Purchases on the paywall to recover it.',
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Reset',
+                    style: 'destructive',
+                    onPress: async () => {
+                      await resetSubState();
+                      if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                      showAppToast('Paywall state cleared — restart the app to see the paywall');
+                    },
+                  },
+                ]
+              );
+            }}
           />
         </GlassCard>
         </CollapsibleSection>
