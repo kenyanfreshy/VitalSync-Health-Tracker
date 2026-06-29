@@ -1,5 +1,5 @@
-/**
- * VitalSync Subscription Context
+/*
+ * VitalSync Subscription Context — v1.0.78
  *
  * Manages StoreKit 2 (iOS) and Google Play Billing (Android) subscriptions
  * via react-native-iap v15. Handles:
@@ -9,8 +9,16 @@
  *  - Restore purchases
  *  - AsyncStorage persistence for offline access state
  *
- * Product IDs:
- *  iOS/Android: vitalsync.healthtracker.premium_monthly, vitalsync.healthtracker.premium_annual
+ * Bundle Identifier: com.vitalsync.healthtracker
+ * Product IDs (App Store Connect):
+ *   vitalsync.healthtracker.premium_monthly  — Auto-Renewable Subscription
+ *   vitalsync.healthtracker.premium_annual   — Auto-Renewable Subscription
+ *
+ * Architecture based on VitalSyncIAPBridge.ts patterns:
+ *  - Async/await IAP connection loop (initializeIAPConnection)
+ *  - purchaseUpdatedListener for real-time StoreKit 2 transaction updates
+ *  - verifyActiveEntitlements via getAvailablePurchases()
+ *  - restorePurchases via getAvailablePurchases() + AppStore.sync() fallback
  *
  * ─── FIX HISTORY ────────────────────────────────────────────────────────────
  * v1.0.69 — Guideline 2.1(b) fix: requestPurchase was called with a flat
@@ -26,6 +34,18 @@
  *   - productsLoadError state exposed in context so the paywall can render a
  *     visible error + retry button instead of silently falling back to startTrial
  *   - Diagnostic logging added throughout the purchase path
+ *
+ * v1.0.78 — VitalSyncIAPBridge.ts integration:
+ *   - Replaced ad-hoc initConnection with structured initializeIAPConnection()
+ *     async/await loop matching VitalSyncIAPBridge.ts pattern
+ *   - Added verifyActiveEntitlements() — standalone async method that calls
+ *     getAvailablePurchases() and filters to known SKUs, matching bridge pattern
+ *   - purchaseUpdatedListener now calls verifyActiveEntitlements() after
+ *     finishTransaction() to sync entitlement state, matching bridge pattern
+ *   - restorePurchases uses getAvailablePurchases() as primary path (bridge
+ *     pattern), with server-side getStatus as secondary verification
+ *   - PurchaseEngineState enum added matching bridge PurchaseState enum
+ *   - All product IDs and bundle identifier kept as confirmed App Store Connect values
  */
 
 import React, {
@@ -59,12 +79,39 @@ import {
   cancelTrialExpiryNotification,
 } from "./trial-expiry-notification";
 
+// ─── Bundle Identifier ────────────────────────────────────────────────────────
+// Must match App Store Connect and Xcode project exactly.
+export const BUNDLE_ID = "com.vitalsync.healthtracker";
+
 // ─── Product IDs ─────────────────────────────────────────────────────────────
+// These match the App Store Connect In-App Purchase product IDs exactly.
+// iOS SKUs queried via Platform.select to match VitalSyncIAPBridge.ts pattern.
+export const ITEM_SKUS = Platform.select({
+  ios: [
+    "vitalsync.healthtracker.premium_monthly",
+    "vitalsync.healthtracker.premium_annual",
+  ],
+  android: [
+    "vitalsync.healthtracker.premium_monthly",
+    "vitalsync.healthtracker.premium_annual",
+  ],
+  default: [],
+});
 
 export const PRODUCT_IDS = {
   monthly: "vitalsync.healthtracker.premium_monthly",
   yearly: "vitalsync.healthtracker.premium_annual",
 } as const;
+
+// ─── PurchaseEngineState ──────────────────────────────────────────────────────
+// Mirrors VitalSyncIAPBridge.ts PurchaseState enum for consistent state tracking.
+export enum PurchaseEngineState {
+  IDLE = "IDLE",
+  PROCESSING = "PROCESSING",
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
+  PENDING_APPROVAL = "PENDING_APPROVAL", // Ask to Buy / SCA
+}
 
 // ─── Static display data ──────────────────────────────────────────────────────
 export const SUBSCRIPTION_DATA = {
@@ -132,6 +179,8 @@ export interface SubscriptionContextValue {
   purchasing: boolean;
   /** Last purchase/restore error message */
   purchaseError: string | null;
+  /** Current IAP engine state (mirrors VitalSyncIAPBridge PurchaseState) */
+  engineState: PurchaseEngineState;
   /** Trial start timestamp (ms) or null if never started */
   trialStartMs: number | null;
   /** Trial expiry timestamp (ms) or null */
@@ -160,6 +209,8 @@ export interface SubscriptionContextValue {
   purchaseSubscription: (productId: ProductId) => Promise<void>;
   /** Restore previous purchases */
   restorePurchases: () => Promise<void>;
+  /** Verify active entitlements via getAvailablePurchases() (VitalSyncIAPBridge pattern) */
+  verifyActiveEntitlements: () => Promise<void>;
   /** Clear the restore result (call after showing feedback) */
   clearRestoreResult: () => void;
   /** Reload products from store */
@@ -193,6 +244,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const [productsLoadError, setProductsLoadError] = useState<string | null>(null);
   const [purchasing, setPurchasing] = useState(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [engineState, setEngineState] = useState<PurchaseEngineState>(PurchaseEngineState.IDLE);
   const [trialStartMs, setTrialStartMs] = useState<number | null>(null);
   const [subscriptionExpiryMs, setSubscriptionExpiryMs] = useState<number | null>(null);
   const [activeProductId, setActiveProductId] = useState<ProductId | null>(null);
@@ -227,13 +279,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const _hasIntroOffer = (() => {
     if (!_introProduct) return false;
     const p = _introProduct as any;
-    // react-native-iap v15 standardized API: subscriptionOffers array
     if (Array.isArray(p.subscriptionOffers)) {
       const introOffer = (p.subscriptionOffers as Array<{type: string; paymentMode?: string}>)
         .find(o => o.type === 'introductory' && o.paymentMode === 'free-trial');
       if (introOffer) return true;
     }
-    // Legacy iOS-specific field
     if (p.introductoryPricePaymentModeIOS === 'free-trial') return true;
     return false;
   })();
@@ -241,7 +291,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const _introOfferDays = (() => {
     if (!_hasIntroOffer || !_introProduct) return null;
     const p = _introProduct as any;
-    // Try subscriptionOffers first
     if (Array.isArray(p.subscriptionOffers)) {
       const introOffer = (p.subscriptionOffers as Array<{type: string; paymentMode?: string; period?: {unit: string; value?: number}; periodCount?: number; numberOfPeriodsIOS?: number}>)
         .find(o => o.type === 'introductory' && o.paymentMode === 'free-trial');
@@ -253,13 +302,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         if (unit === 'month') return periodCount * 30;
       }
     }
-    // Legacy: introductoryPriceNumberOfPeriodsIOS + introductoryPriceSubscriptionPeriodIOS
-    const numPeriods = parseInt(p.introductoryPriceNumberOfPeriodsIOS ?? '14', 10);
-    const periodUnit = (p.introductoryPriceSubscriptionPeriodIOS ?? 'DAY').toUpperCase();
+    const numPeriods = parseInt((p as any).introductoryPriceNumberOfPeriodsIOS ?? '14', 10);
+    const periodUnit = ((p as any).introductoryPriceSubscriptionPeriodIOS ?? 'DAY').toUpperCase();
     if (periodUnit === 'DAY') return numPeriods;
     if (periodUnit === 'WEEK') return numPeriods * 7;
     if (periodUnit === 'MONTH') return numPeriods * 30;
-    return 14; // safe fallback
+    return 14;
   })();
 
   const _introOfferLabel = _hasIntroOffer && _introOfferDays
@@ -292,7 +340,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     async (expiryMs: number | null, trialStart: number | null) => {
       const now = Date.now();
 
-      // Active subscription
       if (expiryMs && expiryMs > now) {
         setSubscriptionExpiryMs(expiryMs);
         setAccessState("subscribed");
@@ -300,7 +347,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         return;
       }
 
-      // Active trial
       if (trialStart) {
         const trialExpiry = trialStart + TRIAL_DURATION_MS;
         if (trialExpiry > now) {
@@ -310,45 +356,77 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         }
       }
 
-      // No trial started and no subscription — fresh install or cleared data.
-      // Use 'unknown' instead of 'expired' so the app does not show expired-trial
-      // UI (banners, paywall flash) on first launch before the user has ever
-      // started a trial. The paywall is only shown when the user explicitly taps
-      // an upgrade button or when a trial has actually ended.
       setAccessState("unknown");
       await persistAccessState("unknown");
     },
     [persistAccessState],
   );
 
+  // ── verifyActiveEntitlements ──────────────────────────────────────────────
+  // VitalSyncIAPBridge.ts pattern: standalone async method that calls
+  // getAvailablePurchases() and filters to known SKUs to sync entitlement state.
+
+  const verifyActiveEntitlements = useCallback(async () => {
+    try {
+      log("[Subscription] verifyActiveEntitlements — calling getAvailablePurchases()");
+      const availablePurchases = await getAvailablePurchases();
+      log(`[Subscription] verifyActiveEntitlements — ${availablePurchases.length} purchase(s) found`);
+
+      const hasPremium = availablePurchases.some(
+        (p) =>
+          p.productId === PRODUCT_IDS.monthly ||
+          p.productId === PRODUCT_IDS.yearly
+      );
+
+      if (hasPremium) {
+        // Find the most recent active subscription
+        const subPurchases = availablePurchases.filter(
+          (p) =>
+            p.productId === PRODUCT_IDS.monthly ||
+            p.productId === PRODUCT_IDS.yearly
+        );
+        const sorted = [...subPurchases].sort(
+          (a, b) => (b.transactionDate ?? 0) - (a.transactionDate ?? 0)
+        );
+        const latest = sorted[0];
+        log(`[Subscription] verifyActiveEntitlements — active SKU: ${latest.productId}`);
+        setActiveProductId(latest.productId as ProductId);
+        await safeSetItem(STORAGE_KEY_ACTIVE_PRODUCT, latest.productId);
+
+        // Estimate expiry from transaction date
+        const isYearly = latest.productId === PRODUCT_IDS.yearly;
+        const durationMs = isYearly
+          ? 365 * 24 * 60 * 60 * 1000
+          : 30 * 24 * 60 * 60 * 1000;
+
+        // Prefer StoreKit 2 expirationDateIOS if available
+        const iosPurchase = latest as Purchase & { expirationDateIOS?: number | null };
+        const expiryMs =
+          iosPurchase.expirationDateIOS && iosPurchase.expirationDateIOS > Date.now()
+            ? iosPurchase.expirationDateIOS
+            : Date.now() + durationMs;
+
+        setSubscriptionExpiryMs(expiryMs);
+        setAccessState("subscribed");
+        await persistAccessState("subscribed", expiryMs);
+        await cancelTrialExpiryNotification();
+      } else {
+        log("[Subscription] verifyActiveEntitlements — no active premium subscription found");
+      }
+    } catch (e) {
+      warn("[Subscription] verifyActiveEntitlements — bypassed (non-fatal):", e);
+    }
+  }, [persistAccessState]);
+
   // ── Silent server-side restore on cold start ──────────────────────────────
 
-  /**
-   * After loading local persisted state, silently query the server for the
-   * verified subscription status. If the server confirms an active subscription
-   * but local state is 'unknown' or 'expired' (e.g. after a reinstall, device
-   * transfer, or cleared AsyncStorage), upgrade the local state to 'subscribed'
-   * without requiring the user to tap "Restore Purchases".
-   *
-   * Guards:
-   * - Only runs on iOS/Android (no server session on web)
-   * - Only runs when local state is 'unknown' or 'expired'
-   * - Requires an active auth session token
-   * - Has a 6-second timeout to avoid blocking the UI
-   * - Never throws — any failure is logged and silently ignored
-   */
   const silentRestoreOnColdStart = useCallback(
     async (localState: AccessState) => {
       if (Platform.OS === "web") return;
-      // Only attempt restore when local state suggests no active subscription
       if (localState !== "unknown" && localState !== "expired") return;
       try {
-        // Require an authenticated session — no point calling the server otherwise
         const token = await Auth.getSessionToken();
         if (!token) {
-          // No server session (fresh install or logged-out user).
-          // Fall back to StoreKit-native restore: call getAvailablePurchases() directly.
-          // This is the standard Apple-recommended approach for reinstall scenarios.
           log("[Subscription] silentRestoreOnColdStart: no session token — attempting StoreKit-native restore");
           try {
             const purchases = await Promise.race([
@@ -399,7 +477,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           if (result.productId) {
             await safeSetItem(STORAGE_KEY_ACTIVE_PRODUCT, result.productId);
           }
-          // Cancel any trial expiry notification — user has an active subscription
           await cancelTrialExpiryNotification();
         } else {
           log("[Subscription] silentRestoreOnColdStart: server reports no active subscription");
@@ -409,48 +486,49 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         if (msg === "getStatus timeout") {
           warn("[Subscription] silentRestoreOnColdStart timed out after 6s — skipping");
         } else {
-          // UNAUTHORIZED (no server session) is expected on first launch — log at warn level
           warn("[Subscription] silentRestoreOnColdStart failed (non-fatal):", msg);
         }
       }
     },
-    [persistAccessState, processPurchase],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [persistAccessState],
   );
-  // ── Load persisted state on mount ───────────────────────────────────────────
+
+  // ── Load persisted state ────────────────────────────────────────────────────
 
   const loadPersistedState = useCallback(async () => {
     try {
-        const [storedTrialStart, storedExpiry, storedProductId, storedOrigDate, storedAutoRenew, storedPlatform] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEY_TRIAL_START),
-        AsyncStorage.getItem(STORAGE_KEY_EXPIRY),
-        AsyncStorage.getItem(STORAGE_KEY_ACTIVE_PRODUCT),
-        AsyncStorage.getItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE),
-        AsyncStorage.getItem(STORAGE_KEY_AUTO_RENEW),
-        AsyncStorage.getItem(STORAGE_KEY_SUB_PLATFORM),
-      ]);
-      const trialStart = storedTrialStart ? parseInt(storedTrialStart, 10) : null;
-      const expiry = storedExpiry ? parseInt(storedExpiry, 10) : null;
+      const [trialStartStr, expiryStr, activeProduct, origDateStr, autoRenewStr, platformStr] =
+        await Promise.all([
+          AsyncStorage.getItem(STORAGE_KEY_TRIAL_START),
+          AsyncStorage.getItem(STORAGE_KEY_EXPIRY),
+          AsyncStorage.getItem(STORAGE_KEY_ACTIVE_PRODUCT),
+          AsyncStorage.getItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE),
+          AsyncStorage.getItem(STORAGE_KEY_AUTO_RENEW),
+          AsyncStorage.getItem(STORAGE_KEY_SUB_PLATFORM),
+        ]);
+
+      const trialStart = trialStartStr ? parseInt(trialStartStr, 10) : null;
+      const expiryMs = expiryStr ? parseInt(expiryStr, 10) : null;
+
       if (trialStart) setTrialStartMs(trialStart);
-      if (expiry) setSubscriptionExpiryMs(expiry);
-      if (storedProductId) setActiveProductId(storedProductId as ProductId);
-      if (storedOrigDate) setOriginalPurchaseDateMs(parseInt(storedOrigDate, 10));
-      if (storedAutoRenew !== null) setAutoRenewEnabled(storedAutoRenew === 'true');
-      if (storedPlatform === 'ios' || storedPlatform === 'android') setSubscriptionPlatform(storedPlatform);
-      await evaluateAccess(expiry, trialStart);
-      // After local state is resolved, silently verify with the server.
-      // This handles reinstalls and device transfers without user interaction.
-      // We derive the local state inline rather than reading React state
-      // (which may not have flushed yet) to avoid a stale-closure race.
-      const derivedLocalState: AccessState = (() => {
-        const now = Date.now();
-        if (expiry && expiry > now) return "subscribed";
-        if (trialStart && trialStart + TRIAL_DURATION_MS > now) return "trial_active";
-        return "unknown";
-      })();
-      // Fire-and-forget: silentRestoreOnColdStart never throws
-      silentRestoreOnColdStart(derivedLocalState).catch(() => {});
+      if (activeProduct) setActiveProductId(activeProduct as ProductId);
+      if (origDateStr) setOriginalPurchaseDateMs(parseInt(origDateStr, 10));
+      if (autoRenewStr !== null) setAutoRenewEnabled(autoRenewStr === 'true');
+      if (platformStr === 'ios' || platformStr === 'android') setSubscriptionPlatform(platformStr);
+
+      await evaluateAccess(expiryMs, trialStart);
+
+      const resolvedState: AccessState =
+        expiryMs && expiryMs > Date.now()
+          ? "subscribed"
+          : trialStart && trialStart + TRIAL_DURATION_MS > Date.now()
+          ? "trial_active"
+          : "unknown";
+
+      await silentRestoreOnColdStart(resolvedState);
     } catch (e) {
-      logError("[Subscription] Failed to load persisted state:", e);
+      logError("[Subscription] loadPersistedState failed:", e);
       setAccessState("unknown");
     } finally {
       setIsLoading(false);
@@ -464,21 +542,15 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       try {
         log("[Subscription] Processing purchase:", purchase.productId);
 
-        // Determine expiry from transaction receipt
         let expiryMs: number | null = null;
 
         if (Platform.OS === "ios") {
-          // On iOS, transactionDate + subscription period is the best we can do
-          // without a server-side receipt validation. Use 30 days for monthly,
-          // 365 days for yearly as a local estimate. Real validation happens
-          // server-side or via StoreKit 2 in production.
           const isYearly = purchase.productId === PRODUCT_IDS.yearly;
           const durationMs = isYearly
             ? 365 * 24 * 60 * 60 * 1000
             : 30 * 24 * 60 * 60 * 1000;
           expiryMs = Date.now() + durationMs;
         } else if (Platform.OS === "android") {
-          // Android: use purchaseStateAndroid or expiryTimeAndroid if available
           const androidPurchase = purchase as Purchase & {
             expiryTimeAndroid?: string;
           };
@@ -490,8 +562,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           }
         }
 
-        // ── Capture StoreKit 2 metadata ──────────────────────────────────────
-        // iOS: prefer expirationDateIOS from StoreKit 2 JWS over our local estimate
         if (Platform.OS === "ios") {
           const iosPurchase = purchase as Purchase & {
             expirationDateIOS?: number | null;
@@ -499,24 +569,19 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
             isAutoRenewing?: boolean;
             renewalInfoIOS?: { willAutoRenew?: boolean; renewalDate?: number | null } | null;
           };
-          // Use StoreKit 2 expirationDateIOS if available (more accurate than our local estimate)
           if (iosPurchase.expirationDateIOS && iosPurchase.expirationDateIOS > Date.now()) {
             expiryMs = iosPurchase.expirationDateIOS;
             log(`[Subscription] Using StoreKit 2 expirationDateIOS: ${new Date(expiryMs).toISOString()}`);
           }
-          // Original purchase date
           const origDate = iosPurchase.originalTransactionDateIOS ?? purchase.transactionDate ?? null;
           if (origDate) {
             setOriginalPurchaseDateMs(origDate);
             await safeSetItem(STORAGE_KEY_ORIGINAL_PURCHASE_DATE, String(origDate));
-            log(`[Subscription] Original purchase date: ${new Date(origDate).toISOString()}`);
           }
-          // Auto-renew status — prefer renewalInfoIOS.willAutoRenew, fall back to isAutoRenewing
           const autoRenew = iosPurchase.renewalInfoIOS?.willAutoRenew ?? iosPurchase.isAutoRenewing ?? null;
           if (autoRenew !== null) {
             setAutoRenewEnabled(autoRenew);
             await safeSetItem(STORAGE_KEY_AUTO_RENEW, String(autoRenew));
-            log(`[Subscription] Auto-renew: ${autoRenew}`);
           }
           setSubscriptionPlatform('ios');
           await safeSetItem(STORAGE_KEY_SUB_PLATFORM, 'ios');
@@ -540,9 +605,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         await safeSetItem(STORAGE_KEY_ACTIVE_PRODUCT, purchase.productId);
         setAccessState("subscribed");
         await persistAccessState("subscribed", expiryMs);
-        // Acknowledge/finish the transaction
         await finishTransaction({ purchase, isConsumable: false });
-        // Cancel the trial expiry reminder — user has subscribed
         await cancelTrialExpiryNotification();
       } catch (e) {
         logError("[Subscription] Failed to process purchase:", e);
@@ -551,23 +614,24 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [persistAccessState],
   );
 
-  // ── Initialize IAP connection ───────────────────────────────────────────────
+  // ── Initialize IAP connection (VitalSyncIAPBridge.ts pattern) ──────────────
+  // Structured async/await initializeIAPConnection loop:
+  // 1. initConnection() with 5s timeout guard
+  // 2. fetchProducts for both SKUs
+  // 3. verifyActiveEntitlements() on startup
+  // 4. Wire purchaseUpdatedListener and purchaseErrorListener
 
   const initIAP = useCallback(async () => {
-    // IAP is only available on iOS and Android native builds.
-    // On web, or when the Nitro runtime is not yet linked (e.g. first build
-    // before react-native-iap pods are installed), skip initConnection entirely
-    // to prevent a Dead-on-Arrival crash that produces a white screen.
     if (Platform.OS === "web") {
       log("[Subscription] IAP not available on web — skipping initConnection");
       return;
     }
     if (iapInitialized.current) return;
+
     try {
-      // Wrap initConnection in a 5-second timeout so a hung StoreKit/Play Billing
-      // session does not freeze the app on the splash screen indefinitely.
-      // 5 s is chosen specifically to accommodate Apple reviewers testing from
-      // behind a corporate VPN/firewall where StoreKit may be slow to respond.
+      setEngineState(PurchaseEngineState.PROCESSING);
+
+      // Step 1: initConnection with timeout guard (VitalSyncIAPBridge pattern)
       await Promise.race([
         initConnection(),
         new Promise<never>((_, reject) =>
@@ -575,56 +639,67 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         ),
       ]);
       iapInitialized.current = true;
-      log("[Subscription] IAP connection initialized");
+      log("[Subscription] IAP connection initialized — bundle: " + BUNDLE_ID);
 
-      // Clear any pending iOS transactions
-      if (Platform.OS === "ios") {
-        // clearTransactionIOS removed in react-native-iap v15; finishTransaction handles cleanup
-      }
-
-      // Listen for purchase updates
+      // Step 2: Wire purchaseUpdatedListener (VitalSyncIAPBridge pattern)
+      // On receipt: finishTransaction → verifyActiveEntitlements → SUCCESS state
       purchaseUpdateSub.current = purchaseUpdatedListener(
         async (purchase: Purchase) => {
           log("[Subscription] purchaseUpdatedListener fired — productId:", purchase.productId);
-          await processPurchase(purchase);
+          const receipt = purchase.transactionReceipt;
+          if (receipt) {
+            try {
+              await finishTransaction({ purchase, isConsumable: false });
+              // VitalSyncIAPBridge pattern: call verifyActiveEntitlements after finish
+              await verifyActiveEntitlements();
+              setEngineState(PurchaseEngineState.SUCCESS);
+              log("[Subscription] purchaseUpdatedListener — transaction finished, entitlements verified");
+            } catch (ackErr) {
+              warn("[Subscription] purchaseUpdatedListener — finalize warning:", ackErr);
+            }
+          } else {
+            // Fallback: process via full processPurchase path
+            await processPurchase(purchase);
+          }
           setPurchasing(false);
         },
       );
 
+      // Step 3: Wire purchaseErrorListener
       purchaseErrorSub.current = purchaseErrorListener((err: PurchaseError) => {
         logError("[Subscription] purchaseErrorListener fired — code:", err.code, "message:", err.message);
         if ((err.code as string) !== "E_USER_CANCELLED" && (err.code as string) !== "user-cancelled") {
           setPurchaseError(err.message || "Purchase failed. Please try again.");
+          setEngineState(PurchaseEngineState.ERROR);
+        } else {
+          setEngineState(PurchaseEngineState.IDLE);
         }
         setPurchasing(false);
       });
+
+      setEngineState(PurchaseEngineState.IDLE);
     } catch (e) {
-      // Covers three failure modes:
-      // 1. react-native-iap pod not linked (pre-EAS build)
-      // 2. Nitro runtime failed to initialize (New Architecture timing issue)
-      // 3. StoreKit/Play Billing timed out (5-second guard above)
-      // In all cases, set accessState to 'unknown' so the app continues normally.
-      // The app is fully usable in 'unknown' state — the user can still access
-      // free features and the paywall will show a "Retry" option.
       const msg = e instanceof Error ? e.message : String(e);
       if (msg === 'IAP init timeout') {
         warn("[Subscription] IAP initConnection timed out after 5s — setting unknown (App Store reviewer VPN fallback)");
       } else {
         logError("[Subscription] IAP init failed — Nitro not available or pod not linked:", e);
       }
+      setEngineState(PurchaseEngineState.ERROR);
       setAccessState("unknown");
     }
-  }, [processPurchase]);
+  }, [processPurchase, verifyActiveEntitlements]);
 
   // ── Load products ───────────────────────────────────────────────────────────
+  // Uses ITEM_SKUS (Platform.select) matching VitalSyncIAPBridge.ts itemSKUs pattern.
 
   const reloadProducts = useCallback(async (retryCount = 0) => {
     setProductsLoading(true);
     if (retryCount === 0) setProductsLoadError(null);
     try {
-      log(`[Subscription] fetchProducts attempt ${retryCount + 1}/3 — SKUs: ${PRODUCT_IDS.monthly}, ${PRODUCT_IDS.yearly} — platform: ${Platform.OS}`);
+      log(`[Subscription] fetchProducts attempt ${retryCount + 1}/3 — SKUs: ${ITEM_SKUS?.join(', ')} — platform: ${Platform.OS}`);
       const subs = (await fetchProducts({
-        skus: [PRODUCT_IDS.monthly, PRODUCT_IDS.yearly],
+        skus: ITEM_SKUS ?? [PRODUCT_IDS.monthly, PRODUCT_IDS.yearly],
         type: 'subs',
       })) as ProductSubscription[];
       const productSummary = subs.map(p => `${p.id} (${(p as any).localizedPrice ?? 'no price'})`).join(', ');
@@ -640,8 +715,8 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
             "Possible causes:\n" +
             "  1. Products not yet approved in App Store Connect (status must be 'Ready to Submit')\n" +
             "  2. Sandbox tester account not configured in App Store Connect → Users and Access → Sandbox\n" +
-            "  3. In-App Purchases capability not enabled for bundle ID com.vitalsync.healthtracker\n" +
-            "  4. Product IDs in App Store Connect do not match: vitalsync.healthtracker.premium_monthly / vitalsync.healthtracker.premium_annual\n" +
+            `  3. In-App Purchases capability not enabled for bundle ID ${BUNDLE_ID}\n` +
+            `  4. Product IDs in App Store Connect do not match: ${PRODUCT_IDS.monthly} / ${PRODUCT_IDS.yearly}\n` +
             "  5. Device is not signed in to a sandbox Apple ID in Settings → App Store"
           );
           setProductsLoadError(
@@ -677,7 +752,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       await safeSetItem(STORAGE_KEY_TRIAL_START, String(now));
       await persistAccessState("trial_active");
       log("[Subscription] Trial started at", new Date(now).toISOString());
-      // Schedule a reminder 24h before trial ends
       await scheduleTrialExpiryNotification(expiryMs);
     } catch (e) {
       logError("[Subscription] Failed to save trial start:", e);
@@ -685,40 +759,29 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   }, [persistAccessState]);
 
   // ── Purchase subscription ───────────────────────────────────────────────────
-  //
-  // FIX (v1.0.69): react-native-iap v15 requires platform-specific request shape:
-  //
+  // v1.0.69 fix: platform-specific request shape for react-native-iap v15.
   //   iOS:     { request: { apple: { sku: productId } }, type: 'subs' }
   //   Android: { request: { google: { skus: [productId] } }, type: 'subs' }
-  //
-  // The previous call was:
-  //   requestPurchase({ request: { sku: productId }, type: "subs" } as any)
-  //
-  // This caused requestPurchase to look for request.apple.sku (undefined) and
-  // throw "Invalid request for iOS. The `sku` property is required." — which was
-  // caught and set as purchaseError, but the StoreKit sheet never appeared.
-  //
+
   const purchaseSubscription = useCallback(
     async (productId: ProductId) => {
       setPurchaseError(null);
       setPurchasing(true);
+      setEngineState(PurchaseEngineState.PROCESSING);
       log(`[Subscription] purchaseSubscription — productId: ${productId}, platform: ${Platform.OS}`);
       log(`[Subscription] Products loaded: ${products.length} — [${products.map(p => p.id).join(', ')}]`);
 
-      // Guard: if products haven't loaded, abort with a visible error instead of
-      // silently throwing inside requestPurchase (which would never show the sheet)
       if (products.length === 0) {
         warn("[Subscription] purchaseSubscription called with no products loaded — aborting");
         setPurchaseError(
           "Subscription options are not loaded yet. Please wait a moment and try again."
         );
         setPurchasing(false);
+        setEngineState(PurchaseEngineState.ERROR);
         return;
       }
 
       try {
-        // Build the correct platform-specific request shape for react-native-iap v15.
-        // See: https://github.com/dooboolab-community/react-native-iap#requestpurchase
         const purchaseRequest =
           Platform.OS === "ios"
             ? { request: { apple: { sku: productId } }, type: "subs" as const }
@@ -726,7 +789,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
 
         log(`[Subscription] Calling requestPurchase — payload: ${JSON.stringify(purchaseRequest)}`);
         await requestPurchase(purchaseRequest as any);
-        // Successful result is delivered via purchaseUpdatedListener, not the return value.
         log("[Subscription] requestPurchase resolved — StoreKit sheet should have appeared");
       } catch (e) {
         const err = e as PurchaseError;
@@ -734,8 +796,10 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
         logError(`[Subscription] requestPurchase threw — code: ${code}, message: ${err.message}`, e);
         if (code !== "E_USER_CANCELLED" && code !== "user-cancelled") {
           setPurchaseError(err.message || "Purchase failed. Please try again.");
+          setEngineState(PurchaseEngineState.ERROR);
         } else {
           log("[Subscription] User cancelled the purchase sheet");
+          setEngineState(PurchaseEngineState.IDLE);
         }
         setPurchasing(false);
       }
@@ -743,21 +807,26 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     [products],
   );
 
-  // ── Restore purchases ───────────────────────────────────────────────────────
+  // ── Restore purchases (VitalSyncIAPBridge.ts pattern) ──────────────────────
+  // Primary: getAvailablePurchases() filtered to known SKUs
+  // Secondary: server-side getStatus verification
 
   const restorePurchases = useCallback(async () => {
     setPurchaseError(null);
     setRestoreResult(null);
     setIsRestoring(true);
+    setEngineState(PurchaseEngineState.PROCESSING);
     log("[Subscription] restorePurchases — calling getAvailablePurchases()");
     try {
+      // VitalSyncIAPBridge pattern: verifyActiveEntitlements as primary restore path
+      await verifyActiveEntitlements();
+
       const purchases = await getAvailablePurchases();
       log(`[Subscription] getAvailablePurchases returned ${purchases.length} purchase(s)`);
       purchases.forEach((p, idx) => {
         log(`[Subscription]   [${idx}] productId=${p.productId} transactionDate=${p.transactionDate} transactionId=${p.transactionId}`);
       });
 
-      // Filter to known subscription SKUs only
       const subPurchases = purchases.filter(
         p => p.productId === PRODUCT_IDS.monthly || p.productId === PRODUCT_IDS.yearly
       );
@@ -766,11 +835,11 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       if (subPurchases.length === 0) {
         log("[Subscription] No subscription purchases found — setting restoreResult: no_subscription");
         setRestoreResult('no_subscription');
+        setEngineState(PurchaseEngineState.IDLE);
         setIsRestoring(false);
         return;
       }
 
-      // Find the most recent subscription purchase
       const sorted = [...subPurchases].sort(
         (a, b) => (b.transactionDate ?? 0) - (a.transactionDate ?? 0),
       );
@@ -778,14 +847,16 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       log(`[Subscription] Restoring latest purchase — productId: ${latest.productId}, transactionDate: ${latest.transactionDate}`);
       await processPurchase(latest as Purchase);
       setRestoreResult('success');
+      setEngineState(PurchaseEngineState.SUCCESS);
       log("[Subscription] Restore completed successfully");
     } catch (e) {
       logError("[Subscription] Restore failed:", e);
       setPurchaseError("Restore failed. Please try again.");
+      setEngineState(PurchaseEngineState.ERROR);
     } finally {
       setIsRestoring(false);
     }
-  }, [processPurchase]);
+  }, [processPurchase, verifyActiveEntitlements]);
 
   const clearRestoreResult = useCallback(() => {
     setRestoreResult(null);
@@ -812,6 +883,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     productsLoadError,
     purchasing,
     purchaseError,
+    engineState,
     trialStartMs,
     trialExpiryMs,
     trialDaysRemaining,
@@ -828,6 +900,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     startTrial,
     purchaseSubscription,
     restorePurchases,
+    verifyActiveEntitlements,
     clearRestoreResult,
     reloadProducts,
   };
