@@ -207,9 +207,7 @@ export default function ConsentScreen() {
   function handleRevokeAppleIntelligence() {
     Alert.alert(
       'Revoke Apple Intelligence Consent',
-      'This will disable AI wellness summaries powered by Apple Intelligence. The consent dialog will appear again the next time you open the AI Wellness Insights card.
-
-Your health data will not be deleted.',
+      'This will disable AI wellness summaries powered by Apple Intelligence. The consent dialog will appear again the next time you open the AI Wellness Insights card.\n\nYour health data will not be deleted.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
