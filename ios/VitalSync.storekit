@@ -1,0 +1,156 @@
+{
+  "identifier" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+  "nonConsumableProducts" : [
+
+  ],
+  "nonRenewingSubscriptionProducts" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInReview" : false,
+    "_billingGraceEnabled" : true,
+    "_billingGracePeriodDurationUnit" : "DAY",
+    "_billingGracePeriodDurationValue" : 6,
+    "_billingRetryEnabled" : true,
+    "_billingRetryMaxRetries" : 3,
+    "_billingRetryRetryPeriodDuration" : 1,
+    "_billingRetryRetryPeriodDurationUnit" : "DAY",
+    "_customerCancellationEnabled" : true,
+    "_customerCancellationReasonEnabled" : true,
+    "_failTransactionsEnabled" : false,
+    "_locale" : "en_US",
+    "_storefront" : "USA",
+    "_storeKitErrors" : [
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorUnknown"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorClientInvalid"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorPaymentCancelled"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorPaymentInvalid"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorPaymentNotAllowed"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorStoreProductNotAvailable"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorCloudServicePermissionDenied"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorCloudServiceNetworkConnectionFailed"
+      },
+      {
+        "current" : "0",
+        "enabled" : false,
+        "error" : "SKErrorCloudServiceRevoked"
+      }
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "B2C3D4E5-F6A7-8901-BCDE-F12345678901",
+      "localizations" : [
+        {
+          "customAppName" : "VitalSync",
+          "description" : "Unlock all premium health tracking features including unlimited food scans, AI wellness summaries, advanced analytics, and priority support.",
+          "displayName" : "VitalSync Premium",
+          "locale" : "en_US"
+        }
+      ],
+      "name" : "VitalSync Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "4.99",
+          "familySharable" : false,
+          "groupNumber" : 1,
+          "internalID" : "C3D4E5F6-A7B8-9012-CDEF-123456789012",
+          "introductoryOffer" : {
+            "duration" : 2,
+            "durationUnit" : "WEEK",
+            "offerIdentifier" : "vitalsync.healthtracker.premium_monthly.trial",
+            "offerMode" : "FREE_TRIAL",
+            "offerType" : "INTRODUCTORY_OFFER"
+          },
+          "localizations" : [
+            {
+              "description" : "Full access to all VitalSync Premium features. Billed monthly. Cancel anytime.",
+              "displayName" : "VitalSync Premium Monthly",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "vitalsync.healthtracker.premium_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Premium Monthly",
+          "subscriptionGroupID" : "B2C3D4E5-F6A7-8901-BCDE-F12345678901",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "49.99",
+          "familySharable" : false,
+          "groupNumber" : 2,
+          "internalID" : "D4E5F6A7-B8C9-0123-DEF0-234567890123",
+          "introductoryOffer" : {
+            "duration" : 2,
+            "durationUnit" : "WEEK",
+            "offerIdentifier" : "vitalsync.healthtracker.premium_annual.trial",
+            "offerMode" : "FREE_TRIAL",
+            "offerType" : "INTRODUCTORY_OFFER"
+          },
+          "localizations" : [
+            {
+              "description" : "Full access to all VitalSync Premium features. Billed annually. Best value — save ~17% vs monthly.",
+              "displayName" : "VitalSync Premium Annual",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "vitalsync.healthtracker.premium_annual",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "Premium Annual",
+          "subscriptionGroupID" : "B2C3D4E5-F6A7-8901-BCDE-F12345678901",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 2,
+    "minor" : 0
+  }
+}
