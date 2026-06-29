@@ -75,6 +75,25 @@ const config: ExpoConfig = {
         "App-prefs",
         "app-settings",
       ],
+      // ─── Local Network / Metro Bundler (Debug) ────────────────────────────────
+      // iOS 14+ requires NSLocalNetworkUsageDescription to show the local network
+      // permission prompt. Without it, RCTBundleURLProvider returns nil and the
+      // app crashes with "No script URL provided" when run from Xcode (Debug).
+      NSLocalNetworkUsageDescription:
+        "VitalSync needs local network access to connect to the Metro bundler during development.",
+      // Bonjour services declaration required for Metro discovery on iOS 14+
+      NSBonjourServices: ["_http._tcp", "_https._tcp"],
+      // ATS: allow local networking + explicit localhost exception for Metro
+      NSAppTransportSecurity: {
+        NSAllowsArbitraryLoads: false,
+        NSAllowsLocalNetworking: true,
+        NSExceptionDomains: {
+          localhost: {
+            NSExceptionAllowsInsecureHTTPLoads: true,
+            NSIncludesSubdomains: false,
+          },
+        },
+      },
     },
     entitlements: {
       "com.apple.developer.healthkit": true,
