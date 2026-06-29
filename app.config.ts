@@ -312,6 +312,10 @@ const config: ExpoConfig = {
     ],
     // Guideline 2.5.4 fix: remove 'audio' from UIBackgroundModes injected by expo-audio/expo-video
     "./plugins/withNoBackgroundAudio",
+    // Fix: replace RCTBundleURLProvider with direct Metro URL to avoid nil bundleURL in New Arch mode
+    "./plugins/withBundleURL",
+    // StoreKit local testing: copy VitalSync.storekit into ios/ and wire to Debug scheme
+    "./plugins/withStoreKitConfig",
   ],
   experiments: {
     typedRoutes: true,
