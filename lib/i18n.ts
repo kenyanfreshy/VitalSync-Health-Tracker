@@ -19735,7 +19735,7 @@ export const foodCameraStrings = {
       consentRequired: 'AI consent required to use this feature.',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: 'Go to Settings → Privacy & Consent to re-enable.'
-      enableInPrivacyConsent: 'Enable in Privacy & Consent →',,
+      enableInPrivacyConsent: 'Enable in Privacy & Consent →',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Diet Log',
     insightsTabLabel: 'Insights',
@@ -19862,7 +19862,7 @@ export const foodCameraStrings = {
       consentRequired: 'Se requiere consentimiento de IA para usar esta función.',
       enableConsent: 'Habilitar Consentimiento IA',
       consentRevokedHint: 'Ve a Ajustes → Privacidad y Consentimiento para reactivar.'
-      enableInPrivacyConsent: 'Activar en Privacidad y Consentimiento →',,
+      enableInPrivacyConsent: 'Activar en Privacidad y Consentimiento →',
     nutritionTabTitle: 'Nutricion',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analisis',
@@ -19994,7 +19994,7 @@ export const foodCameraStrings = {
       consentRequired: 'Le consentement IA est requis pour utiliser cette fonctionnalité.',
       enableConsent: 'Activer le Consentement IA',
       consentRevokedHint: 'Allez dans Paramètres → Confidentialité et Consentement pour réactiver.'
-      enableInPrivacyConsent: 'Activer dans Confidentialité et Consentement →',,
+      enableInPrivacyConsent: 'Activer dans Confidentialité et Consentement →',
     nutritionTabTitle: 'Nutrition',
     dietLogTabLabel: 'Journal',
     insightsTabLabel: 'Analyzes',
@@ -20126,7 +20126,7 @@ export const foodCameraStrings = {
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: '启用 AI 同意',
       consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
-      enableInPrivacyConsent: '在隐私与同意中启用 →',,
+      enableInPrivacyConsent: '在隐私与同意中启用 →',
     nutritionTabTitle: 'Nutricao',
     dietLogTabLabel: 'Diario',
     insightsTabLabel: 'Analises',
@@ -20257,7 +20257,7 @@ export const foodCameraStrings = {
       consentRequired: 'مطلوب موافقة الذكاء الاصطناعي لاستخدام هذه الميزة.',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: 'انتقل إلى الإعدادات → الخصوصية والموافقة لإعادة التفعيل.'
-      enableInPrivacyConsent: 'تفعيل في الخصوصية والموافقة →',,
+      enableInPrivacyConsent: 'تفعيل في الخصوصية والموافقة →',
     nutritionTabTitle: 'AlTghyh',
     dietLogTabLabel: 'sjlAlGhDA',
     insightsTabLabel: 'rwyA',
@@ -20389,7 +20389,7 @@ export const foodCameraStrings = {
       consentRequired: 'Inahitajika ridhaa ya AI kutumia kipengele hiki.',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: 'Nenda Mipangilio → Faragha na Ridhaa kuwezesha tena.'
-      enableInPrivacyConsent: 'Wezesha katika Faragha na Ridhaa →',,
+      enableInPrivacyConsent: 'Wezesha katika Faragha na Ridhaa →',
     nutritionTabTitle: 'Lishe',
     dietLogTabLabel: 'Kumbukumbu',
     insightsTabLabel: 'Maarifa',
@@ -20521,7 +20521,7 @@ export const foodCameraStrings = {
       consentRequired: 'इस सुविधा का उपयोग करने के लिए AI सहमति आवश्यक है।',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: 'पुनः सक्षम करने के लिए सेटिंग्स → गोपनीयता और सहमति पर जाएं।'
-      enableInPrivacyConsent: 'गोपनीयता और सहमति में सक्षम करें →',,
+      enableInPrivacyConsent: 'गोपनीयता और सहमति में सक्षम करें →',
     nutritionTabTitle: 'Poshan',
     dietLogTabLabel: 'Aahar Log',
     insightsTabLabel: 'Antardrishti',
@@ -20653,7 +20653,7 @@ export const foodCameraStrings = {
       consentRequired: '使用此功能需要 AI 同意。',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: '前往设置 → 隐私与同意以重新启用。'
-      enableInPrivacyConsent: '在隐私与同意中启用 →',,
+      enableInPrivacyConsent: '在隐私与同意中启用 →',
     nutritionTabTitle: 'Yingyang',
     dietLogTabLabel: 'Yinshi Riji',
     insightsTabLabel: 'Dongjian',
@@ -20784,7 +20784,7 @@ export const foodCameraStrings = {
       consentRequired: 'KI-Einwilligung erforderlich, um diese Funktion zu nutzen.',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: 'Gehe zu Einstellungen → Datenschutz & Einwilligung, um es wieder zu aktivieren.'
-      enableInPrivacyConsent: 'In Datenschutz & Einwilligung aktivieren →',,
+      enableInPrivacyConsent: 'In Datenschutz & Einwilligung aktivieren →',
     nutritionTabTitle: 'Ernahrung',
     dietLogTabLabel: 'Ernahrungstagebuch',
     insightsTabLabel: 'Einblicke',
@@ -20916,7 +20916,7 @@ export const foodCameraStrings = {
       consentRequired: 'この機能を使用するにはAI同意が必要です。',
       enableConsent: 'Enable AI Consent',
       consentRevokedHint: '設定 → プライバシーと同意 で再度有効にしてください。'
-      enableInPrivacyConsent: 'プライバシーと同意で有効にする →',,
+      enableInPrivacyConsent: 'プライバシーと同意で有効にする →',
     nutritionTabTitle: 'Eiyo',
     dietLogTabLabel: 'Shokuji Kiroku',
     insightsTabLabel: 'Bunseki',
