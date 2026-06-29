@@ -388,7 +388,7 @@ export default function VitalsLogScreen() {
       for (const rec of newRecords) {
         await addVitalSigns(rec);
       }
-      const sourceName = result.source === 'health-connect' ? 'Health Connect' : 'your BP monitor';
+      const sourceName = 'your BP monitor';
       Alert.alert('Synced', l.syncedMsg(newRecords.length, sourceName));
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } finally {

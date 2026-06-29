@@ -65,6 +65,8 @@ import { lookupBarcodeOFF } from '@/lib/nutrition/open-food-facts';
 import { BarcodeScannerModal } from '@/components/barcode-scanner-modal';
 import { MicrophoneIcon } from '@/components/ui/microphone-icon';
 import { MealAnalysisOverlay, type AnalysisStep, type AnalysisStepState, type DetectedFoodLabel } from '@/components/meal-analysis-overlay';
+import { GeminiConsentModal } from '@/components/gemini-consent-modal';
+import { hasGeminiConsent, markGeminiConsent } from '@/lib/gemini-consent';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1611,6 +1613,12 @@ export function AiFoodCameraSheet({
   // Apple Health inline prompt state (replaces Alert.alert for first-time HK pref)
   const [showHkPrompt, setShowHkPrompt] = useState(false);
   const pendingHkCallback = useRef<(() => void) | null>(null);
+
+  // ── Gemini AI consent gate ────────────────────────────────────────────────
+  // showGeminiConsent: true = consent dialog is visible, waiting for user decision
+  // pendingPlateScan: true = user tried to scan before consent; retry after accept
+  const [showGeminiConsent, setShowGeminiConsent] = useState(false);
+  const pendingPlateScanRef = useRef(false);
   // Recent search queries loaded from AsyncStorage cache
   const [recentQueries, setRecentQueries] = useState<string[]>([]);
   // Load recent queries whenever the sheet becomes visible
@@ -1773,6 +1781,15 @@ export function AiFoodCameraSheet({
   const handlePlateScan = useCallback(async () => {
     if (onScanMealPress) {
       onScanMealPress();
+      return;
+    }
+    // ── Gemini AI consent gate ───────────────────────────────────────────────────────────────
+    // Apple requires explicit, revocable consent before sending images to Google Gemini.
+    // Check consent; if not yet given, show the dialog and defer the scan.
+    const consentGiven = await hasGeminiConsent();
+    if (!consentGiven) {
+      pendingPlateScanRef.current = true;
+      setShowGeminiConsent(true);
       return;
     }
     if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -2713,6 +2730,25 @@ export function AiFoodCameraSheet({
       visible={showBarcodeScanner}
       onBarcode={handleBarcodeDetected}
       onClose={() => setShowBarcodeScanner(false)}
+    />
+
+    {/* Gemini AI consent dialog — shown before first food image upload */}
+    <GeminiConsentModal
+      visible={showGeminiConsent}
+      onAccept={async () => {
+        await markGeminiConsent();
+        setShowGeminiConsent(false);
+        // Resume the pending plate scan if the user was trying to scan
+        if (pendingPlateScanRef.current) {
+          pendingPlateScanRef.current = false;
+          // Small delay so the modal fully dismisses before camera opens
+          setTimeout(() => handlePlateScan(), 300);
+        }
+      }}
+      onDecline={() => {
+        setShowGeminiConsent(false);
+        pendingPlateScanRef.current = false;
+      }}
     />
 
 

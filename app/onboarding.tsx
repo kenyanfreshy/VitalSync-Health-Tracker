@@ -988,20 +988,6 @@ export default function OnboardingScreen() {
               </View>
             </View>
 
-            {/* ── Health Connect (Android) ── */}
-            <View style={[styles.permPlatformCard, {
-              backgroundColor: ACCENT + '20',
-              borderColor: ACCENT + '50',
-            }]}>
-              <View style={[styles.permPlatformIcon, { backgroundColor: ACCENT + '20' }]}>
-                <IconSymbol name="waveform" size={20} color={ACCENT} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.permPlatformOS}>Android · Wear OS</Text>
-                <Text style={styles.permPlatformName}>{o.dataSourceAndroidHealth}</Text>
-                <Text style={styles.permPlatformSub}>{o.dataSourceAndroidHealthDesc}</Text>
-              </View>
-            </View>
 
             {/* ── Apple Scribe ── */}
             <View style={[styles.permPlatformCard, {
@@ -1054,7 +1040,7 @@ export default function OnboardingScreen() {
                 <Text style={{ color: '#38BDF8', fontWeight: '600' }}>{o.settingsHealthDetail}</Text>.
                 Tap{' '}
                 <Text style={{ color: '#E53E3E', fontWeight: '600' }}>{o.requestPermissionInline}</Text>
-                {' '}to grant access on iOS or Android.
+                {' '}to grant access on iOS.
               </Text>
             </View>
 

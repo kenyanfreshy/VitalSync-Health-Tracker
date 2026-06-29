@@ -189,7 +189,7 @@ function syncedAtLabel(iso: string): string {
 /** Returns a compact source badge string. */
 function sourceLabel(source: string): string {
   if (source === 'healthkit') return '🍎 Apple Health';
-  if (source === 'health-connect') return '🤖 Health Connect';
+  if (source === 'health-connect') return '❤️ Apple Health';
   if (source === 'device') return '📡 Device';
   return '✏️ Manual';
 }

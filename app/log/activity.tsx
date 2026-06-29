@@ -689,7 +689,7 @@ export default function ActivityLogScreen() {
                   {item.note ? <Text style={s.rowNote}>{item.note}</Text> : null}
                   {(item.source === 'healthkit' || item.source === 'health-connect') && (
                     <Text style={s.sourceBadge}>
-                      {item.source === 'healthkit' ? '⌚ Apple Health' : '⌚ Health Connect'}
+                      {item.source === 'healthkit' ? '⌚ Apple Health' : '⌚ Apple Health'}
                     </Text>
                   )}
                 </View>

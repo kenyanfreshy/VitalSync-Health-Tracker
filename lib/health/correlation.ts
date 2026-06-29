@@ -256,17 +256,17 @@ function generateInsight(
   let specific = '';
   if (xMetric === 'sleepEfficiency' && yMetric === 'bpSystolic') {
     specific = direction === 'negative'
-      ? ' Better sleep quality appears to be associated with lower blood pressure — a well-established relationship in cardiovascular research.'
-      : ' Interestingly, your data shows an atypical pattern. Consider discussing with your doctor.';
+      ? ' Better sleep quality may be associated with lower blood pressure in your personal data — an observed wellness pattern.'
+      : ' Your data shows an observed pattern worth discussing with a licensed clinician.';
   } else if (xMetric === 'weight' && yMetric === 'bpSystolic') {
     specific = direction === 'positive'
-      ? ' Weight and blood pressure often move together. Even modest weight reduction can meaningfully lower BP.'
-      : ' Your data shows an inverse pattern between weight and BP, which may reflect other lifestyle factors.';
+      ? ' Weight and blood pressure may move together in your personal data. This is a wellness observation, not medical advice.'
+      : ' Your data shows an observed inverse pattern between weight and blood pressure, which may reflect other wellness factors.';
   } else if (xMetric === 'hrv' && yMetric === 'heartRate') {
     specific = direction === 'negative'
-      ? ' Higher HRV with lower resting heart rate is a classic sign of good cardiovascular fitness.'
+      ? ' Higher HRV with lower resting heart rate may indicate good cardiovascular wellness in your personal data.'
       : '';
   }
 
-  return `There is a ${strengthWord} ${direction} correlation (r = ${r.toFixed(2)}): ${directionPhrase}.${specific}`;
+  return `There is a ${strengthWord} ${direction} association (r = ${r.toFixed(2)}) in your personal data: ${directionPhrase}.${specific} Correlation does not prove causation. This is a wellness observation, not medical advice.`;
 }

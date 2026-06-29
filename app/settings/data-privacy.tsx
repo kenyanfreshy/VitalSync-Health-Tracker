@@ -132,6 +132,11 @@ export default function DataPrivacyScreen() {
   const LEAVES_DEVICE: { icon: string; title: string; desc: string }[] = [
     { icon: '📄', title: tp.leavesItem1Title ?? 'Personal Health Report PDF', desc: tp.leavesItem1Desc ?? 'Only when you tap "Generate PDF" and then explicitly share it via the system share sheet.' },
     { icon: '📤', title: tp.leavesItem2Title ?? 'Insight Share', desc: tp.leavesItem2Desc ?? 'Only when you tap the share button on a specific Correlation Engine insight card.' },
+    {
+      icon: '📷',
+      title: 'Food Scan Images (Camera Scan only)',
+      desc: 'When you use Camera Scan, your food photo is sent to Google Gemini for Nutrition Analysis. This requires your explicit consent, which you can revoke at any time in Settings → Privacy → Consent & Data Use. Manual food search and barcode scan do not send any images off-device.',
+    },
   ];
   const WE_NEVER: string[] = [
     tp.weNever1 ?? 'Upload your health data to any server',

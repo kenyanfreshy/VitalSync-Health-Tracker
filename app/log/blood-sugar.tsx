@@ -196,7 +196,7 @@ export default function BloodSugarLogScreen() {
       for (const rec of newRecords) {
         await addBloodSugar(rec);
       }
-      const sourceName = result.source === 'health-connect' ? l.healthConnectSource : l.glucometerSource;
+      const sourceName = l.glucometerSource;
       Alert.alert(l.importedFromAppleHealth ?? 'Imported from Apple Health', l.syncedMsg(newRecords.length, sourceName));
       if (Platform.OS !== 'web') {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

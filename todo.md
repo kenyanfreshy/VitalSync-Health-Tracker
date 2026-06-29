@@ -10491,3 +10491,51 @@
 - [x] Commit and push
 - [x] EAS iOS production build
 - [x] TestFlight submission
+
+## v1.0.75 — Restore Purchases Fix, A1C Copy Rename, Manage Subscription Deep Link
+- [x] Rename "Projected A1C estimates" → "Logged A1C & Trend Tracking" across entire codebase
+- [x] StoreKit-native cold-start restore fallback (no server session required)
+- [x] Fix Manage Subscription deep link to open VitalSync directly in Apple Subscriptions
+- [x] What's New v1.0.74 entry updated to neutral copy (no crash mention)
+- [x] Version bump to 1.0.75 / Build 10075
+- [x] Commit and push
+- [x] EAS iOS production build
+- [x] TestFlight submission
+
+## v1.0.76 — New 3D VS App Icon
+- [x] New 3D VS + ECG metallic app icon across all icon locations
+- [x] logoUrl updated in app.config.ts
+- [x] Version bump to 1.0.76 / Build 10076
+- [x] Commit and push
+- [x] EAS iOS production build
+- [x] TestFlight submission
+
+## v1.0.77 — Apple App Review Remediation (Guidelines 2.3.10, 2.3.2, 5.1.1(i), 5.1.2(i), 2.1(b))
+- [ ] Remove all Android references (source, i18n, onboarding, paywall, settings, assets)
+- [ ] Remove Health Connect adapter and data-sources Android path
+- [ ] Remove Prescription Scan feature (screens, services, translations, navigation, tests)
+- [ ] Remove Laboratory Scan feature (screens, OCR, Gemini parser, routes, translations)
+- [ ] Standardize AI branding to "Nutrition Analysis powered by Google Gemini with the USDA FoodData Central database"
+- [ ] Implement Google Gemini AI consent dialog before first Food Scan upload
+- [x] Add revocable AI consent toggle in Settings → Privacy & AI
+- [x] Update in-app Privacy Policy to reflect Food Scan data practices
+- [x] Audit subscription purchase flow — no automatic purchases
+- [x] Remove pricing from promoted IAP images, titles, and descriptions
+- [x] Dead code cleanup — unused imports, components, contexts, services, translations
+- [x] TypeScript and ESLint clean pass
+- [x] Bump to v1.0.77, commit, push
+- [ ] EAS iOS production build
+- [ ] Submit to TestFlight
+
+## v1.0.77 — Layered AI Architecture (Apple Intelligence + Gemini + Core ML + App Intents)
+- [x] AI provider abstraction layer: AIProvider enum, routing logic, provider selection
+- [x] Foundation Models integration: wellness summaries, correlation explanations, nutrition summaries with iOS availability checks
+- [x] Gemini fallback: clean fallback when Foundation Models unavailable
+- [x] Core ML layer: wellness score, recovery trend, anomaly detection, projected A1C, trend risk flags
+- [x] App Intents: Siri/Apple Intelligence intents (8 intents, no duplicate screens)
+- [x] Medical compliance guardrails: block unsafe language, add required disclaimers across all AI outputs
+- [x] AI consent: extend Gemini consent to cover Apple Intelligence with required language
+- [x] Runtime safety checks: empty states for HealthKit denied, AI unavailable, USDA failure, no data
+- [x] Tests: AI provider selection, fallback, USDA failure, HealthKit denied, correlation insufficient data, subscription gating
+- [x] Version bump to v1.0.77 + commit + push + EAS build
+- [ ] RTM (Requirements Traceability Matrix) report

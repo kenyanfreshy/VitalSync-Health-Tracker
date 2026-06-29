@@ -2,8 +2,7 @@
  * Data Sources Screen
  *
  * Allows users to connect, disconnect, and sync VitalSync with supported
- * external health data sources: Apple Health, Apple Watch, Health Connect,
- * Wear OS, Oura Ring, and Garmin Connect.
+ * external health data sources: Apple Health, Apple Watch, Oura Ring, and Garmin Connect.
  */
 
 import { safeFormatDate } from '@/lib/utils';
@@ -621,9 +620,7 @@ export default function DataSourcesScreen() {
           heading="Wearable Accuracy & Data Privacy"
           refs={[
             { label: 'AHA Wearable Device Accuracy 2019', url: 'https://pubmed.ncbi.nlm.nih.gov/31154804/', badge: 'AHA' },
-            { label: 'Apple HealthKit Privacy Docs', url: 'https://developer.apple.com/documentation/healthkit/protecting_user_privacy', badge: 'Apple' },
-            { label: 'Google Health Connect Privacy', url: 'https://developer.android.com/health-and-fitness/guides/health-connect/plan/privacy-policy', badge: 'Google' },
-          ]}
+            { label: 'Apple HealthKit Privacy Docs', url: 'https://developer.apple.com/documentation/healthkit/protecting_user_privacy', badge: 'Apple' },          ]}
           style={{ marginHorizontal: 0, marginBottom: 0 }}
         />
         <View style={{ height: 32 }} />

@@ -8,7 +8,7 @@
  * - Manual entry fallback with inline reference ranges
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -22,11 +22,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { router } from 'expo-router';
-import * as SafeImagePicker from '@/lib/safe-image-picker';
-import { MedicalScanAnalysisOverlay, type ScanStep } from '@/components/medical-scan-analysis-overlay';
-import { extractTextFromImage } from 'expo-text-extractor';
-import { parseLabOcr } from '@/lib/scribe/parsers';
-import { OcrReviewCard, type OcrReviewField } from '@/components/ocr-review-card';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -37,7 +32,7 @@ import { scheduleLabPanelReminder } from '@/lib/health/lab-reminders';
 import { checkAnalyteThresholdsForResult } from '@/lib/notifications/analyte-threshold-checker';
 import { useHealth } from '@/lib/health/health-context';
 
-import { LAB_PANEL_LABELS, PANEL_ANALYTES, REFERENCE_RANGES, getAnalyteStatus, type LabPanelId, type LabAnalyteId, LabResult } from '@/lib/health/lab-types';
+import { PANEL_ANALYTES, REFERENCE_RANGES, getAnalyteStatus, type LabPanelId, type LabAnalyteId, LabResult } from '@/lib/health/lab-types';
 import { DatePickerIconButton } from '@/components/date-time-picker-field';
 
 const { width: _SCREEN_W } = Dimensions.get('window');
@@ -239,24 +234,12 @@ export default function LabEntryScreen() {
     new Date().toISOString().slice(0, 10),
   );
   const [isSaving, setIsSaving] = useState(false);
-  const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrError, setOcrError] = useState<string | null>(null);
-  const [ocrReviewFields, setOcrReviewFields] = useState<OcrReviewField[]>([]);
-  // Accumulated extracted values across multiple scanned pages
-  const [ocrAccumulated, setOcrAccumulated] = useState<Record<string, string>>({});
-  const [ocrPageCount, setOcrPageCount] = useState(0);
-  // Stable refs so onConfirm always reads the latest pending data regardless of re-renders
-  const ocrPendingRef = useRef<Record<string, string> | null>(null);
-  const ocrUsedLlmRef = useRef(false);
-  // Store raw Gemini labs array for direct form population (bypasses slug-matching)
-  const geminiLabsRef = useRef<import('@/lib/labs/gemini-lab-parser').LabResultItem[] | null>(null);
 
   const analytes = PANEL_ANALYTES[selectedPanel];
   const accentColor = PANEL_COLORS[selectedPanel];
 
   const handlePanelChange = useCallback((panel: LabPanelId) => {
     setSelectedPanel(panel);
-    setOcrError(null);
   }, []);
 
   const handleValueChange = useCallback((analyteId: LabAnalyteId, val: string) => {
@@ -374,381 +357,7 @@ export default function LabEntryScreen() {
   };
 
   // ── Apply Gemini labs directly to form (bypasses slug-matching) ───────────
-  const applyLabsFromGemini = useCallback((labs: import('@/lib/labs/gemini-lab-parser').LabResultItem[], labName_: string, collectionDate_: string) => {
-    const newValues: Partial<Record<LabAnalyteId, string>> = {};
-    for (const lab of labs) {
-      if (!lab.result) continue;
-      const key = lab.test.toLowerCase().trim();
-      const analyteId = LAB_ALIAS_MAP[key];
-      if (analyteId) newValues[analyteId] = lab.result;
-    }
-    // Auto-detect best panel
-    const matchedIds = Object.keys(newValues) as LabAnalyteId[];
-    let bestPanel: LabPanelId = selectedPanel;
-    let bestMatches = 0;
-    for (const panel of PANELS) {
-      const matches = matchedIds.filter(k => (PANEL_ANALYTES[panel] as string[]).includes(k)).length;
-      if (matches > bestMatches) { bestMatches = matches; bestPanel = panel; }
-    }
-    if (bestMatches > 0) setSelectedPanel(bestPanel);
-    if (Object.keys(newValues).length > 0) setValues(newValues);
-    if (labName_) setLabName(labName_);
-    if (collectionDate_) setCollectionDate(collectionDate_.slice(0, 10));
-    setOcrError(null);
-    setOcrReviewFields([]);
-    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [selectedPanel]);
-
-  // ── Apply extracted OCR data to form ─────────────────────────────────────
-  const applyExtracted = useCallback((extracted: Record<string, string>) => {
-    const extractedKeys = Object.keys(extracted).filter(k => extracted[k]?.trim() && !k.startsWith('__'));
-    // Auto-detect best panel from extracted analyte keys
-    let bestPanel: LabPanelId = selectedPanel;
-    let bestMatches = 0;
-    for (const panel of PANELS) {
-      const panelAnalytes = PANEL_ANALYTES[panel];
-      const matches = extractedKeys.filter(k => panelAnalytes.includes(k as LabAnalyteId)).length;
-      if (matches > bestMatches) { bestMatches = matches; bestPanel = panel; }
-    }
-    if (bestMatches > 0) setSelectedPanel(bestPanel);
-    const newValues: Partial<Record<LabAnalyteId, string>> = {};
-    for (const [k, v] of Object.entries(extracted)) {
-      if (v?.trim() && !k.startsWith('__')) newValues[k as LabAnalyteId] = v;
-    }
-    if (Object.keys(newValues).length > 0) setValues(newValues);
-    if (extracted.__labName) setLabName(extracted.__labName);
-    if (extracted.__collectionDate) setCollectionDate(extracted.__collectionDate.slice(0, 10));
-    setOcrError(null);
-    setOcrReviewFields([]);
-    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [selectedPanel]);
-
-  // ── Lab Report Scan: LLM vision primary, Apple Vision OCR fallback ─────────
-  // Lab scan overlay state
-  const [labScanOverlayVisible, setLabScanOverlayVisible] = useState(false);
-  const [labScanImageUri, setLabScanImageUri] = useState<string>('');
-  const [labScanProgress, setLabScanProgress] = useState(0);
-  const [labScanError, setLabScanError] = useState<string | null>(null);
-  const [labScanSuccess, setLabScanSuccess] = useState(false);
-  const [labScanPageCount, setLabScanPageCount] = useState(0);
-  const [labScanPartialData, setLabScanPartialData] = useState<import('@/components/medical-scan-analysis-overlay').PartialScanData | undefined>(undefined);
-  // Accumulated Gemini labs across multiple pages (for multi-page scan flow)
-  const accumulatedGeminiLabsRef = useRef<import('@/lib/labs/gemini-lab-parser').LabResultItem[]>([]);
-  const [labScanSteps, setLabScanSteps] = useState<ScanStep[]>([
-    { id: 'capture',  label: 'Image captured',           status: 'pending' },
-    { id: 'upload',   label: 'Analyzing lab report',     status: 'pending' },
-    { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
-    { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
-    { id: 'validate', label: 'Validating results',       status: 'pending' },
-  ]);
-  const INITIAL_LAB_STEPS: ScanStep[] = [
-    { id: 'capture',  label: 'Image captured',           status: 'pending' },
-    { id: 'upload',   label: 'Analyzing lab report',     status: 'pending' },
-    { id: 'reading',  label: 'Reading lab report',       status: 'pending' },
-    { id: 'extract',  label: 'Extracting lab values',    status: 'pending' },
-    { id: 'validate', label: 'Validating results',       status: 'pending' },
-  ];
-  const updateLabStep = useCallback((id: string, status: ScanStep['status']) => {
-    setLabScanSteps(prev => prev.map(s => s.id === id ? { ...s, status } : s));
-  }, []);
-
-  const handleOcrScan = useCallback(async () => {
-    try {
-      const perm = await SafeImagePicker.requestCameraPermissionsAsync();
-      if (!perm.granted) {
-        Alert.alert(ls.cameraPermissionTitle, ls.cameraPermissionMsg);
-        return;
-      }
-      const result = await SafeImagePicker.launchCameraAsync({
-        mediaTypes: 'images',
-        quality: 0.9,
-        base64: true,
-        allowsEditing: false,
-      });
-      if (result.canceled || !result.assets?.[0]) return;
-
-      const asset = result.assets[0];
-
-      // ── Show live analysis overlay ────────────────────────────────────────
-      setLabScanImageUri(asset.uri);
-      setLabScanSteps(INITIAL_LAB_STEPS);
-      setLabScanProgress(0);
-      setLabScanError(null);
-      setLabScanSuccess(false);
-      setLabScanPartialData(undefined);
-      setLabScanOverlayVisible(true);
-      setOcrLoading(true);
-      setOcrError(null);
-      setOcrReviewFields([]);
-
-      let extracted: Record<string, string> = {};
-      let usedLlm = false;
-
-      try {
-        updateLabStep('capture', 'done');
-        setLabScanProgress(20);
-        updateLabStep('upload', 'active');
-
-        // ── Primary: Gemini 2.5-flash Vision (client-side, no server needed) ───
-        if (asset.base64) {
-          try {
-            updateLabStep('upload', 'done');
-            setLabScanProgress(40);
-            updateLabStep('reading', 'active');
-
-            const { parseLabReportWithGemini } = await import('@/lib/labs/gemini-lab-parser');
-            const llmResult = await parseLabReportWithGemini(asset.base64, 'image/jpeg');
-
-            updateLabStep('reading', 'done');
-            setLabScanProgress(70);
-            updateLabStep('extract', 'active');
-
-            if (!llmResult.error && llmResult.labs && llmResult.labs.length > 0) {
-              // Store raw Gemini labs for direct form population via applyLabsFromGemini
-              geminiLabsRef.current = llmResult.labs;
-              if (llmResult.laboratoryName) extracted.__labName = llmResult.laboratoryName;
-              if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
-              // Store partial data for overlay display
-              const extractedItems = llmResult.labs
-                .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
-                .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
-              setLabScanPartialData({
-                extractedItems,
-                extractedCount: extractedItems.length,
-                totalCount: llmResult.labs.length,
-              });
-              ocrPendingRef.current = extracted;
-              usedLlm = true;
-            } else if (llmResult.error) {
-              throw new Error(llmResult.error);
-            }
-          } catch (llmErr) {
-            console.warn('[Lab Scan] Gemini Vision failed, falling back to Apple Vision OCR:', llmErr);
-            updateLabStep('reading', 'error');
-          }
-        }
-
-        // ── Fallback: Apple Vision OCR + local regex parser ─────────────────
-        if (!usedLlm) {
-          updateLabStep('upload', 'done');
-          setLabScanProgress(40);
-          updateLabStep('reading', 'active');
-          const lines = await extractTextFromImage(asset.uri);
-          extracted = parseLabOcr(lines);
-          updateLabStep('reading', 'done');
-          setLabScanProgress(70);
-          updateLabStep('extract', 'active');
-        }
-
-        updateLabStep('extract', 'done');
-        setLabScanProgress(90);
-        updateLabStep('validate', 'active');
-
-        // Validation: for Gemini path check raw labs array; for Apple Vision check slug-based keys
-        const hasGeminiLabs = usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0;
-        const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
-        if (!hasGeminiLabs && analyteKeys.length === 0) {
-          throw new Error(usedLlm ? ls.ocrNoValuesFound : ls.ocrScanFailed);
-        }
-
-        updateLabStep('validate', 'done');
-        setLabScanProgress(100);
-        ocrUsedLlmRef.current = usedLlm;
-
-        if (usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0) {
-          // Gemini path: accumulate labs across pages
-          // Merge new labs into accumulated array (newer page values override older for same test name)
-          const existingTests = new Map(accumulatedGeminiLabsRef.current.map(l => [l.test.toLowerCase().trim(), l]));
-          for (const lab of geminiLabsRef.current) {
-            existingTests.set(lab.test.toLowerCase().trim(), lab);
-          }
-          accumulatedGeminiLabsRef.current = Array.from(existingTests.values());
-          const newPageCount = labScanPageCount + 1;
-          setLabScanPageCount(newPageCount);
-
-          // Update partial data to reflect merged totals
-          const mergedItems = accumulatedGeminiLabsRef.current
-            .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
-            .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
-          setLabScanPartialData(prev => ({
-            ...prev,
-            extractedItems: mergedItems,
-            extractedCount: mergedItems.length,
-            totalCount: accumulatedGeminiLabsRef.current.length,
-            labName: extracted.__labName || prev?.labName,
-            collectionDate: extracted.__collectionDate || prev?.collectionDate,
-          }));
-
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          // Show success card — keep overlay open so user can scan another page or review
-          setLabScanSuccess(true);
-        } else {
-          // Apple Vision OCR fallback path: use slug-based merge
-          const merged = { ...ocrAccumulated, ...extracted };
-          setOcrAccumulated(merged);
-          setOcrPageCount(prev => prev + 1);
-
-          const mergedAnalyteKeys = Object.keys(merged).filter(k => !k.startsWith('__'));
-          const allPanelAnalytes = PANEL_ANALYTES[selectedPanel];
-          const allKnownAnalytes = PANELS.flatMap(p => PANEL_ANALYTES[p]);
-          const extraAnalytes = mergedAnalyteKeys.filter(
-            k => !allPanelAnalytes.includes(k as LabAnalyteId) && allKnownAnalytes.includes(k as LabAnalyteId)
-          ) as LabAnalyteId[];
-          const reviewAnalytes = [...allPanelAnalytes, ...extraAnalytes];
-          const mergedReviewFields: OcrReviewField[] = reviewAnalytes.map(id => ({
-            label: REFERENCE_RANGES[id]?.label ?? id,
-            value: merged[id] ?? null,
-            extracted: !!merged[id],
-          }));
-          if (merged.__labName) mergedReviewFields.push({ label: ls.labFacility, value: merged.__labName, extracted: true });
-          if (merged.__collectionDate) mergedReviewFields.push({ label: ls.collectionDate, value: merged.__collectionDate, extracted: true });
-          setOcrReviewFields(mergedReviewFields);
-          ocrPendingRef.current = merged;
-
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setTimeout(() => setLabScanOverlayVisible(false), 600);
-        }
-
-      } catch (innerErr: any) {
-        const msg = innerErr?.message ?? ls.ocrScanFailed;
-        setLabScanError(msg);
-        setOcrError(msg);
-        setLabScanSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      } finally {
-        setOcrLoading(false);
-      }
-    } catch (err: any) {
-      setOcrError(err?.message ?? ls.ocrScanFailed);
-    }
-  }, [selectedPanel, ocrAccumulated, updateLabStep]);
-
   // ── Scan Another Page: launch camera without resetting accumulated labs ────────
-  const handleOcrScanNextPage = useCallback(async () => {
-    // Same as handleOcrScan but does NOT reset accumulatedGeminiLabsRef or labScanPageCount
-    try {
-      const perm = await SafeImagePicker.requestCameraPermissionsAsync();
-      if (!perm.granted) {
-        Alert.alert(ls.cameraPermissionTitle, ls.cameraPermissionMsg);
-        return;
-      }
-      const result = await SafeImagePicker.launchCameraAsync({
-        mediaTypes: 'images',
-        quality: 0.9,
-        base64: true,
-        allowsEditing: false,
-      });
-      if (result.canceled || !result.assets?.[0]) return;
-
-      const asset = result.assets[0];
-      setLabScanImageUri(asset.uri);
-      setLabScanSteps(INITIAL_LAB_STEPS);
-      setLabScanProgress(0);
-      setLabScanError(null);
-      setLabScanSuccess(false);
-      setLabScanOverlayVisible(true);
-      setOcrLoading(true);
-      setOcrError(null);
-
-      let extracted: Record<string, string> = {};
-      let usedLlm = false;
-
-      try {
-        updateLabStep('capture', 'done');
-        setLabScanProgress(20);
-        updateLabStep('upload', 'active');
-
-        if (asset.base64) {
-          try {
-            updateLabStep('upload', 'done');
-            setLabScanProgress(40);
-            updateLabStep('reading', 'active');
-            const { parseLabReportWithGemini } = await import('@/lib/labs/gemini-lab-parser');
-            const llmResult = await parseLabReportWithGemini(asset.base64);
-            updateLabStep('reading', 'done');
-            setLabScanProgress(70);
-            updateLabStep('extract', 'active');
-
-            if (!llmResult.error && llmResult.labs && llmResult.labs.length > 0) {
-              geminiLabsRef.current = llmResult.labs;
-              if (llmResult.laboratoryName) extracted.__labName = llmResult.laboratoryName;
-              if (llmResult.collectionDate) extracted.__collectionDate = llmResult.collectionDate;
-              const extractedItems = llmResult.labs
-                .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
-                .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
-              setLabScanPartialData(prev => ({ ...prev, extractedItems, extractedCount: extractedItems.length }));
-              usedLlm = true;
-            } else if (llmResult.error) {
-              throw new Error(llmResult.error);
-            }
-          } catch (llmErr) {
-            console.warn('[Lab Scan Next Page] Gemini failed:', llmErr);
-            updateLabStep('reading', 'error');
-          }
-        }
-
-        if (!usedLlm) {
-          updateLabStep('upload', 'done');
-          setLabScanProgress(40);
-          updateLabStep('reading', 'active');
-          const lines = await extractTextFromImage(asset.uri);
-          extracted = parseLabOcr(lines);
-          updateLabStep('reading', 'done');
-          setLabScanProgress(70);
-          updateLabStep('extract', 'active');
-        }
-
-        updateLabStep('extract', 'done');
-        setLabScanProgress(90);
-        updateLabStep('validate', 'active');
-
-        const hasGeminiLabs = usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0;
-        const analyteKeys = Object.keys(extracted).filter(k => !k.startsWith('__'));
-        if (!hasGeminiLabs && analyteKeys.length === 0) {
-          throw new Error(ls.ocrNoValuesFound);
-        }
-
-        updateLabStep('validate', 'done');
-        setLabScanProgress(100);
-
-        if (usedLlm && geminiLabsRef.current && geminiLabsRef.current.length > 0) {
-          // Merge into accumulated (newer page values override older for same test name)
-          const existingTests = new Map(accumulatedGeminiLabsRef.current.map(l => [l.test.toLowerCase().trim(), l]));
-          for (const lab of geminiLabsRef.current) {
-            existingTests.set(lab.test.toLowerCase().trim(), lab);
-          }
-          accumulatedGeminiLabsRef.current = Array.from(existingTests.values());
-          setLabScanPageCount(prev => prev + 1);
-
-          const mergedItems = accumulatedGeminiLabsRef.current
-            .filter(r => r.result !== null && r.result !== undefined && r.result !== '')
-            .map(r => `${r.test}: ${r.result}${r.unit ? ' ' + r.unit : ''}`);
-          setLabScanPartialData(prev => ({
-            ...prev,
-            extractedItems: mergedItems,
-            extractedCount: mergedItems.length,
-            totalCount: accumulatedGeminiLabsRef.current.length,
-            labName: extracted.__labName || prev?.labName,
-            collectionDate: extracted.__collectionDate || prev?.collectionDate,
-          }));
-
-          if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          setLabScanSuccess(true);
-        }
-      } catch (innerErr: any) {
-        const msg = innerErr?.message ?? ls.ocrScanFailed;
-        setLabScanError(msg);
-        setOcrError(msg);
-        setLabScanSteps(prev => prev.map(s => s.status === 'active' ? { ...s, status: 'error' } : s));
-        if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      } finally {
-        setOcrLoading(false);
-      }
-    } catch (err: any) {
-      setOcrError(err?.message ?? ls.ocrScanFailed);
-    }
-  }, [selectedPanel, updateLabStep, ls]);
-
 
   // ── Save ──────────────────────────────────────────────────────────────────────────────
 
@@ -831,66 +440,6 @@ export default function LabEntryScreen() {
         <GlassCard accentColor={accentColor} style={styles.dialCard}>
           <PanelDial selected={selectedPanel} onSelect={handlePanelChange} />
         </GlassCard>
-
-        {/* Apple Vision OCR Scan */}
-        <GlassCard accentColor={accentColor}>
-          <View style={styles.ocrSection}>
-            <View style={styles.ocrTextBlock}>
-              <Text style={[styles.ocrTitle, { color: colors.foreground }]}>{ls.scanLabReport}</Text>
-              <Text style={[styles.ocrSubtitle, { color: colors.muted }]}>
-                {ls.scanLabReportSubtitle}
-              </Text>
-            </View>
-            <Pressable
-              onPress={handleOcrScan}
-              disabled={ocrLoading}
-              style={({ pressed }) => [
-                styles.ocrButton,
-                { backgroundColor: accentColor, opacity: pressed || ocrLoading ? 0.7 : 1 },
-              ]}
-            >
-              {ocrLoading
-                ? <ActivityIndicator size="small" color="#fff" />
-                : <Text style={{ fontSize: 22 }}>{'\uD83D\uDCF7'}</Text>
-              }
-            </Pressable>
-          </View>
-          {ocrError && (
-            <Text style={[styles.ocrError, { color: colors.error }]}>{ocrError}</Text>
-          )}
-        </GlassCard>
-        {ocrReviewFields.length > 0 && (
-          <OcrReviewCard
-            title={ocrPageCount > 1 ? `${ls.scanLabReport} · ${ocrPageCount} pages` : ls.scanLabReport}
-            fields={ocrReviewFields}
-            scanMethod={ocrUsedLlmRef.current ? 'smart' : 'ocr'}
-            onConfirm={() => {
-              const pending = ocrPendingRef.current;
-              ocrPendingRef.current = null;
-              if (pending) applyExtracted(pending);
-              setOcrAccumulated({});
-              setOcrPageCount(0);
-            }}
-            onRetake={() => {
-              ocrPendingRef.current = null;
-              setOcrReviewFields([]);
-              setOcrAccumulated({});
-              setOcrPageCount(0);
-              handleOcrScan();
-            }}
-            onManual={() => {
-              ocrPendingRef.current = null;
-              setOcrReviewFields([]);
-              setOcrAccumulated({});
-              setOcrPageCount(0);
-            }}
-            onScanMore={() => {
-              // Keep accumulated state and trigger another scan
-              setOcrReviewFields([]);
-              handleOcrScan();
-            }}
-          />
-        )}
 
         {/* Meta: Lab Name + Date */}
         <GlassCard>
@@ -977,60 +526,6 @@ placeholder={ls.facilityPlaceholder}
           }
         </Pressable>
       </ScrollView>
-
-      {/* Lab Scan Analysis Overlay */}
-      {labScanOverlayVisible && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#0D1117', zIndex: 100 }}>
-          {/* Close button — always visible */}
-          <Pressable
-            onPress={() => setLabScanOverlayVisible(false)}
-            style={{ position: 'absolute', top: insets.top + 12, right: 16, zIndex: 10, width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' }}
-            hitSlop={12}
-          >
-            <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>✕</Text>
-          </Pressable>
-          {labScanImageUri ? (
-            <MedicalScanAnalysisOverlay
-              type="lab"
-              imageUri={labScanImageUri}
-              steps={labScanSteps}
-              progress={labScanProgress}
-              isAnalyzing={ocrLoading}
-              error={labScanError}
-              isSuccess={labScanSuccess}
-              pageCount={labScanPageCount}
-              partialData={labScanPartialData}
-              onRetry={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
-              onUploadNew={() => { setLabScanOverlayVisible(false); setTimeout(handleOcrScan, 300); }}
-              onScanAnotherPage={() => {
-                // Reset step/progress state but keep accumulated labs; launch camera again
-                setLabScanSteps(INITIAL_LAB_STEPS);
-                setLabScanProgress(0);
-                setLabScanError(null);
-                setLabScanSuccess(false);
-                // Trigger camera for next page (brief delay to let state settle)
-                setTimeout(handleOcrScanNextPage, 300);
-              }}
-              onManualEntry={() => {
-                setLabScanOverlayVisible(false);
-                // Pre-populate form: prefer accumulated Gemini labs; fall back to Apple Vision OCR slug path
-                const labsToApply = accumulatedGeminiLabsRef.current.length > 0
-                  ? accumulatedGeminiLabsRef.current
-                  : geminiLabsRef.current;
-                if (labsToApply && labsToApply.length > 0) {
-                  applyLabsFromGemini(
-                    labsToApply,
-                    labScanPartialData?.labName ?? ocrPendingRef.current?.__labName ?? '',
-                    labScanPartialData?.collectionDate ?? ocrPendingRef.current?.__collectionDate ?? '',
-                  );
-                } else if (ocrPendingRef.current && Object.keys(ocrPendingRef.current).length > 0) {
-                  applyExtracted(ocrPendingRef.current); // Apple Vision OCR fallback
-                }
-              }}
-            />
-          ) : null}
-        </View>
-      )}
     </View>
   );
 }
@@ -1114,7 +609,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: 0,
   },
-  ocrError: { fontSize: 12, marginTop: 8, lineHeight: 16 },
 
   // Meta fields
   metaRow: { flexDirection: 'row' },

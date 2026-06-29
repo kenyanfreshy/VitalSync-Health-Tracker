@@ -161,6 +161,24 @@ export function PaywallScreen({
   const monthlyPrice = getDisplayPrice(monthlyProduct as any, FALLBACK_MONTHLY);
   const yearlyLabel = productsLoading ? FALLBACK_YEARLY_LABEL : `${yearlyPrice}/year`;
   const monthlyLabel = productsLoading ? FALLBACK_MONTHLY_LABEL : `${monthlyPrice}/month`;
+  // Compute per-month equivalent from yearly price (for "billed yearly" sub-label)
+  const yearlyPerMonthLabel = (() => {
+    const numericPrice = (yearlyProduct as any)?.price as number | undefined;
+    if (typeof numericPrice === 'number' && numericPrice > 0) {
+      const perMonth = numericPrice / 12;
+      const currencySymbol = yearlyPrice.match(/^[^0-9]+/)?.[0] ?? '$';
+      return `${currencySymbol}${perMonth.toFixed(2)}/mo billed yearly`;
+    }
+    const match = yearlyPrice.match(/[0-9]+[.,][0-9]+/);
+    if (match) {
+      const parsed = parseFloat(match[0].replace(',', '.'));
+      if (!isNaN(parsed) && parsed > 0) {
+        const currencySymbol = yearlyPrice.match(/^[^0-9]+/)?.[0] ?? '$';
+        return `${currencySymbol}${(parsed / 12).toFixed(2)}/mo billed yearly`;
+      }
+    }
+    return null; // hide if price unavailable
+  })();
 
   // ── Disclosure text (Apple 3.1.2(c)) ─────────────────────────────────────
   // IMPORTANT: Only mention free trial in disclosure when StoreKit confirms
@@ -512,7 +530,9 @@ export function PaywallScreen({
                 {((pw as any).introFreeTrial ?? '{days}-day free trial').replace('{days}', String(introOfferDays))}
               </Text>
             )}
-            <Text style={s.trialSubText}>$4.17/mo billed yearly</Text>
+            {yearlyPerMonthLabel != null && (
+              <Text style={s.trialSubText}>{yearlyPerMonthLabel}</Text>
+            )}
             <Text style={s.savingText}>Save ~17%</Text>
             <View style={[s.radioOuter, selectedPlan === PRODUCT_IDS.yearly && s.radioOuterSelected]}>
               {selectedPlan === PRODUCT_IDS.yearly && <View style={s.radioInner} />}

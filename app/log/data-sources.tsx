@@ -28,8 +28,8 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
     icon: '📡',
     description: 'Continuous real-time glucose readings',
     items: [
-      { name: 'Dexcom G7', brand: 'Dexcom', connection: ['bluetooth', 'healthkit', 'health-connect'], category: 'cgm', notes: 'Direct BLE + Apple Health / Google Health' },
-      { name: 'Dexcom G6', brand: 'Dexcom', connection: ['healthkit', 'health-connect'], category: 'cgm', notes: 'Via Apple Health / Google Health Connect' },
+      { name: 'Dexcom G7', brand: 'Dexcom', connection: ['bluetooth', 'healthkit'], category: 'cgm', notes: 'Direct BLE + Apple Health / Google Health' },
+      { name: 'Dexcom G6', brand: 'Dexcom', connection: ['healthkit'], category: 'cgm', notes: 'Via Apple Health' },
       { name: 'FreeStyle Libre 3', brand: 'Abbott', connection: ['bluetooth', 'healthkit'], category: 'cgm', notes: 'Direct BLE on iOS 15+ / Apple Health' },
       { name: 'FreeStyle Libre 2', brand: 'Abbott', connection: ['healthkit'], category: 'cgm', notes: 'Via LibreLink app → Apple Health' },
     ],
@@ -54,11 +54,11 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
     icon: '⚖️',
     description: 'Body weight and composition scales',
     items: [
-      { name: 'Body+ / Body Cardio', brand: 'Withings', connection: ['bluetooth', 'healthkit', 'health-connect'], category: 'scale' },
+      { name: 'Body+ / Body Cardio', brand: 'Withings', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'Body Scan', brand: 'Withings', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'Smart Scale P2 Pro', brand: 'Eufy', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'Smart Scale C1', brand: 'Eufy', connection: ['bluetooth'], category: 'scale' },
-      { name: 'Smart Body Scale', brand: 'Renpho', connection: ['bluetooth', 'healthkit', 'health-connect'], category: 'scale' },
+      { name: 'Smart Body Scale', brand: 'Renpho', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'QardioBase 2', brand: 'Qardio', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'BC-601 / BC-568', brand: 'Tanita', connection: ['bluetooth', 'healthkit'], category: 'scale' },
       { name: 'Body Composition Monitor', brand: 'Omron', connection: ['bluetooth'], category: 'scale' },
@@ -70,9 +70,9 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
     icon: '💓',
     description: 'Arm and wrist BP cuffs',
     items: [
-      { name: 'HEM-7361T / HEM-7600T', brand: 'Omron', connection: ['bluetooth', 'healthkit', 'health-connect'], category: 'bp-monitor' },
+      { name: 'HEM-7361T / HEM-7600T', brand: 'Omron', connection: ['bluetooth', 'healthkit'], category: 'bp-monitor' },
       { name: 'HEM-9200T / HEM-9210T', brand: 'Omron', connection: ['bluetooth', 'healthkit'], category: 'bp-monitor' },
-      { name: 'BPM Connect / BPM Core', brand: 'Withings', connection: ['bluetooth', 'healthkit', 'health-connect'], category: 'bp-monitor' },
+      { name: 'BPM Connect / BPM Core', brand: 'Withings', connection: ['bluetooth', 'healthkit'], category: 'bp-monitor' },
       { name: 'QardioArm', brand: 'Qardio', connection: ['bluetooth', 'healthkit'], category: 'bp-monitor' },
       { name: 'iHealth Feel / Clear', brand: 'iHealth', connection: ['bluetooth', 'healthkit'], category: 'bp-monitor' },
       { name: 'UA-651BLE / UA-767PBT', brand: 'A&D Medical', connection: ['bluetooth'], category: 'bp-monitor' },
@@ -85,12 +85,11 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
     description: 'HR, steps, calories, sleep, and activity',
     items: [
       { name: 'Apple Watch (all models)', brand: 'Apple', connection: ['healthkit'], category: 'fitness-tracker', notes: 'Full HealthKit integration' },
-      { name: 'Charge 6 / Sense 2', brand: 'Fitbit / Google', connection: ['health-connect', 'healthkit'], category: 'fitness-tracker', notes: 'Via Google Health Connect / Apple Health' },
-      { name: 'Forerunner / Fenix / Venu', brand: 'Garmin', connection: ['healthkit', 'health-connect', 'app'], category: 'fitness-tracker', notes: 'Via Garmin Connect app' },
+      { name: 'Charge 6 / Sense 2', brand: 'Fitbit / Google', connection: ['healthkit'], category: 'fitness-tracker', notes: 'Via Apple Health' },
+      { name: 'Forerunner / Fenix / Venu', brand: 'Garmin', connection: ['healthkit', 'app'], category: 'fitness-tracker', notes: 'Via Garmin Connect app' },
       { name: 'H10 / Vantage V3', brand: 'Polar', connection: ['bluetooth', 'healthkit'], category: 'fitness-tracker', notes: 'Direct BLE HR + Polar Flow' },
       { name: 'WHOOP 4.0', brand: 'WHOOP', connection: ['healthkit'], category: 'fitness-tracker', notes: 'Via Apple Health' },
-      { name: 'Galaxy Watch 6/7', brand: 'Samsung', connection: ['health-connect'], category: 'fitness-tracker', notes: 'Via Google Health Connect' },
-      { name: 'Fenix 7 / Epix', brand: 'Garmin', connection: ['health-connect', 'app'], category: 'fitness-tracker' },
+      { name: 'Fenix 7 / Epix', brand: 'Garmin', connection: ['app'], category: 'fitness-tracker' },
     ],
   },
   {
@@ -99,9 +98,6 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
     description: 'Aggregator platforms that sync all your devices',
     items: [
       { name: 'Apple Health (HealthKit)', brand: 'Apple', connection: ['healthkit'], category: 'platform', notes: 'iOS only — aggregates all Apple Health data' },
-      { name: 'Google Health Connect', brand: 'Google', connection: ['health-connect'], category: 'platform', notes: 'Android 9+ — aggregates all Health Connect data' },
-      { name: 'Google Fit', brand: 'Google', connection: ['health-connect'], category: 'platform', notes: 'Via Health Connect on Android' },
-      { name: 'Samsung Health', brand: 'Samsung', connection: ['health-connect'], category: 'platform', notes: 'Via Health Connect on Android' },
     ],
   },
 ];
@@ -109,7 +105,7 @@ const SOURCES: { category: string; icon: string; description: string; items: Dat
 const METHOD_LABEL: Record<ConnectionMethod, string> = {
   bluetooth: 'Bluetooth',
   healthkit: 'Apple Health',
-  'health-connect': 'Health Connect',
+  'health-connect': 'Apple Health',
   app: 'Companion App',
   manual: 'Manual Entry',
 };

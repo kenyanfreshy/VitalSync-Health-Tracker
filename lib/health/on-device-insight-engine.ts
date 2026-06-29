@@ -155,7 +155,7 @@ const rules: InsightRule[] = [
     if (avgGlucose >= 126) {
       return {
         id: 'glucose_fasting_high',
-        text: `Fasting glucose averaging ${avgGlucose} mg/dL — above ADA diagnostic threshold of 126 mg/dL`,
+        text: `Fasting glucose averaging ${avgGlucose} mg/dL — above the ADA reference range of 126 mg/dL. This is a wellness observation, not a medical assessment.`,
         severity: 'alert',
         icon: '🩸',
         metric: 'glucose',
@@ -166,7 +166,7 @@ const rules: InsightRule[] = [
     if (avgGlucose >= 100) {
       return {
         id: 'glucose_fasting_impaired',
-        text: `Fasting glucose averaging ${avgGlucose} mg/dL — in impaired fasting range (100–125 mg/dL) per ADA`,
+        text: `Fasting glucose averaging ${avgGlucose} mg/dL — in the ADA reference range for elevated fasting glucose (100–125 mg/dL). This is a wellness observation, not a medical assessment.`,
         severity: 'caution',
         icon: '🩸',
         metric: 'glucose',
@@ -189,7 +189,7 @@ const rules: InsightRule[] = [
     if (avgGlucose >= 180) {
       return {
         id: 'glucose_postmeal_high',
-        text: `Post-meal glucose averaging ${avgGlucose} mg/dL — above ADA 2-hour target of 180 mg/dL`,
+        text: `Post-meal glucose averaging ${avgGlucose} mg/dL — above the ADA 2-hour reference of 180 mg/dL. This is a wellness observation, not a medical assessment.`,
         severity: 'alert',
         icon: '🩸',
         metric: 'glucose',
@@ -200,7 +200,7 @@ const rules: InsightRule[] = [
     if (avgGlucose >= 140) {
       return {
         id: 'glucose_postmeal_elevated',
-        text: `Post-meal glucose averaging ${avgGlucose} mg/dL — above non-diabetic target of 140 mg/dL`,
+        text: `Post-meal glucose averaging ${avgGlucose} mg/dL — above the 140 mg/dL wellness reference range. This is a wellness observation, not a medical assessment.`,
         severity: 'caution',
         icon: '🩸',
         metric: 'glucose',

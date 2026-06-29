@@ -37,6 +37,12 @@ import {
   resetConsent,
   CONSENT_VERSION,
 } from '@/components/consent-modal';
+import {
+  hasGeminiConsent,
+  revokeGeminiConsent,
+  hasAppleIntelligenceConsent,
+  revokeAppleIntelligenceConsent,
+} from '@/lib/gemini-consent';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -105,12 +111,22 @@ export default function ConsentScreen() {
   const [loading, setLoading]           = useState(true);
   const [revoking, setRevoking]         = useState(false);
 
+  // ── Gemini AI consent state ───────────────────────────────────────────────────────────────
+  const [geminiConsented, setGeminiConsented] = useState<boolean>(false);
+  const [revokingGemini, setRevokingGemini]   = useState(false);
+
+  // ── Apple Intelligence consent state ─────────────────────────────────────
+  const [appleIntelligenceConsented, setAppleIntelligenceConsented] = useState<boolean>(false);
+  const [revokingAppleIntelligence, setRevokingAppleIntelligence] = useState(false);
+
   // ── Load consent state ─────────────────────────────────────────────────────
   const loadConsentState = useCallback(async () => {
     try {
-      const [raw, dateStr] = await Promise.all([
+      const [raw, dateStr, geminiOk, appleIntelligenceOk] = await Promise.all([
         AsyncStorage.getItem(CONSENT_KEY),
         AsyncStorage.getItem(CONSENT_DATE_KEY),
+        hasGeminiConsent(),
+        hasAppleIntelligenceConsent(),
       ]);
       if (raw === null) {
         setAccepted(false);
@@ -122,6 +138,8 @@ export default function ConsentScreen() {
         setAccepted(version >= CONSENT_VERSION);
       }
       setAcceptedDate(dateStr);
+      setGeminiConsented(geminiOk);
+      setAppleIntelligenceConsented(appleIntelligenceOk);
     } catch (_unused) {
       setAccepted(false);
     } finally {
@@ -163,7 +181,55 @@ export default function ConsentScreen() {
   }
 
   // ── Open external links ────────────────────────────────────────────────────
-  async function openLink(url: string) {
+  // ── Revoke Gemini AI consent ──────────────────────────────────────────────
+  function handleRevokeGemini() {
+    Alert.alert(
+      'Revoke AI Food Scan Consent',
+      'This will remove your consent for sending food photos to Google Gemini. The consent dialog will appear again the next time you try to scan a meal.\n\nYour logged nutrition data will not be deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Revoke',
+          style: 'destructive',
+          onPress: async () => {
+            setRevokingGemini(true);
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            await revokeGeminiConsent();
+            await loadConsentState();
+            setRevokingGemini(false);
+          },
+        },
+      ],
+    );
+  }
+
+  // ── Revoke Apple Intelligence consent ────────────────────────────────────
+  function handleRevokeAppleIntelligence() {
+    Alert.alert(
+      'Revoke Apple Intelligence Consent',
+      'This will disable AI wellness summaries powered by Apple Intelligence. The consent dialog will appear again the next time you open the AI Wellness Insights card.
+
+Your health data will not be deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Revoke',
+          style: 'destructive',
+          onPress: async () => {
+            setRevokingAppleIntelligence(true);
+            try {
+              await revokeAppleIntelligenceConsent();
+              setAppleIntelligenceConsented(false);
+            } finally {
+              setRevokingAppleIntelligence(false);
+            }
+          },
+        },
+      ]
+    );
+  }
+
+    async function openLink(url: string) {
     try {
       if (Platform.OS !== 'web') {
         await openBrowserAsync(url, { presentationStyle: 'pageSheet' as any });
@@ -371,6 +437,97 @@ export default function ConsentScreen() {
           </Pressable>
         )}
 
+
+        {/* ── Gemini AI Food Scan Consent ─────────────────────────────────────── */}
+        <View style={[styles.sectionDivider, { borderTopColor: colors.border }]} />
+        <View style={{ gap: 6 }}>
+          <Text style={[styles.sectionLabel, { color: colors.muted }]}>AI FOOD SCAN CONSENT</Text>
+          <View style={[styles.consentStatusRow, {
+            backgroundColor: geminiConsented ? (colors.bpGreen + (isDark ? '18' : '12')) : (colors.warning + (isDark ? '18' : '12')),
+            borderColor: geminiConsented ? (colors.bpGreen + (isDark ? '40' : '30')) : (colors.warning + (isDark ? '40' : '30')),
+          }]}>
+            <Text style={[styles.statusDot, { color: geminiConsented ? colors.bpGreen : colors.warning }]}>●</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.statusLabel, { color: geminiConsented ? colors.bpGreen : colors.warning }]}>
+                {geminiConsented ? 'Consent Given' : 'Not Yet Consented'}
+              </Text>
+              <Text style={[styles.statusSub, { color: colors.muted }]}>
+                {geminiConsented
+                  ? 'Food photos may be sent to Google Gemini for Nutrition Analysis.'
+                  : 'Consent will be requested the next time you use Camera Scan.'}
+              </Text>
+            </View>
+          </View>
+          {geminiConsented && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.revokeBtn,
+                {
+                  backgroundColor: isDark ? colors.error + '15' : '#FFF5F5',
+                  borderColor: colors.error + '40',
+                  opacity: pressed || revokingGemini ? 0.7 : 1,
+                },
+              ]}
+              onPress={handleRevokeGemini}
+              disabled={revokingGemini}
+            >
+              {revokingGemini ? (
+                <ActivityIndicator size="small" color={colors.error} />
+              ) : (
+                <IconSymbol name="xmark.circle.fill" size={16} color={colors.error} />
+              )}
+              <Text style={[styles.revokeBtnText, { color: colors.error }]}>
+                {revokingGemini ? 'Revoking…' : 'Revoke AI Food Scan Consent'}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
+                {/* ── Apple Intelligence Consent ──────────────────────────────────────────────────────────────────────────────────────── */}
+        <View style={[styles.sectionDivider, { borderTopColor: colors.border }]} />
+        <View style={{ gap: 6 }}>
+          <Text style={[styles.sectionLabel, { color: colors.muted }]}>APPLE INTELLIGENCE CONSENT</Text>
+          <View style={[styles.consentStatusRow, {
+            backgroundColor: appleIntelligenceConsented ? (colors.bpGreen + (isDark ? '18' : '12')) : (colors.warning + (isDark ? '18' : '12')),
+            borderColor: appleIntelligenceConsented ? (colors.bpGreen + (isDark ? '40' : '30')) : (colors.warning + (isDark ? '40' : '30')),
+          }]}>
+            <Text style={[styles.statusDot, { color: appleIntelligenceConsented ? colors.bpGreen : colors.warning }]}>●</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.statusLabel, { color: appleIntelligenceConsented ? colors.bpGreen : colors.warning }]}>
+                {appleIntelligenceConsented ? 'Consent Given' : 'Not Yet Consented'}
+              </Text>
+              <Text style={[styles.statusSub, { color: colors.muted }]}>
+                {appleIntelligenceConsented
+                  ? 'AI wellness summaries are processed on-device using Apple Intelligence (iOS 26+).'
+                  : 'Consent will be requested the next time you open the AI Wellness Insights card.'}
+              </Text>
+            </View>
+          </View>
+          {appleIntelligenceConsented && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.revokeBtn,
+                {
+                  backgroundColor: isDark ? colors.error + '15' : '#FFF5F5',
+                  borderColor: colors.error + '40',
+                  opacity: pressed || revokingAppleIntelligence ? 0.7 : 1,
+                },
+              ]}
+              onPress={handleRevokeAppleIntelligence}
+              disabled={revokingAppleIntelligence}
+            >
+              {revokingAppleIntelligence ? (
+                <ActivityIndicator size="small" color={colors.error} />
+              ) : (
+                <IconSymbol name="xmark.circle.fill" size={16} color={colors.error} />
+              )}
+              <Text style={[styles.revokeBtnText, { color: colors.error }]}>
+                {revokingAppleIntelligence ? 'Revoking…' : 'Revoke Apple Intelligence Consent'}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+
         <Text style={[styles.footerNote, { color: colors.muted }]}>
           Revoking consent does not delete your health data. Use Settings → Data Management → Clear All Data to permanently remove all records.
         </Text>
@@ -422,6 +579,11 @@ const styles = StyleSheet.create({
   statusDot: { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
   statusTitle: { fontSize: 14, fontWeight: '700' },
   statusSub: { fontSize: 12, fontWeight: '400', marginTop: 2 },
+  // Gemini AI consent section
+  sectionDivider: { borderTopWidth: StyleSheet.hairlineWidth, marginVertical: 12 },
+  sectionLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 0.8, textTransform: 'uppercase', marginBottom: 4 },
+  consentStatusRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, borderRadius: 12, borderWidth: 1, padding: 12 },
+  statusLabel: { fontSize: 13, fontWeight: '700', lineHeight: 18 },
   // Cards
   card: {
     borderRadius: 14,

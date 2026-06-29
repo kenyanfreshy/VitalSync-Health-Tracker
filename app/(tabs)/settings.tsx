@@ -1960,7 +1960,7 @@ export default function SettingsScreen() {
                     ? (t.loadingPlansLabel ?? 'Loading plans…')
                     : subHasIntroOffer && subIntroOfferDays
                       ? (t.monthlyYearlySub ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr — includes {days}-day free trial').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice).replace('{days}', String(subIntroOfferDays))
-                      : (t.monthlyYearlySubNoTrial ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
+                      : (se.monthlyYearlySubNoTrial ?? 'Monthly {monthly}/mo · Yearly {yearly}/yr').replace('{monthly}', monthlyPrice).replace('{yearly}', yearlyPrice)}
                 </Text>
               )}
             </View>
@@ -1977,7 +1977,7 @@ export default function SettingsScreen() {
                     ? (t.subscribeNowLabel ?? 'Subscribe Now')
                     : subHasIntroOffer && subIntroOfferDays
                       ? (t.startTrialLabel ?? 'Start {days}-Day Free Trial').replace('{days}', String(subIntroOfferDays))
-                      : (t.subscribeToPremium ?? 'Subscribe to Premium')}
+                      : (se.subscribeToPremium ?? 'Subscribe to Premium')}
                 </Text>
                 <Text style={{ fontSize: 18, color: '#6366F1' }}>›</Text>
               </TouchableOpacity>

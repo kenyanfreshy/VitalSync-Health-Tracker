@@ -114,7 +114,7 @@ export default function WeightLogScreen() {
       for (const rec of newRecords) {
         await addWeight(rec);
       }
-      const sourceName = result.source === 'health-connect' ? 'Health Connect' : 'your scale';
+      const sourceName = 'your scale';
       Alert.alert('Synced', l.syncedMsg(newRecords.length, sourceName));
       if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } finally {
