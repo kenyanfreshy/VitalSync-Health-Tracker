@@ -4,7 +4,7 @@
  * Manages StoreKit 2 (iOS) and Google Play Billing (Android) subscriptions
  * via react-native-iap v15. Handles:
  *  - 14-day free trial on both Monthly and Annual plans
- *  - Monthly ($6.99/mo) and Annual ($69.99/yr) auto-renewable subscriptions
+ *  - Monthly ($4.99/mo) and Annual ($49.99/yr) auto-renewable subscriptions
  *  - Premium access gating (trial → active → expired)
  *  - Restore purchases
  *  - AsyncStorage persistence for offline access state
