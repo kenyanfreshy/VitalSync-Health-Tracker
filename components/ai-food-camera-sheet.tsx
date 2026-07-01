@@ -1091,8 +1091,10 @@ interface HomeScreenProps {
   onReLog: (meal: SodiumRecordLike) => void;
   prevEstimate?: { kcal: number; name: string } | null;
   scanBtnSpinAnim?: Animated.Value;
+  /** Called to dismiss the sheet before navigating away (avoids iOS crash when pushing a route while a Modal is mounted) */
+  onClose?: () => void;
 }
-function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan, consentGranted, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim }: HomeScreenProps) {
+function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan, consentGranted, recentMeals, swipedId, setSwipedId, deleteSodium, isDark, foregroundColor, mutedColor, fc, onReLog, prevEstimate, scanBtnSpinAnim, onClose }: HomeScreenProps) {
   return (
     <>
       <View style={styles.homeGrid}>
@@ -2676,6 +2678,7 @@ export function AiFoodCameraSheet({
                       prevEstimate={prevEstimate}
                       fc={fc}
                       scanBtnSpinAnim={scanBtnSpinAnim}
+                      onClose={onClose}
                       onReLog={async (meal) => {
                         if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                         const record: SodiumRecord = {
