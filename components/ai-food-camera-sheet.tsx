@@ -1167,7 +1167,12 @@ function HomeScreen({ scanning, openingCamera, mode, onPlateScan, onBarcodeScan,
           <Pressable
             onPress={() => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push('/settings/consent');
+              // The sheet is a React Native Modal. router.push fires behind an active Modal,
+              // so we must dismiss the sheet first, then navigate after the close animation.
+              onClose?.();
+              setTimeout(() => {
+                router.push('/settings/data-privacy' as any);
+              }, 350);
             }}
             style={({ pressed }) => [styles.consentBannerLink, { opacity: pressed ? 0.7 : 1 }]}
           >
@@ -1947,7 +1952,73 @@ export function AiFoodCameraSheet({
       }
 
       let builtPreview: MacroPreview;
-      if (usdaItem) {
+      // ── Low-confidence fallback: run food name through searchFood (Gemini+USDA pipeline) ──
+      // This mirrors the same pipeline used by the Food Search tab.
+      const isLowConf = usdaItem?.confidence === 'low' || !usdaItem;
+      const fallbackFoodName = usdaItem?.description || recognition.primaryFood;
+      const activeDietProtocolForScan = dietType && dietType !== 'balanced' ? dietType : undefined;
+      if (isLowConf && fallbackFoodName) {
+        try {
+          const searchResp = await searchFood(fallbackFoodName, activeDietProtocolForScan);
+          if (searchResp.items.length > 0) {
+            const best = searchResp.items[0];
+            setReferenceWeightG(best.serving_g > 0 ? best.serving_g : 100);
+            builtPreview = {
+              foodDescription: best.name,
+              calories: best.calories,
+              carbsG: best.carbs_g,
+              proteinG: best.protein_g,
+              fatG: best.fat_g,
+              fiberG: best.fiber_g,
+              sugarG: null,
+              glycemicLoad: best.glycemic_index,
+              sodiumMg: best.sodium_mg ?? 0,
+              confidence: best.confidence,
+              reasoning: `${recognition.summary}\nNutrition via Gemini+USDA for "${best.name}" (${best.serving_size}).`,
+              source: 'ai-photo',
+            };
+          } else {
+            throw new Error('No results');
+          }
+        } catch {
+          // searchFood failed — fall through to original low-conf path
+          if (usdaItem) {
+            setReferenceWeightG(usdaItem.servingWeightG ?? 100);
+            const servingNote = usdaItem.servingDescription
+              ? `Serving: ${usdaItem.servingDescription}`
+              : 'Estimated values for this meal';
+            builtPreview = {
+              foodDescription: usdaItem.description,
+              calories: usdaItem.calories,
+              carbsG: usdaItem.carbsG,
+              proteinG: usdaItem.proteinG,
+              fatG: usdaItem.fatG,
+              fiberG: usdaItem.fiberG,
+              sugarG: usdaItem.sugarG,
+              glycemicLoad: usdaItem.glycemicLoad,
+              sodiumMg: usdaItem.sodiumMg ?? 0,
+              confidence: usdaItem.confidence,
+              reasoning: `${recognition.summary}\n${servingNote}`,
+              source: 'ai-photo',
+            };
+          } else {
+            builtPreview = {
+              foodDescription: recognition.primaryFood || 'Detected meal',
+              calories: null,
+              carbsG: null,
+              proteinG: null,
+              fatG: null,
+              fiberG: null,
+              sugarG: null,
+              glycemicLoad: null,
+              sodiumMg: 0,
+              confidence: 'low',
+              reasoning: `${recognition.summary}\nSearch by name for accurate macros.`,
+              source: 'ai-photo',
+            };
+          }
+        }
+      } else if (usdaItem) {
         setReferenceWeightG(usdaItem.servingWeightG ?? 100);
         const servingNote = usdaItem.servingDescription
           ? `Serving: ${usdaItem.servingDescription}`
@@ -1991,7 +2062,7 @@ export function AiFoodCameraSheet({
       await new Promise(r => setTimeout(r, 500));
 
       setPreview(builtPreview);
-      const finalConf = usdaItem ? usdaItem.confidence : 'low';
+      const finalConf = builtPreview.confidence ?? 'low';
       if (finalConf === 'low') {
         setLowConfToast(true);
         setTimeout(() => setLowConfToast(false), 4000);
@@ -2011,7 +2082,7 @@ export function AiFoodCameraSheet({
       setScanning(false);
       if (analysisElapsedRef.current) { clearInterval(analysisElapsedRef.current); analysisElapsedRef.current = null; }
     }
-  }, [onScanMealPress, resetAnalysisState, advanceStep]);
+  }, [onScanMealPress, resetAnalysisState, advanceStep, dietType]);
 
   // ── Barcode scan — native on-device scanner → Open Food Facts API ──────────
   const handleBarcodeScan = useCallback(async () => {
