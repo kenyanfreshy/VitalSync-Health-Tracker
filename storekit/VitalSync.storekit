@@ -1,14 +1,5 @@
 {
   "identifier" : "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
-  "nonConsumableProducts" : [
-
-  ],
-  "nonRenewingSubscriptionProducts" : [
-
-  ],
-  "products" : [
-
-  ],
   "settings" : {
     "_applicationInReview" : false,
     "_billingGraceEnabled" : true,
@@ -20,6 +11,7 @@
     "_billingRetryRetryPeriodDurationUnit" : "DAY",
     "_customerCancellationEnabled" : true,
     "_customerCancellationReasonEnabled" : true,
+    "_enabled" : true,
     "_failTransactionsEnabled" : false,
     "_locale" : "en_US",
     "_storefront" : "USA",
