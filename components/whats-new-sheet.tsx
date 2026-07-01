@@ -91,6 +91,20 @@ export const whatsNewV1059Strings = {
   i1Desc: "Every new string in the Correlate tab redesign is fully translated into Spanish, French, German, Chinese, Arabic, Portuguese, Japanese, Swahili, and Hindi.",
 } as const;
 
+/** Release note content — v1.0.82 */
+export const whatsNewV1082Strings = {
+  version: "1.0.82",
+  date: "Jun 2026",
+  headline: "Apple App Review Compliance · iOS-Only Cleanup",
+  // Fixed
+  f1Title: "Android & Play Store References Removed",
+  f1Desc: "All Android, Google Play, and Play Store references have been removed from every user-facing screen, paywall, onboarding, settings, about, and localization strings. VitalSync on iPhone and iPad is now a fully iOS-native experience.",
+  f2Title: "IAP Display Names & Descriptions Updated",
+  f2Desc: "In-App Purchase product names are now \"Premium Annual\" and \"Premium Monthly\" with compliant descriptions. All price references have been removed from promotional metadata.",
+  f3Title: "Subscription Management Fixed",
+  f3Desc: "Manage Subscription and Rate VitalSync now open directly to the correct Apple App Store pages on all iOS devices.",
+} as const;
+
 /** Release note content — v1.0.75 */
 export const whatsNewV1075Strings = {
   version: "1.0.75",
@@ -515,7 +529,7 @@ export const whatsNewV2935Strings = {
   i1Title: "Personal Health Report Rename",
   i1Desc: "All references to 'Doctor Report' have been updated to 'Personal Health Report' across the app, release notes, and clinical source citations.",
   i2Title: "Translation Engine: Apple & Gemini Only",
-  i2Desc: "PDF report translation now uses only Apple on-device Translation (iOS 18+) or Gemini (Android/Web). The server is no longer involved in any translation flow.",
+  i2Desc: "PDF report translation now uses only Apple on-device Translation (iOS 18+) or Gemini (Web). The server is no longer involved in any translation flow.",
 
   // Fixed
   f1Title: "117 Missing Report Translation Keys",
@@ -540,7 +554,7 @@ export const whatsNewV2755Strings = {
   i1Title: "What's New Badge Dot on Dashboard",
   i1Desc: "The ? help icon in the Dashboard header now shows a small red dot whenever a new app version is installed. Tapping it clears the badge and navigates to Settings → About.",
   i2Title: "Share & Contact Support in Settings",
-  i2Desc: "Settings → About now has a \"Share VitalSync\" row (native share sheet with App Store/Play Store link) and a \"Contact Support\" row that opens a pre-filled email with your app version and platform automatically included.",
+  i2Desc: "Settings → About now has a \"Share VitalSync\" row (native share sheet with App Store link) and a \"Contact Support\" row that opens a pre-filled email with your app version automatically included.",
 
   // Fixed
   f1Title: "Medications Scribe Crash Fixed",
@@ -705,7 +719,7 @@ export const whatsNewV15Strings = {
   n2Title: "Copy Log to Clipboard",
   n2Desc: "Copy the crash log to your clipboard and paste it into any messaging app — no mail client needed.",
   n3Title: "Share Sheet",
-  n3Desc: "Share crash logs via AirDrop, Slack, Messages, or any app using the native iOS/Android share sheet.",
+  n3Desc: "Share crash logs via AirDrop, Slack, Messages, or any app using the native iOS share sheet.",
   n4Title: "Norwegian Language Support",
   n4Desc: "Norsk is now available in both the first-launch consent screen and the Settings language picker.",
 
@@ -781,8 +795,8 @@ export const whatsNewV12Strings = {
   headline: "Health Data Integration",
 
   // New
-  n1Title: "HealthKit & Health Connect",
-  n1Desc: "Live vitals sync from Apple Health (iOS) and Health Connect (Android) — heart rate, steps, sleep, and more.",
+  n1Title: "Apple Health Integration",
+  n1Desc: "Live vitals sync from Apple Health — heart rate, steps, sleep, and more.",
   n2Title: "Privacy-First Architecture",
   n2Desc: "All health data stays on your device. No cloud sync, no accounts, no third-party sharing.",
   n3Title: "Force Sync Engine",
@@ -828,6 +842,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2365 = useT(whatsNewV2365Strings);
   const v2366 = useT(whatsNewV2366Strings);
   const v2755 = useT(whatsNewV2755Strings);
+  const v1082 = useT(whatsNewV1082Strings);
   const v1075 = useT(whatsNewV1075Strings);
   const v1074 = useT(whatsNewV1074Strings);
   const v1073 = useT(whatsNewV1073Strings);
@@ -858,7 +873,7 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
   const v2935 = useT(whatsNewV2935Strings);
 
   // Always show the latest version in the header
-  const latestVersion = v1075;
+  const latestVersion = v1082;
 
   // Keep Modal mounted until close animation completes to prevent a one-frame
   // flash where the sheet appears at the bottom before animating in.
@@ -988,7 +1003,14 @@ export function WhatsNewSheet({ visible, onClose }: WhatsNewSheetProps) {
           showsVerticalScrollIndicator={false}
           bounces
         >
-          {/* ── v1.0.75 (latest) ── */}
+          {/* ── v1.0.82 (latest) ── */}
+          <View style={styles.section}>
+            <SectionPill label={ui.labelFixed} color="#F87171" />
+            <ReleaseItem emoji="📱" title={v1082.f1Title} desc={v1082.f1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="💳" title={v1082.f2Title} desc={v1082.f2Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+            <ReleaseItem emoji="🔗" title={v1082.f3Title} desc={v1082.f3Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />
+          </View>
+          {/* ── v1.0.75 ── */}
           <View style={styles.section}>
             <SectionPill label={ui.labelChanged ?? 'Changed'} color="#60A5FA" />
             <ReleaseItem emoji="🧪" title={v1075.c1Title} desc={v1075.c1Desc} textColor={textColor} descColor={descColor} itemBg={itemBg} />

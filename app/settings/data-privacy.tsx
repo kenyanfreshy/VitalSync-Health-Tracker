@@ -37,6 +37,13 @@ import { loadConfigAuditLog, clearConfigAuditLog, appendConfigAuditEntry, type C
 import { readAnalyticsEvents, clearAnalyticsEvents, type AnalyticsEvent } from '@/lib/analytics';
 import { clearHealthData } from '@/lib/health/storage';
 import { privacyStrings } from '@/lib/i18n';
+import {
+  hasGeminiConsent,
+  markGeminiConsent,
+  revokeGeminiConsent,
+} from '@/lib/gemini-consent';
+import { TransparencyCard } from '@/components/transparency-card';
+import { useColorScheme } from '@/hooks';
 // ─── Data sections ─────────────────────────────────────────────────────────────
 
 // ON_DEVICE and LEAVES_DEVICE are built dynamically inside the component using tPrivacy keys
@@ -90,6 +97,8 @@ const DEFAULT_AUDIT_META = { icon: '📝', color: '#6B7280' };
 
 export default function DataPrivacyScreen() {
   const colors = useColors();
+  const scheme = useColorScheme() ?? 'light';
+  const isDark = scheme === 'dark';
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
   const [deletedAt, setDeletedAt] = useState<Date | null>(null);
@@ -145,6 +154,42 @@ export default function DataPrivacyScreen() {
     tp.weNever4 ?? 'Track your usage or collect analytics',
     tp.weNever5 ?? 'Access your data without your explicit action',
   ];
+  // ── AI Food Scan Consent state ──────────────────────────────────────────────
+  const [geminiConsented, setGeminiConsented] = useState(false);
+  const [revokingGemini, setRevokingGemini] = useState(false);
+  const [aiConsentExpanded, setAiConsentExpanded] = useState(false);
+
+  useEffect(() => {
+    hasGeminiConsent().then(setGeminiConsented).catch(() => {});
+  }, []);
+
+  const handleGrantGemini = async () => {
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    await markGeminiConsent();
+    setGeminiConsented(true);
+  };
+
+  const handleRevokeGemini = () => {
+    Alert.alert(
+      'Revoke AI Food Scan Consent',
+      'This will remove your consent for sending food photos to Google Gemini. The consent dialog will appear again the next time you try to scan a meal.\n\nYour logged nutrition data will not be deleted.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Revoke',
+          style: 'destructive',
+          onPress: async () => {
+            setRevokingGemini(true);
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            await revokeGeminiConsent();
+            setGeminiConsented(false);
+            setRevokingGemini(false);
+          },
+        },
+      ],
+    );
+  };
+
   const [configHistoryVisible, setConfigHistoryVisible] = useState(false);
   const [auditEntries, setAuditEntries] = useState<ConfigAuditEntry[]>([]);
   const [auditSearch, setAuditSearch] = useState('');
@@ -632,6 +677,130 @@ export default function DataPrivacyScreen() {
             {deleting ? (tPrivacy.deletingLabel ?? 'Deleting…') : (tPrivacy.deleteAllDataLabel ?? 'Delete All My Data')}
           </Text>
         </Pressable>
+
+        {/* ─── AI Food Scan Consent ──────────────────────────────────────── */}
+        {/* TransparencyCard: About Meal Scanner (always visible, collapsible) */}
+        <TransparencyCard variant="mealScanner" style={{ marginBottom: 8 }} />
+        {/* AI Food Scan Consent collapsible tile */}
+        <Pressable
+          onPress={() => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setAiConsentExpanded(v => !v);
+          }}
+          style={({ pressed }) => [{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            paddingVertical: 12,
+            paddingHorizontal: 14,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.surface,
+            marginBottom: aiConsentExpanded ? 0 : 20,
+            opacity: pressed ? 0.8 : 1,
+          }]}
+          accessibilityRole="button"
+          accessibilityLabel="AI Food Scan Consent"
+          accessibilityHint={aiConsentExpanded ? 'Tap to collapse' : 'Tap to expand'}
+        >
+          <View style={[s.neverDot, { backgroundColor: '#F59E0B18' }]}>
+            <IconSymbol name="camera.fill" size={14} color="#F59E0B" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[s.rowTitle, { color: colors.foreground }]}>AI Food Scan Consent</Text>
+            <Text style={[s.rowDesc, { color: geminiConsented ? '#10B981' : '#F59E0B' }]}>
+              {geminiConsented ? '● Consent Given' : '● Not Yet Consented'}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 10, color: colors.muted }}>{aiConsentExpanded ? '▲' : '▼'}</Text>
+        </Pressable>
+        {aiConsentExpanded && (
+          <View style={[s.card, {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            marginBottom: 20,
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
+            borderTopWidth: 0,
+            padding: 14,
+            gap: 10,
+          }]}>
+            {/* Status row */}
+            <View style={[{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 10,
+              borderRadius: 12,
+              borderWidth: 1,
+              padding: 12,
+              backgroundColor: geminiConsented
+                ? ('#10B981' + (isDark ? '18' : '12'))
+                : ('#F59E0B' + (isDark ? '18' : '12')),
+              borderColor: geminiConsented
+                ? ('#10B981' + (isDark ? '40' : '30'))
+                : ('#F59E0B' + (isDark ? '40' : '30')),
+            }]}>
+              <Text style={{ fontSize: 16, color: geminiConsented ? '#10B981' : '#F59E0B', lineHeight: 20 }}>●</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '700', lineHeight: 18, color: geminiConsented ? '#10B981' : '#F59E0B' }}>
+                  {geminiConsented ? 'Consent Given' : 'Not Yet Consented'}
+                </Text>
+                <Text style={[s.rowDesc, { color: colors.muted, marginTop: 2 }]}>
+                  {geminiConsented
+                    ? 'Food photos may be sent to Google Gemini for Nutrition Analysis.'
+                    : 'Enable to allow Camera Scan to send food photos to Google Gemini for analysis.'}
+                </Text>
+              </View>
+            </View>
+            {/* Enable button */}
+            {!geminiConsented && (
+              <Pressable
+                style={({ pressed }) => [{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  borderRadius: 14,
+                  paddingVertical: 14,
+                  backgroundColor: '#10B981',
+                  opacity: pressed ? 0.85 : 1,
+                  marginTop: 4,
+                }]}
+                onPress={handleGrantGemini}
+              >
+                <IconSymbol name="checkmark.circle.fill" size={18} color="#fff" />
+                <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>Enable AI Food Scan (Camera Scan)</Text>
+              </Pressable>
+            )}
+            {/* Revoke button */}
+            {geminiConsented && (
+              <Pressable
+                style={({ pressed }) => [{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  paddingVertical: 14,
+                  backgroundColor: isDark ? (colors.error + '15') : '#FFF5F5',
+                  borderColor: colors.error + '40',
+                  opacity: (pressed || revokingGemini) ? 0.7 : 1,
+                }]}
+                onPress={handleRevokeGemini}
+                disabled={revokingGemini}
+              >
+                {revokingGemini
+                  ? <ActivityIndicator size="small" color={colors.error} />
+                  : <IconSymbol name="xmark.circle.fill" size={16} color={colors.error} />}
+                <Text style={{ fontSize: 14, fontWeight: '600', color: colors.error }}>
+                  {revokingGemini ? 'Revoking…' : 'Revoke AI Food Scan Consent'}
+                </Text>
+              </Pressable>
+            )}
+          </View>
+        )}
 
         {/* Legal documents: Privacy Policy + Terms of Use */}
         <View style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>

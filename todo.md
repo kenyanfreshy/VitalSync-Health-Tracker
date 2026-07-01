@@ -10539,3 +10539,7 @@
 - [x] Tests: AI provider selection, fallback, USDA failure, HealthKit denied, correlation insufficient data, subscription gating
 - [x] Version bump to v1.0.77 + commit + push + EAS build
 - [ ] RTM (Requirements Traceability Matrix) report
+
+- [x] Move AI Food Scan Consent into Settings → Data & Privacy as collapsible section below About Meal Scan
+- [ ] Remove inline consent navigation from food scan UI (replace with Settings → Data & Privacy deeplink)
+- [x] Fix low-confidence photo scan: when Gemini returns low confidence or no food, run food name through searchFood (Gemini+USDA) pipeline

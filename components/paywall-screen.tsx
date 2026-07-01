@@ -54,7 +54,6 @@ if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental
 // Deep link that opens the iOS Subscriptions page directly to VitalSync
 const IOS_MANAGE_SUB_URL = "itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions";
 const IOS_MANAGE_SUB_FALLBACK = "https://apps.apple.com/account/subscriptions";
-const ANDROID_MANAGE_SUB_URL = "https://play.google.com/store/account/subscriptions";
 
 // ─── Fallback prices ──────────────────────────────────────────────────────────
 const FALLBACK_MONTHLY = "$4.99";
@@ -298,8 +297,6 @@ export function PaywallScreen({
       } catch {
         await openLink(IOS_MANAGE_SUB_FALLBACK);
       }
-    } else if (Platform.OS === 'android') {
-      await openLink(ANDROID_MANAGE_SUB_URL);
     } else {
       await openLink(IOS_MANAGE_SUB_FALLBACK);
     }

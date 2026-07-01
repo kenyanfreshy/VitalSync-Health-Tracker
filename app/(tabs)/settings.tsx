@@ -1988,13 +1988,9 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
               onPress={() => {
-                if (Platform.OS === 'ios') {
-                  Linking.openURL('itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions').catch(() =>
-                    Linking.openURL('https://apps.apple.com/account/subscriptions')
-                  );
-                } else {
-                  Linking.openURL('https://play.google.com/store/account/subscriptions');
-                }
+                Linking.openURL('itms-apps://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/manageSubscriptions').catch(() =>
+                  Linking.openURL('https://apps.apple.com/account/subscriptions')
+                );
               }}
               activeOpacity={0.7}
             >
@@ -4178,10 +4174,7 @@ export default function SettingsScreen() {
                 if (isAvailable) {
                   await StoreReview.requestReview();
                 } else {
-                  const storeUrl = Platform.OS === 'ios'
-                    ? 'https://apps.apple.com/app/id6504192558'
-                    : 'https://play.google.com/store/apps/details?id=space.manus.vitalsync';
-                  await Linking.openURL(storeUrl);
+                  await Linking.openURL('https://apps.apple.com/app/id6504192558');
                 }
               } catch (_unused) {
                 // Silently ignore if store review is unavailable
@@ -4196,9 +4189,7 @@ export default function SettingsScreen() {
             subtitle={se.shareVitalSyncSub}
             onPress={async () => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              const storeUrl = Platform.OS === 'android'
-                ? 'https://play.google.com/store/apps/details?id=space.manus.vitalsync'
-                : 'https://apps.apple.com/app/id6504192558';
+              const storeUrl = 'https://apps.apple.com/app/id6504192558';
               await Share.share({
                 title: 'VitalSync — Personal Wellness Hub',
                 message: `I've been using VitalSync to track my health data privately on-device. Check it out: ${storeUrl}`,
@@ -4232,13 +4223,10 @@ export default function SettingsScreen() {
             icon="arrow.up.right"
             iconColor="#0EA5E9"
             label={se.viewOnAppStore}
-            subtitle={Platform.OS === 'android' ? 'Google Play Store' : 'Apple App Store'}
+            subtitle={'Apple App Store'}
             onPress={async () => {
               if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              const storeUrl = Platform.OS === 'android'
-                ? 'https://play.google.com/store/apps/details?id=space.manus.vitalsync'
-                : 'https://apps.apple.com/app/id6504192558';
-              await Linking.openURL(storeUrl);
+              await Linking.openURL('https://apps.apple.com/app/id6504192558');
             }}
           />
           <SettingsRow

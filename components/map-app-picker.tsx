@@ -117,15 +117,9 @@ export function MapAppPicker({ visible, activityType, onClose }: MapAppPickerPro
       } else {
         // App not installed — offer to open App Store / Play Store
         const storeUrls: Record<string, string> = {
-          'google-maps': Platform.OS === 'ios'
-            ? 'https://apps.apple.com/app/google-maps/id585027354'
-            : 'https://play.google.com/store/apps/details?id=com.google.android.apps.maps',
-          garmin: Platform.OS === 'ios'
-            ? 'https://apps.apple.com/app/garmin-connect/id583446403'
-            : 'https://play.google.com/store/apps/details?id=com.garmin.android.apps.connectmobile',
-          strava: Platform.OS === 'ios'
-            ? 'https://apps.apple.com/app/strava/id426826309'
-            : 'https://play.google.com/store/apps/details?id=com.strava',
+          'google-maps': 'https://apps.apple.com/app/google-maps/id585027354',
+          garmin: 'https://apps.apple.com/app/garmin-connect/id583446403',
+          strava: 'https://apps.apple.com/app/strava/id426826309',
         };
         const storeUrl = storeUrls[app.id];
         if (storeUrl) {

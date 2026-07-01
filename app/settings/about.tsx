@@ -93,14 +93,8 @@ export default function AboutScreen() {
   };
 
   const handleRate = async () => {
-    const storeUrl =
-      Platform.OS === 'ios'
-        ? 'itms-apps://itunes.apple.com/app/id6760217377?action=write-review'
-        : 'market://details?id=com.myvitalsyncclinicalhub.vitalsync';
-    const webFallback =
-      Platform.OS === 'ios'
-        ? 'https://apps.apple.com/app/id6760217377?action=write-review'
-        : 'https://play.google.com/store/apps/details?id=com.myvitalsyncclinicalhub.vitalsync';
+    const storeUrl = 'itms-apps://itunes.apple.com/app/id6760217377?action=write-review';
+    const webFallback = 'https://apps.apple.com/app/id6760217377?action=write-review';
     const canOpen = await Linking.canOpenURL(storeUrl);
     if (canOpen) {
       await Linking.openURL(storeUrl);

@@ -163,7 +163,7 @@ function SourceCard({ id, available }: SourceCardProps) {
 
   async function handleConnect() {
     if (!available) {
-      const platformName = meta.platform === 'ios' ? 'iPhone or iPad' : 'Android';
+      const platformName = meta.platform === 'ios' ? 'iPhone or iPad' : 'this device';
       Alert.alert(t.notAvailableTitle, `${meta.name} ${t.notAvailableMsg} ${platformName}.`);
       return;
     }
@@ -573,11 +573,15 @@ export default function DataSourcesScreen() {
           <SourceCard key={id} id={id} available={isAvailable(id)} />
         ))}
 
-        {/* Android sources */}
-        <SectionHeader title="Android" />
-        {androidSources.map((id) => (
-          <SourceCard key={id} id={id} available={isAvailable(id)} />
-        ))}
+        {/* Android sources — hidden on iOS */}
+        {Platform.OS !== 'ios' && (
+          <>
+            <SectionHeader title="Android" />
+            {androidSources.map((id) => (
+              <SourceCard key={id} id={id} available={isAvailable(id)} />
+            ))}
+          </>
+        )}
 
         {/* Cross-platform / wearable sources */}
         <SectionHeader title="Wearables & Third-Party" />
